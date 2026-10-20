@@ -74,13 +74,20 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -f ./gradlew ]]; then
-            ./gradlew --no-daemon tasks --all | grep -q 'lintDebug' && ./gradlew --no-daemon lintDebug || {
-              echo "::notice::lintDebug task is not available or did not run; inspect Gradle task output if lint is expected."
-            }
+            chmod +x ./gradlew
+            task_list="$(./gradlew --no-daemon tasks --all)"
+            if grep -q 'lintDebug' <<< "$task_list"; then
+              ./gradlew --no-daemon lintDebug
+            else
+              echo "::notice::lintDebug task is not available in this project."
+            fi
           else
-            gradle --no-daemon tasks --all | grep -q 'lintDebug' && gradle --no-daemon lintDebug || {
-              echo "::notice::lintDebug task is not available or did not run; inspect Gradle task output if lint is expected."
-            }
+            task_list="$(gradle --no-daemon tasks --all)"
+            if grep -q 'lintDebug' <<< "$task_list"; then
+              gradle --no-daemon lintDebug
+            else
+              echo "::notice::lintDebug task is not available in this project."
+            fi
           fi
 
       - name: Generate APK SHA-256
