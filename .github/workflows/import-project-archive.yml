@@ -15,6 +15,8 @@ concurrency:
 
 jobs:
   import-project:
+    # The import commit removes the uploaded ZIP; skip that follow-up push to avoid re-triggering without an archive.
+    if: ${{ !startsWith(github.event.head_commit.message, 'Import and verify AI Council Android ') }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
