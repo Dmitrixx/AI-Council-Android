@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'AI-Council-Android-v1.32.0-files.zip'
+      - 'AI-Council-Android-v1.33.0-files.zip'
 
 permissions:
   contents: write
@@ -22,12 +22,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          archive="AI-Council-Android-v1.32.0-files.zip"
+          archive="AI-Council-Android-v1.33.0-files.zip"
           test -f "$archive"
           python3 - <<'PY'
           import zipfile
           from pathlib import PurePosixPath
-          archive = "AI-Council-Android-v1.32.0-files.zip"
+          archive = "AI-Council-Android-v1.33.0-files.zip"
           with zipfile.ZipFile(archive) as z:
               for name in z.namelist():
                   p = PurePosixPath(name)
@@ -49,5 +49,5 @@ jobs:
             echo "No changes to commit."
             exit 0
           fi
-          git commit -m "Import AI Council Android v1.32.0 source"
+          git commit -m "Import AI Council Android v1.33.0 source"
           git push
