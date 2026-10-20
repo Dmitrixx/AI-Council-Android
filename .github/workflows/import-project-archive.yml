@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'AI-Council-Android-v1.34.0-files.zip'
+      - 'AI-Council-Android-v1.35.0-files.zip'
 
 permissions:
   contents: write
@@ -27,12 +27,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          archive="AI-Council-Android-v1.34.0-files.zip"
+          archive="AI-Council-Android-v1.35.0-files.zip"
           test -f "$archive"
           python3 - <<'PY'
           import zipfile
           from pathlib import PurePosixPath
-          archive = "AI-Council-Android-v1.34.0-files.zip"
+          archive = "AI-Council-Android-v1.35.0-files.zip"
           with zipfile.ZipFile(archive) as z:
               for name in z.namelist():
                   p = PurePosixPath(name)
