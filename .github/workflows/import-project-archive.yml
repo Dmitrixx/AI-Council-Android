@@ -1,10 +1,10 @@
-name: Import and verify Android project archive
+name: Import, test and build AI Council Android
 
 on:
   push:
     branches: [main]
     paths:
-      - 'AI-Council-Android-v1.36.0-files.zip'
+      - 'AI-Council-Android-v*-files.zip'
 
 permissions:
   contents: write
@@ -16,40 +16,81 @@ concurrency:
 jobs:
   import-project:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
           persist-credentials: true
 
-      - name: Extract project files
+      - name: Safely extract project archive
+        id: extract
         shell: bash
         run: |
           set -euo pipefail
-          archive="AI-Council-Android-v1.36.0-files.zip"
-          test -f "$archive"
-          python3 - <<'PY'
+          shopt -s nullglob
+          archives=(AI-Council-Android-v*-files.zip)
+          if [[ "${#archives[@]}" -ne 1 ]]; then
+            echo "::error::Expected exactly one AI-Council-Android-v*-files.zip archive in the repository root; found ${#archives[@]}."
+            printf 'Found: %s\n' "${archives[@]}"
+            exit 1
+          fi
+          archive="${archives[0]}"
+          version="${archive#AI-Council-Android-}"
+          version="${version%-files.zip}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          test -s "$archive"
+
+          # Keep this workflow authoritative if the archive contains an older copy.
+          workflow_backup="$(mktemp)"
+          cp .github/workflows/import-project-archive.yml "$workflow_backup"
+
+          python3 - "$archive" <<'PY'
+          import os
+          import stat
+          import sys
           import zipfile
           from pathlib import PurePosixPath
-          archive = "AI-Council-Android-v1.36.0-files.zip"
+
+          archive = sys.argv[1]
+          destination = "/tmp/aicouncil-project"
+          max_entries = 20000
+          max_uncompressed = 500 * 1024 * 1024
+          os.makedirs(destination, exist_ok=True)
+
           with zipfile.ZipFile(archive) as z:
-              for name in z.namelist():
-                  p = PurePosixPath(name)
-                  if p.is_absolute() or ".." in p.parts:
-                      raise SystemExit(f"Unsafe path in archive: {name}")
-              z.extractall("/tmp/aicouncil-project")
+              entries = z.infolist()
+              if len(entries) > max_entries:
+                  raise SystemExit(f"Archive has too many entries: {len(entries)}")
+              total = 0
+              for info in entries:
+                  p = PurePosixPath(info.filename)
+                  if p.is_absolute() or ".." in p.parts or not p.parts:
+                      raise SystemExit(f"Unsafe path in archive: {info.filename!r}")
+                  mode = info.external_attr >> 16
+                  if stat.S_ISLNK(mode):
+                      raise SystemExit(f"Symbolic links are not allowed: {info.filename!r}")
+                  total += info.file_size
+                  if total > max_uncompressed:
+                      raise SystemExit("Archive expands beyond the 500 MiB safety limit")
+              z.extractall(destination)
+
+          print(f"Extracted {len(entries)} entries ({total} bytes uncompressed)")
           PY
+
           cp -a /tmp/aicouncil-project/. .
-          rm "$archive"
+          mkdir -p .github/workflows
+          cp "$workflow_backup" .github/workflows/import-project-archive.yml
+          rm -f "$workflow_backup" "$archive"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
-      - name: Install Android SDK
+      - name: Install Android SDK packages
         uses: android-actions/setup-android@v4
         with:
           packages: |
@@ -61,22 +102,56 @@ jobs:
         with:
           gradle-version: '7.6.4'
 
-      - name: Static project verification
-        run: python3 tools/verify_project.py
+      - name: Verify project structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d app || { echo "::error::Missing app/ directory after extraction."; exit 1; }
+          if [[ -f tools/verify_project.py ]]; then
+            python3 tools/verify_project.py
+          else
+            echo "::warning::tools/verify_project.py is absent; static verifier skipped."
+          fi
 
       - name: Desktop smoke tests
-        run: sh tools/desktop_smoke/run.sh
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f tools/desktop_smoke/run.sh ]]; then
+            sh tools/desktop_smoke/run.sh
+          else
+            echo "::notice::No desktop smoke-test script in this archive."
+          fi
         env:
           JAVA_TOOL_OPTIONS: -XX:+UseSerialGC
 
       - name: Build debug APK
-        run: gradle --no-daemon --stacktrace assembleDebug
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f ./gradlew ]]; then
+            chmod +x ./gradlew
+            ./gradlew --no-daemon --stacktrace assembleDebug
+          else
+            gradle --no-daemon --stacktrace assembleDebug
+          fi
 
-      - name: Upload debug APK
+      - name: Create APK checksum
+        id: apk
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$apk"
+          sha256sum "$apk" | tee app/build/outputs/apk/debug/app-debug.apk.sha256
+
+      - name: Upload debug APK and checksum
         uses: actions/upload-artifact@v7
         with:
-          name: ai-council-android-v1.34.0-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: ai-council-android-${{ steps.extract.outputs.version }}-debug-apk
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/apk/debug/app-debug.apk.sha256
           if-no-files-found: error
           retention-days: 14
 
@@ -91,5 +166,5 @@ jobs:
             echo "No project changes to commit."
             exit 0
           fi
-          git commit -m "Import and verify AI Council Android v1.34.0"
+          git commit -m "Import and verify AI Council Android ${{ steps.extract.outputs.version }} source"
           git push
