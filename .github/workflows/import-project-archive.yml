@@ -1,4 +1,4 @@
-name: Import Android project archive
+name: Import and verify Android project archive
 
 on:
   push:
@@ -9,12 +9,17 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: import-aicouncil-archive
+  cancel-in-progress: false
+
 jobs:
   import-project:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: true
 
@@ -38,7 +43,44 @@ jobs:
           cp -a /tmp/aicouncil-project/. .
           rm "$archive"
 
-      - name: Commit project source
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: |
+            platforms;android-34
+            build-tools;34.0.0
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '7.6.4'
+
+      - name: Static project verification
+        run: python3 tools/verify_project.py
+
+      - name: Desktop smoke tests
+        run: sh tools/desktop_smoke/run.sh
+        env:
+          JAVA_TOOL_OPTIONS: -XX:+UseSerialGC
+
+      - name: Build debug APK
+        run: gradle --no-daemon --stacktrace assembleDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-council-android-v1.34.0-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Commit validated source project
         shell: bash
         run: |
           set -euo pipefail
@@ -46,8 +88,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "No project changes to commit."
             exit 0
           fi
-          git commit -m "Import AI Council Android v1.34.0 source"
+          git commit -m "Import and verify AI Council Android v1.34.0"
           git push
