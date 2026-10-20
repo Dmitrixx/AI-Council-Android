@@ -1,0 +1,53 @@
+name: Import Android project archive
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'AI-Council-Android-v1.32.0-files.zip'
+
+permissions:
+  contents: write
+
+jobs:
+  import-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Extract project files
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="AI-Council-Android-v1.32.0-files.zip"
+          test -f "$archive"
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import PurePosixPath
+          archive = "AI-Council-Android-v1.32.0-files.zip"
+          with zipfile.ZipFile(archive) as z:
+              for name in z.namelist():
+                  p = PurePosixPath(name)
+                  if p.is_absolute() or ".." in p.parts:
+                      raise SystemExit(f"Unsafe path in archive: {name}")
+              z.extractall("/tmp/aicouncil-project")
+          PY
+          cp -a /tmp/aicouncil-project/. .
+          rm "$archive"
+
+      - name: Commit project source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Import AI Council Android v1.32.0 source"
+          git push
