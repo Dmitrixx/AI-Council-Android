@@ -180,6 +180,52 @@ elif "Текущий лимит — " not in text:
     raise SystemExit("PDF preview description anchor not found")
 activity.write_text(text, encoding="utf-8")
 
+# Diagnostic for the autonomous checker: report the first delimiter mismatch if a patch
+# accidentally changes Java lexical structure. The real build/test steps still fail closed.
+def diagnose_java_balance(source):
+    stack = []
+    state = "code"
+    i = 0
+    pairs = {")": "(", "]": "[", "}": "{"}
+    while i < len(source):
+        ch = source[i]
+        nxt = source[i + 1] if i + 1 < len(source) else ""
+        if state == "code":
+            if ch == "/" and nxt == "/": state = "line"; i += 2; continue
+            if ch == "/" and nxt == "*": state = "block"; i += 2; continue
+            if ch == '"': state = "string"; i += 1; continue
+            if ch == "'": state = "char"; i += 1; continue
+            if ch in "([{": stack.append((ch, i))
+            elif ch in ")]}":
+                if not stack or stack[-1][0] != pairs[ch]:
+                    line = source.count("\\n", 0, i) + 1
+                    col = i - source.rfind("\\n", 0, i)
+                    print("MainActivity delimiter mismatch:", repr(ch), "line", line, "column", col,
+                          "top stack", stack[-3:])
+                    return
+                stack.pop()
+            i += 1
+        elif state == "line":
+            if ch == "\\n": state = "code"
+            i += 1
+        elif state == "block":
+            if ch == "*" and nxt == "/": state = "code"; i += 2
+            else: i += 1
+        else:
+            quote = '"' if state == "string" else "'"
+            if ch == "\\\\": i += 2
+            elif ch == quote: state = "code"; i += 1
+            else: i += 1
+    if stack or state != "code":
+        positions = []
+        for token, pos in stack[-8:]:
+            positions.append((token, source.count("\\n", 0, pos) + 1))
+        print("MainActivity delimiter state at EOF:", state, "open delimiters", positions)
+try:
+    diagnose_java_balance(activity.read_text(encoding="utf-8"))
+except Exception as diagnostic_error:
+    print("MainActivity balance diagnostic unavailable:", str(diagnostic_error))
+
 
 # Keep autonomous tests explicit and ensure legacy default factories remain compatible.
 policy_test_path = "tools/desktop_smoke/src/com/aicouncil/app/ocr/OcrInputPolicySmokeTest.java"
