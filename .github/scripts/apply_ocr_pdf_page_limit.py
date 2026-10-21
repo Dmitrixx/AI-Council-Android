@@ -172,10 +172,10 @@ if "private void showOcrPdfPageLimitDialog(Button button)" not in text:
         raise SystemExit("OCR UI helper anchor not found")
     text = text.replace(helper_anchor, helper_new, 1)
 
-preview_old = """? "Страницы PDF распознаны локально с помощью Tesseract. Модель языка хранится в закрытой папке приложения; сам PDF не отправлялся на сервер. Обрабатываются только первые пять страниц. OCR может ошибаться, поэтому проверьте результат. Ничего не добавится, пока вы не нажмёте «Добавить в задачу»."""
-preview_new = """? "Страницы PDF обрабатываются локально: текстовый слой извлекается напрямую, сканы распознаются Tesseract. Модель языка хранится в закрытой папке приложения; сам PDF не отправлялся на сервер. Текущий лимит — " + ocrPdfPageLimit() + " страниц. OCR может ошибаться, поэтому проверьте результат. Ничего не добавится, пока вы не нажмёте «Добавить в задачу»." """
-if preview_old in text:
-    text = text.replace(preview_old, preview_new, 1)
+preview_sentence = "Обрабатываются только первые пять страниц."
+if preview_sentence in text:
+    text = text.replace(preview_sentence,
+        'Текущий лимит — " + ocrPdfPageLimit() + " страниц.', 1)
 elif "Текущий лимит — " not in text:
     raise SystemExit("PDF preview description anchor not found")
 activity.write_text(text, encoding="utf-8")
