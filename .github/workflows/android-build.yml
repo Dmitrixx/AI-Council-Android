@@ -168,6 +168,15 @@ jobs:
         working-directory: ${{ steps.source.outputs.project_dir }}
         run: zip -qr "$RUNNER_TEMP/AI-Council-Android-v2.0.0-ocr-page-limit.zip" .
 
+      - name: Upload pre-build source snapshot for debugging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-council-source-snapshot-${{ github.run_number }}
+          path: ${{ runner.temp }}/AI-Council-Android-v2.0.0-ocr-page-limit.zip
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
