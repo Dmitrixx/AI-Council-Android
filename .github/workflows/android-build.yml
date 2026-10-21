@@ -1,0 +1,120 @@
+name: Build AI Council APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "AI-Council-Android-v2.0.0-*.zip"
+      - "settings.gradle"
+      - "settings.gradle.kts"
+      - "build.gradle"
+      - "build.gradle.kts"
+      - "app/**"
+      - "tools/**"
+      - ".github/workflows/android-build.yml"
+  pull_request:
+    paths:
+      - "AI-Council-Android-v2.0.0-*.zip"
+      - "settings.gradle"
+      - "settings.gradle.kts"
+      - "build.gradle"
+      - "build.gradle.kts"
+      - "app/**"
+      - "tools/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Locate Android source
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f settings.gradle || -f settings.gradle.kts ]]; then
+            echo "project_dir=." >> "$GITHUB_OUTPUT"
+          else
+            archive="$(find . -maxdepth 1 -type f -name 'AI-Council-Android-v2.0.0-*.zip' -print -quit)"
+            if [[ -z "$archive" ]]; then
+              echo "::error::Android source not found. Upload AI-Council-Android-v2.0.0-hybrid-pdf.zip to the repository root, then push again."
+              exit 1
+            fi
+            mkdir -p .build-source
+            unzip -q "$archive" -d .build-source
+            settings="$(find .build-source -maxdepth 4 -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)"
+            if [[ -z "$settings" ]]; then
+              echo "::error::The source ZIP does not contain settings.gradle or settings.gradle.kts."
+              exit 1
+            fi
+            echo "project_dir=$(dirname "$settings")" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platforms;android-36
+            build-tools;36.0.0
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.6.0"
+
+      - name: Static verification
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        run: python3 tools/verify_project.py
+
+      - name: Desktop smoke tests
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        run: sh tools/desktop_smoke/run.sh
+        env:
+          JAVA_TOOL_OPTIONS: -XX:+UseSerialGC
+
+      - name: Build debug APK
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f ./gradlew ]]; then
+            chmod +x ./gradlew
+            ./gradlew --no-daemon --stacktrace assembleDebug
+          else
+            gradle --no-daemon --stacktrace assembleDebug
+          fi
+
+      - name: Verify APK and create checksum
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$apk"
+          sha256sum "$apk" | tee "$apk.sha256"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-council-debug-apk-${{ github.run_number }}
+          path: |
+            ${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk
+            ${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk.sha256
+          if-no-files-found: error
+          retention-days: 14
