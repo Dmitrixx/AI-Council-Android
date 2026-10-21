@@ -104,6 +104,17 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      - name: Verify and force Java 21
+        run: |
+          echo "JAVA_HOME before=$JAVA_HOME"
+          java -version
+          # Make sure the PATH prefers the Java 21 we just installed
+          echo "$JAVA_HOME/bin" >> $GITHUB_PATH
+          export PATH="$JAVA_HOME/bin:$PATH"
+          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+          java -version
+          which java
+
       - name: Install Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -113,7 +124,7 @@ jobs:
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses || true
 
-      - name: Set up Gradle
+      - name: Set up Gradle 9.6.0
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "9.6.0"
@@ -131,8 +142,16 @@ jobs:
       - name: Build debug APK
         working-directory: ${{ steps.source.outputs.project_dir }}
         shell: bash
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
         run: |
           set -euo pipefail
+          echo "=== Build environment ==="
+          echo "JAVA_HOME=$JAVA_HOME"
+          java -version
+          which java
+          gradle --version || true
+          echo "========================="
           if [[ -f ./gradlew ]]; then
             chmod +x ./gradlew
             ./gradlew --no-daemon --stacktrace assembleDebug
