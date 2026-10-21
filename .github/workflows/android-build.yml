@@ -94,6 +94,62 @@ jobs:
           test -f "$new_pd"
           test -f "$new_ts"
 
+      - name: Fix Java compiler errors found by the Android build
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          chat_path = Path("app/src/main/java/com/aicouncil/app/ChatCompletionsClient.java")
+          chat = chat_path.read_text(encoding="utf-8")
+          old_chat = '''                        Object maxTokens = body.opt("max_tokens");
+                        body.remove("max_tokens");
+                        body.put("max_completion_tokens", maxTokens == null ? 2048 : maxTokens);
+                        completionTokenField = true;'''
+          new_chat = '''                        Object maxTokens = body.opt("max_tokens");
+                        body.remove("max_tokens");
+                        try {
+                            body.put("max_completion_tokens", maxTokens == null ? 2048 : maxTokens);
+                        } catch (Exception invalidFallbackJson) {
+                            return new Result(text.toString(), "Ошибка запроса: не удалось подготовить совместимый лимит токенов.", false, false);
+                        }
+                        completionTokenField = true;'''
+          if old_chat in chat:
+              chat = chat.replace(old_chat, new_chat, 1)
+              chat_path.write_text(chat, encoding="utf-8")
+          elif "catch (Exception invalidFallbackJson)" not in chat:
+              raise SystemExit("ChatCompletionsClient fallback block did not match expected source")
+
+          activity_path = Path("app/src/main/java/com/aicouncil/app/MainActivity.java")
+          activity = activity_path.read_text(encoding="utf-8")
+          old_start = '''        String[] compactModes={"Быстрый","Совет","Проверка","Разбор","Авто"}; TextView[] chipViews=new TextView[compactModes.length];
+        for(int mi=0;mi<compactModes.length;mi++){'''
+          new_start = '''        String[] compactModes={"Быстрый","Совет","Проверка","Разбор","Авто"}; TextView[] chipViews=new TextView[compactModes.length];
+        TextView modeDescription=text("Два независимых ответа и вывод координатора.",13,MUTED,false);
+        for(int mi=0;mi<compactModes.length;mi++){'''
+          old_decl = '''        TextView modeDescription=text("Два независимых ответа и вывод координатора.",13,MUTED,false); modeDescription.setPadding(0,dp(3),0,dp(10)); taskCard.addView(modeDescription);'''
+          new_decl = '''        modeDescription.setPadding(0,dp(3),0,dp(10)); taskCard.addView(modeDescription);'''
+          if old_start in activity and old_decl in activity:
+              activity = activity.replace(old_start, new_start, 1)
+              activity = activity.replace(old_decl, new_decl, 1)
+              activity_path.write_text(activity, encoding="utf-8")
+          elif activity.find("TextView modeDescription=text(") < activity.find("for(int mi=0;mi<compactModes.length;mi++)") and new_decl in activity:
+              pass
+          else:
+              raise SystemExit("MainActivity modeDescription declaration could not be repaired safely")
+
+          verify_path = Path("tools/verify_project.py")
+          verify = verify_path.read_text(encoding="utf-8")
+          anchor = """check('Облачные chat-запросы используют OkHttp и SSE stream=true вне Activity', CHAT_CLIENT.exists() and 'OkHttpClient' in CHAT_CLIENT.read_text(encoding='utf-8') and 'body.put("stream", true)' in src and 'HttpURLConnection' not in CHAT_CLIENT.read_text(encoding='utf-8'))"""
+          add = anchor + "\\ncheck('Переименование max_tokens в max_completion_tokens обрабатывает JSONException', 'catch (Exception invalidFallbackJson)' in CHAT_CLIENT.read_text(encoding='utf-8'))\\ncheck('Описание режима объявлено до обработчиков кнопок режимов', src.find('TextView modeDescription=text(') < src.find('for(int mi=0;mi<compactModes.length;mi++)'))"
+          if anchor in verify:
+              verify_path.write_text(verify.replace(anchor, add, 1), encoding="utf-8")
+          elif "Переименование max_tokens в max_completion_tokens обрабатывает JSONException" not in verify:
+              raise SystemExit("Could not add compiler regression checks to verify_project.py")
+          PY
+
       - name: Package corrected source for reproducibility
         working-directory: ${{ steps.source.outputs.project_dir }}
         run: zip -qr "$RUNNER_TEMP/AI-Council-Android-v2.0.0-pdfbox-fixed.zip" .
