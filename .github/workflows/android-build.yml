@@ -244,20 +244,6 @@ jobs:
             gradle --no-daemon --stacktrace assembleDebug
           fi
 
-      - name: Run Android instrumentation tests on emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          disable-animations: true
-          script: |
-            set -euo pipefail
-            cd "$GITHUB_WORKSPACE"
-            cd "${{ steps.source.outputs.project_dir }}"
-            chmod +x ./gradlew
-            ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
-
       - name: Verify APK and create checksum
         working-directory: ${{ steps.source.outputs.project_dir }}
         shell: bash
@@ -284,3 +270,19 @@ jobs:
           path: ${{ runner.temp }}/AI-Council-Android-v2.0.0-ocr-page-limit.zip
           if-no-files-found: error
           retention-days: 14
+
+      - name: Run Android instrumentation tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          emulator-boot-timeout: 300
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            cd "$GITHUB_WORKSPACE"
+            cd "${{ steps.source.outputs.project_dir }}"
+            chmod +x ./gradlew
+            ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
+
