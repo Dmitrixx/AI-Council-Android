@@ -164,6 +164,12 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/.github/scripts/apply_ocr_pdf_page_limit.py" "${{ steps.source.outputs.project_dir }}"
 
+      - name: Add Android UI instrumentation tests and accessibility state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/.github/scripts/apply_android_ui_smoke_tests.py" "${{ steps.source.outputs.project_dir }}"
+
       - name: Package corrected source for reproducibility
         working-directory: ${{ steps.source.outputs.project_dir }}
         run: zip -qr "$RUNNER_TEMP/AI-Council-Android-v2.0.0-ocr-page-limit.zip" .
@@ -237,6 +243,20 @@ jobs:
           else
             gradle --no-daemon --stacktrace assembleDebug
           fi
+
+      - name: Run Android instrumentation tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            cd "$GITHUB_WORKSPACE"
+            cd "${{ steps.source.outputs.project_dir }}"
+            chmod +x ./gradlew
+            ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
 
       - name: Verify APK and create checksum
         working-directory: ${{ steps.source.outputs.project_dir }}
