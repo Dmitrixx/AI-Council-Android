@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Apply all MainActivity policy extracts in one step (patch or sequential v1-v9)."""
+"""Apply all MainActivity policy extracts in one step (patch or sequential v1-v10)."""
 from pathlib import Path
 import subprocess
 import sys
 import urllib.request
 
-# Known-good MainActivity before permanent extracts (commit 125a66e)
 KNOWN_GOOD_URL = (
     "https://raw.githubusercontent.com/Dmitrixx/AI-Council-Android/"
     "125a66e17593c64c86d5e2b13028558c18b5d8dc/"
@@ -22,6 +21,12 @@ def restore_known_good(activity: Path) -> None:
     activity.write_bytes(data)
     print("MainActivity restored: %d bytes" % len(data))
 
+def run_script(scripts: Path, name: str, root: Path) -> None:
+    script = scripts / name
+    if not script.is_file():
+        raise SystemExit("missing " + name)
+    subprocess.check_call([sys.executable, str(script), str(root)])
+
 def main():
     root = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
     activity = root / "app/src/main/java/com/aicouncil/app/MainActivity.java"
@@ -33,30 +38,42 @@ def main():
         restore_known_good(activity)
         src = activity.read_text(encoding="utf-8")
 
-    if "BackupExportPolicy.MAX_BACKUP_BYTES" in src and "CouncilLaunchPolicy.MAX_TASK_CHARS" in src:
-        print("MainActivity extracts: already applied")
+    scripts = root / ".github/scripts"
+    has_core = "BackupExportPolicy.MAX_BACKUP_BYTES" in src and "CouncilLaunchPolicy.MAX_TASK_CHARS" in src
+    has_v10 = "HistoryProjectPolicy.historyCounterLabel" in src
+
+    if has_core and has_v10:
+        print("MainActivity extracts: already applied (v1-v10)")
         return
 
-    patch = root / ".github/patches/mainactivity_policy_extracts.patch"
-    scripts = root / ".github/scripts"
-    if patch.is_file() and patch.stat().st_size > 100:
-        r = subprocess.run(
-            ["patch", "-p1", "--forward", "--reject-file=-", "-i", str(patch)],
-            cwd=str(root),
-            capture_output=True,
-            text=True,
-        )
-        if r.returncode == 0:
-            print("MainActivity extracts: applied via patch")
-            return
-        print("patch failed, falling back to sequential scripts:", (r.stderr or r.stdout)[:300])
+    if not has_core:
+        patch = root / ".github/patches/mainactivity_policy_extracts.patch"
+        if patch.is_file() and patch.stat().st_size > 100:
+            r = subprocess.run(
+                ["patch", "-p1", "--forward", "--reject-file=-", "-i", str(patch)],
+                cwd=str(root),
+                capture_output=True,
+                text=True,
+            )
+            if r.returncode == 0:
+                print("MainActivity extracts: applied via patch")
+            else:
+                print("patch failed, falling back to sequential scripts:", (r.stderr or r.stdout)[:300])
+                for v in range(1, 10):
+                    run_script(scripts, "apply_mainactivity_extract_v%d.py" % v, root)
+                print("MainActivity extracts: applied via v1-v9")
+        else:
+            for v in range(1, 10):
+                run_script(scripts, "apply_mainactivity_extract_v%d.py" % v, root)
+            print("MainActivity extracts: applied via v1-v9")
 
-    for v in range(1, 10):
-        script = scripts / f"apply_mainactivity_extract_v{v}.py"
-        if not script.is_file():
-            raise SystemExit(f"missing {script.name}")
-        subprocess.check_call([sys.executable, str(script), str(root)])
-    print("MainActivity extracts: applied via v1-v9")
+    # Always try v10 if markers missing (deeper history/showHistory/modeIndex)
+    src = activity.read_text(encoding="utf-8")
+    if "HistoryProjectPolicy.historyCounterLabel" not in src:
+        run_script(scripts, "apply_mainactivity_extract_v10.py", root)
+        print("MainActivity extract v10: done")
+    else:
+        print("MainActivity extract v10: already present")
 
 
 if __name__ == "__main__":
