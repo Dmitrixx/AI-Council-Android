@@ -1,1 +1,373 @@
-PLACEHOLDER
+name: Build AI Council APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "AI-Council-Android-*.zip"
+      - "settings.gradle"
+      - "settings.gradle.kts"
+      - "build.gradle"
+      - "build.gradle.kts"
+      - "app/**"
+      - "tools/**"
+      - ".github/workflows/android-build.yml"
+      - ".github/scripts/**"
+  pull_request:
+    paths:
+      - "AI-Council-Android-*.zip"
+      - "settings.gradle"
+      - "settings.gradle.kts"
+      - "build.gradle"
+      - "build.gradle.kts"
+      - "app/**"
+      - "tools/**"
+      - ".github/scripts/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Locate Android source
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f settings.gradle || -f settings.gradle.kts ]]; then
+            echo "project_dir=." >> "$GITHUB_OUTPUT"
+          else
+            archive="$(find . -maxdepth 1 -type f -name 'AI-Council-Android-*.zip' -print -quit)"
+            if [[ -z "$archive" ]]; then
+              echo "::error::Android source not found. Commit the Android project or upload an AI-Council-Android source ZIP, then push again."
+              exit 1
+            fi
+            mkdir -p .build-source
+            unzip -q "$archive" -d .build-source
+            settings="$(find .build-source -maxdepth 4 -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)"
+            if [[ -z "$settings" ]]; then
+              echo "::error::The source ZIP does not contain settings.gradle or settings.gradle.kts."
+              exit 1
+            fi
+            echo "project_dir=$(dirname "$settings")" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fix PDFBox-Android imports for production and smoke stubs
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          production_files=(
+            app/src/main/java/com/aicouncil/app/DocumentTextExtractor.java
+            app/src/main/java/com/aicouncil/app/ocr/OcrDocumentProcessor.java
+          )
+          for file in "${production_files[@]}"; do
+            test -f "$file"
+            sed -i 's/org\.apache\.pdfbox/com.tom_roush.pdfbox/g' "$file"
+          done
+
+          old_pd="tools/desktop_smoke/src/org/apache/pdfbox/pdmodel/PDDocument.java"
+          old_ts="tools/desktop_smoke/src/org/apache/pdfbox/text/PDFTextStripper.java"
+          new_pd="tools/desktop_smoke/src/com/tom_roush/pdfbox/pdmodel/PDDocument.java"
+          new_ts="tools/desktop_smoke/src/com/tom_roush/pdfbox/text/PDFTextStripper.java"
+          mkdir -p "$(dirname "$new_pd")" "$(dirname "$new_ts")"
+          if [[ -f "$old_pd" ]]; then
+            sed -i 's/org\.apache\.pdfbox/com.tom_roush.pdfbox/g' "$old_pd"
+            mv "$old_pd" "$new_pd"
+          fi
+          if [[ -f "$old_ts" ]]; then
+            sed -i 's/org\.apache\.pdfbox/com.tom_roush.pdfbox/g' "$old_ts"
+            mv "$old_ts" "$new_ts"
+          fi
+          if grep -R -n 'org\.apache\.pdfbox' app/src/main/java/com/aicouncil/app; then
+            echo "::error::Desktop PDFBox package imports remain in Android production source."
+            exit 1
+          fi
+          test -f "$new_pd"
+          test -f "$new_ts"
+
+      - name: Fix Java compiler errors found by the Android build
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new, already_fixed):
+              file = Path(path)
+              content = file.read_text(encoding="utf-8")
+              if old in content:
+                  content = content.replace(old, new, 1)
+                  file.write_text(content, encoding="utf-8")
+              elif already_fixed not in content:
+                  raise SystemExit("Unexpected source shape in " + path)
+
+          replace_once(
+              "app/src/main/java/com/aicouncil/app/ChatCompletionsClient.java",
+              "\n".join([
+                  '                        Object maxTokens = body.opt("max_tokens");',
+                  '                        body.remove("max_tokens");',
+                  '                        body.put("max_completion_tokens", maxTokens == null ? 2048 : maxTokens);',
+                  '                        completionTokenField = true;'
+              ]),
+              "\n".join([
+                  '                        Object maxTokens = body.opt("max_tokens");',
+                  '                        body.remove("max_tokens");',
+                  '                        try {',
+                  '                            body.put("max_completion_tokens", maxTokens == null ? 2048 : maxTokens);',
+                  '                        } catch (Exception invalidFallbackJson) {',
+                  '                            return new Result(text.toString(), "Ошибка запроса: не удалось подготовить совместимый лимит токенов.", false, false);',
+                  '                        }',
+                  '                        completionTokenField = true;'
+              ]),
+              "catch (Exception invalidFallbackJson)"
+          )
+
+          replace_once(
+              "app/src/main/java/com/aicouncil/app/MainActivity.java",
+              "\n".join([
+                  '        String[] compactModes={"Быстрый","Совет","Проверка","Разбор","Авто"}; TextView[] chipViews=new TextView[compactModes.length];',
+                  '        for(int mi=0;mi<compactModes.length;mi++){'
+              ]),
+              "\n".join([
+                  '        String[] compactModes={"Быстрый","Совет","Проверка","Разбор","Авто"}; TextView[] chipViews=new TextView[compactModes.length];',
+                  '        TextView modeDescription=text("Два независимых ответа и вывод координатора.",13,MUTED,false);',
+                  '        for(int mi=0;mi<compactModes.length;mi++){'
+              ]),
+              'TextView modeDescription=text("Два независимых ответа и вывод координатора.",13,MUTED,false);'
+          )
+          activity = Path("app/src/main/java/com/aicouncil/app/MainActivity.java")
+          content = activity.read_text(encoding="utf-8")
+          later = '        TextView modeDescription=text("Два независимых ответа и вывод координатора.",13,MUTED,false); modeDescription.setPadding(0,dp(3),0,dp(10)); taskCard.addView(modeDescription);'
+          if later in content:
+              content = content.replace(later, '        modeDescription.setPadding(0,dp(3),0,dp(10)); taskCard.addView(modeDescription);', 1)
+              activity.write_text(content, encoding="utf-8")
+          elif 'modeDescription.setPadding(0,dp(3),0,dp(10)); taskCard.addView(modeDescription);' not in content:
+              raise SystemExit("Could not normalize modeDescription declaration")
+
+          # Bump in-app version string to match gradle 2.2.0
+          activity = Path("app/src/main/java/com/aicouncil/app/MainActivity.java")
+          content = activity.read_text(encoding="utf-8")
+          if 'APP_VERSION = "2.1.0"' in content:
+              content = content.replace('APP_VERSION = "2.1.0"', 'APP_VERSION = "2.2.0"', 1)
+              activity.write_text(content, encoding="utf-8")
+          elif 'APP_VERSION = "2.2.0"' not in content:
+              raise SystemExit("APP_VERSION constant not found or unexpected")
+
+          PY
+
+      - name: Add user-configurable PDF OCR page limit (5 / 20)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/.github/scripts/apply_ocr_pdf_page_limit.py" "${{ steps.source.outputs.project_dir }}"
+
+      - name: Add Android UI instrumentation tests and accessibility state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/.github/scripts/apply_android_ui_smoke_tests.py" "${{ steps.source.outputs.project_dir }}"
+
+      - name: Package corrected source for reproducibility
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        run: zip -qr "$RUNNER_TEMP/AI-Council-Android-v2.0.0-ocr-page-limit.zip" .
+
+      - name: Upload pre-build source snapshot for debugging
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-council-source-snapshot-${{ github.run_number }}
+          path: ${{ runner.temp }}/AI-Council-Android-v2.0.0-ocr-page-limit.zip
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Verify and force Java 21
+        run: |
+          echo "JAVA_HOME before=$JAVA_HOME"
+          java -version
+          echo "$JAVA_HOME/bin" >> $GITHUB_PATH
+          export PATH="$JAVA_HOME/bin:$PATH"
+          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+          java -version
+          which java
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Set up Gradle 9.6.0
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Static verification
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        run: python3 tools/verify_project.py
+
+      - name: Desktop smoke tests
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        run: sh tools/desktop_smoke/run.sh
+        env:
+          JAVA_TOOL_OPTIONS: -XX:+UseSerialGC
+
+      - name: Build debug APK
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        shell: bash
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+        run: |
+          set -euo pipefail
+          echo "=== Build environment ==="
+          echo "JAVA_HOME=$JAVA_HOME"
+          java -version
+          which java
+          gradle --version || true
+          echo "========================="
+          if [[ -f ./gradlew ]]; then
+            chmod +x ./gradlew
+            ./gradlew --no-daemon --stacktrace assembleDebug
+          else
+            gradle --no-daemon --stacktrace assembleDebug
+          fi
+
+      - name: Verify APK and create checksum
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$apk"
+          sha256sum "$apk" | tee "$apk.sha256"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-council-debug-apk-${{ github.run_number }}
+          path: |
+            ${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk
+            ${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload corrected source archive
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-council-corrected-source-${{ github.run_number }}
+          path: ${{ runner.temp }}/AI-Council-Android-v2.0.0-ocr-page-limit.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish debug APK release
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk_src="${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$apk_src"
+          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.2.0-debug.apk"
+          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.2.0-debug.apk > AI-Council-2.2.0-debug.apk.sha256)
+          notes="$RUNNER_TEMP/release-notes.md"
+          cat > "$notes" <<'EOF'
+          # AI Council 2.2.0
+
+          Debug-сборка 2.2.0: английская документация, лимит PDF в UI, versionCode 49.
+
+          Установите `AI-Council-2.2.0-debug.apk` только из этого релиза. Контрольная сумма лежит рядом в `.sha256`.
+          EOF
+          sed -i 's/^          //' "$notes"
+          if gh release view v2.2.0 >/dev/null 2>&1; then
+            gh release upload v2.2.0               "$RUNNER_TEMP/AI-Council-2.2.0-debug.apk"               "$RUNNER_TEMP/AI-Council-2.2.0-debug.apk.sha256"               --clobber
+          else
+            gh release create v2.2.0               --title "AI Council 2.2.0"               --notes-file "$notes"               "$RUNNER_TEMP/AI-Council-2.2.0-debug.apk"               "$RUNNER_TEMP/AI-Council-2.2.0-debug.apk.sha256"
+          fi
+
+  ui-tests:
+    name: Android UI smoke
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    continue-on-error: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Locate Android source
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f settings.gradle || -f settings.gradle.kts ]]; then
+            echo "project_dir=." >> "$GITHUB_OUTPUT"
+          else
+            archive="$(find . -maxdepth 1 -type f -name 'AI-Council-Android-*.zip' -print -quit)"
+            if [[ -z "$archive" ]]; then
+              echo "::error::Android source not found."
+              exit 1
+            fi
+            mkdir -p .build-source
+            unzip -q "$archive" -d .build-source
+            settings="$(find .build-source -maxdepth 4 -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)"
+            echo "project_dir=$(dirname "$settings")" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+
+      - name: Set up Gradle 9.6.0
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Run UI tests on a lighter emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: default
+          arch: x86_64
+          profile: pixel_2
+          ram-size: 2048
+          emulator-boot-timeout: 600
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: |
+            set -euo pipefail
+            cd "$GITHUB_WORKSPACE/${{ steps.source.outputs.project_dir }}"
+            if [[ -f ./gradlew ]]; then
+              chmod +x ./gradlew
+              ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
+            else
+              gradle --no-daemon --stacktrace connectedDebugAndroidTest
+            fi
