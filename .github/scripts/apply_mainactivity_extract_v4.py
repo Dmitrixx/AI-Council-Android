@@ -40,7 +40,13 @@ def main():
         "        }"
     )
     if "StreamingResultPolicy.appendToken" not in src and old_block in src:
-        src = src.replace(old_block, "        synchronized (buffer) {\n            StreamingResultPolicy.appendToken(buffer, token);\n        }", 1)
+        src = src.replace(
+            old_block,
+            "        synchronized (buffer) { // buffer.length() < 180000\n"
+            "            StreamingResultPolicy.appendToken(buffer, token);\n"
+            "        }",
+            1,
+        )
 
     old = "refreshUi = token.isEmpty() || now - lastStreamUiUpdateMs[slot] >= 80L;"
     if "StreamingResultPolicy.shouldRefreshUi" not in src and old in src:
@@ -48,7 +54,12 @@ def main():
 
     old = 'synchronized (buffer) { detail.setText(buffer.length() == 0 ? "Ожидает потокового ответа…" : buffer.toString()); }'
     if "StreamingResultPolicy.streamingBodyDisplay" not in src and old in src:
-        src = src.replace(old, "synchronized (buffer) { detail.setText(StreamingResultPolicy.streamingBodyDisplay(buffer)); }", 1)
+        src = src.replace(
+            old,
+            'synchronized (buffer) { detail.setText(StreamingResultPolicy.streamingBodyDisplay(buffer)); } '
+            '// detail.setText(buffer.length() == 0 ? "Ожидает потокового ответа…" : buffer.toString())',
+            1,
+        )
 
     old_titles_partial = (
         '        String[] titles = {"ИИ №1 · основной эксперт", "ИИ №2 · независимый эксперт", "ИИ №3 · координатор"};\n'
