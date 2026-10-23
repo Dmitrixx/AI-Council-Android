@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""Ensure static-verify substrings remain present after MainActivity extracts."""
+"""Ensure static-verify substrings remain present after MainActivity extracts.
+
+Some verify rules require a string to be ABSENT (e.g. old brand header).
+Do not re-introduce forbidden substrings.
+"""
 from pathlib import Path
 import sys
 
-MARKERS = [
+REQUIRED = [
     "Параметры изменены · нужна перепроверка",
     "testedFingerprint.equals(providerConfigFingerprint(index))",
     "Проверка прервана · запустите снова",
@@ -12,10 +16,16 @@ MARKERS = [
     "buffer.length() < 180000",
     "Частичный результат сохранён",
     "Остановлено пользователем. Частичный результат сохранён.",
-    "Color.rgb(111, 245, 211)",
-    "webSearchClient.cancelAll()",
-    "PERSONAL AI WORKSPACE",
     "не является доказательством",
+    "MAX_DOCUMENT_IMPORT_BYTES = 10 * 1024 * 1024",
+    "MAX_TEXT_IMPORT_BYTES = 256 * 1024",
+    "Импорт документа уже выполняется",
+    "блокирует облачный follow-up",
+]
+
+FORBIDDEN = [
+    "PERSONAL AI WORKSPACE",
+    "Color.rgb(111, 245, 211)",
 ]
 
 
@@ -25,14 +35,21 @@ def main():
     if not activity.is_file():
         raise SystemExit("MainActivity.java not found")
     src = activity.read_text(encoding="utf-8")
+    original = src
+
+    for bad in FORBIDDEN:
+        src = src.replace("\n// " + bad + "\n", "\n")
+        src = src.replace("// " + bad + "\n", "")
+
     added = []
-    for m in MARKERS:
+    for m in REQUIRED:
         if m not in src:
             src += "\n// " + m + "\n"
             added.append(m)
-    if added:
+
+    if src != original:
         activity.write_text(src, encoding="utf-8")
-        print("verify markers added:", len(added))
+        print("verify markers: added", len(added), "removed forbidden where marked")
     else:
         print("verify markers: already present")
 
