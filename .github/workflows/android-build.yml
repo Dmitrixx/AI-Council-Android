@@ -96,7 +96,7 @@ jobs:
           test -f "$new_pd"
           test -f "$new_ts"
 
-      - name: Fix Java compiler errors and align 2.2.0 version metadata
+      - name: Fix Java compiler errors and align 2.2.1 version metadata
         working-directory: ${{ steps.source.outputs.project_dir }}
         shell: bash
         run: |
@@ -156,37 +156,50 @@ jobs:
           elif 'modeDescription.setPadding(0,dp(3),0,dp(10)); taskCard.addView(modeDescription);' not in content:
               raise SystemExit("Could not normalize modeDescription declaration")
 
-          # Bump in-app version string to match gradle 2.2.0
+          # Bump in-app version string to match gradle 2.2.1
           activity = Path("app/src/main/java/com/aicouncil/app/MainActivity.java")
           content = activity.read_text(encoding="utf-8")
           if 'APP_VERSION = "2.1.0"' in content:
-              content = content.replace('APP_VERSION = "2.1.0"', 'APP_VERSION = "2.2.0"', 1)
+              content = content.replace('APP_VERSION = "2.1.0"', 'APP_VERSION = "2.2.1"', 1)
               activity.write_text(content, encoding="utf-8")
-          elif 'APP_VERSION = "2.2.0"' not in content:
+          elif 'APP_VERSION = "2.2.0"' in content:
+              content = content.replace('APP_VERSION = "2.2.0"', 'APP_VERSION = "2.2.1"', 1)
+              activity.write_text(content, encoding="utf-8")
+          elif 'APP_VERSION = "2.2.1"' not in content:
               raise SystemExit("APP_VERSION constant not found or unexpected")
 
-          # Align static verifier + README header with 2.2.0
+          # Align static verifier + README header with 2.2.1
           verify = Path("tools/verify_project.py")
           vt = verify.read_text(encoding="utf-8")
-          vt = vt.replace("2.1.0 / code 48", "2.2.0 / code 49")
-          vt = vt.replace("versionCode 48", "versionCode 49")
-          vt = vt.replace("versionName '2.1.0'", "versionName '2.2.0'")
-          vt = vt.replace('APP_VERSION = "2.1.0"', 'APP_VERSION = "2.2.0"')
-          vt = vt.replace("до 2.1.0", "до 2.2.0")
-          vt = vt.replace("AI Council 2.1.0", "AI Council 2.2.0")
-          vt = vt.replace("Оболочка 2.1.0", "Оболочка 2.2.0")
-          if "readme.startswith('# AI Council 2.2.0')" not in vt:
+          vt = vt.replace("2.1.0 / code 48", "2.2.1 / code 50")
+          vt = vt.replace("2.2.0 / code 49", "2.2.1 / code 50")
+          vt = vt.replace("versionCode 48", "versionCode 50")
+          vt = vt.replace("versionCode 49", "versionCode 50")
+          vt = vt.replace("versionName '2.1.0'", "versionName '2.2.1'")
+          vt = vt.replace("versionName '2.2.0'", "versionName '2.2.1'")
+          vt = vt.replace('APP_VERSION = "2.1.0"', 'APP_VERSION = "2.2.1"')
+          vt = vt.replace('APP_VERSION = "2.2.0"', 'APP_VERSION = "2.2.1"')
+          vt = vt.replace("до 2.1.0", "до 2.2.1")
+          vt = vt.replace("до 2.2.0", "до 2.2.1")
+          vt = vt.replace("AI Council 2.1.0", "AI Council 2.2.1")
+          vt = vt.replace("AI Council 2.2.0", "AI Council 2.2.1")
+          vt = vt.replace("Оболочка 2.1.0", "Оболочка 2.2.1")
+          vt = vt.replace("Оболочка 2.2.0", "Оболочка 2.2.1")
+          if "readme.startswith('# AI Council 2.2.1')" not in vt:
               vt = vt.replace(
                   "readme.startswith('# AI Council 2.1.0')",
-                  "(readme.startswith('# AI Council 2.2.0') or readme.startswith('# AI Council 2.1.0'))",
+                  "(readme.startswith('# AI Council 2.2.1') or readme.startswith('# AI Council 2.1.0'))",
               )
           verify.write_text(vt, encoding="utf-8")
 
           readme = Path("README_RU.md")
           rt = readme.read_text(encoding="utf-8")
           if rt.startswith("# AI Council 2.1.0"):
-              rt = rt.replace("# AI Council 2.1.0", "# AI Council 2.2.0", 1)
-              rt = rt.replace("Современная оболочка 2.1.0:", "Современная оболочка 2.2.0:", 1)
+              rt = rt.replace("# AI Council 2.1.0", "# AI Council 2.2.1", 1)
+              rt = rt.replace("Современная оболочка 2.1.0:", "Современная оболочка 2.2.1:", 1)
+              readme.write_text(rt, encoding="utf-8")
+          elif rt.startswith("# AI Council 2.2.0"):
+              rt = rt.replace("# AI Council 2.2.0", "# AI Council 2.2.1", 1)
               readme.write_text(rt, encoding="utf-8")
 
           PY
@@ -196,6 +209,12 @@ jobs:
         run: |
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/.github/scripts/apply_ocr_pdf_page_limit.py" "${{ steps.source.outputs.project_dir }}"
+
+      - name: Extract ResultExportPolicy / HistoryProjectPolicy from MainActivity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/.github/scripts/apply_mainactivity_extract_v1.py" "${{ steps.source.outputs.project_dir }}"
 
       - name: Add Android UI instrumentation tests and accessibility state
         shell: bash
@@ -312,21 +331,21 @@ jobs:
           set -euo pipefail
           apk_src="${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$apk_src"
-          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.2.0-debug.apk"
-          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.2.0-debug.apk > AI-Council-2.2.0-debug.apk.sha256)
+          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.2.1-debug.apk"
+          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.2.1-debug.apk > AI-Council-2.2.1-debug.apk.sha256)
           notes="$RUNNER_TEMP/release-notes.md"
           cat > "$notes" <<'EOF'
-          # AI Council 2.2.0
+          # AI Council 2.2.1
 
-          Debug-сборка 2.2.0: английская документация, лимит PDF в UI, versionCode 49.
+          Debug-сборка 2.2.1: вынос ResultExportPolicy и HistoryProjectPolicy из MainActivity, versionCode 50.
 
-          Установите `AI-Council-2.2.0-debug.apk` только из этого релиза. Контрольная сумма лежит рядом в `.sha256`.
+          Установите `AI-Council-2.2.1-debug.apk` только из этого релиза. Контрольная сумма лежит рядом в `.sha256`.
           EOF
           sed -i 's/^          //' "$notes"
-          if gh release view v2.2.0 >/dev/null 2>&1; then
-            gh release upload v2.2.0               "$RUNNER_TEMP/AI-Council-2.2.0-debug.apk"               "$RUNNER_TEMP/AI-Council-2.2.0-debug.apk.sha256"               --clobber
+          if gh release view v2.2.1 >/dev/null 2>&1; then
+            gh release upload v2.2.1               "$RUNNER_TEMP/AI-Council-2.2.1-debug.apk"               "$RUNNER_TEMP/AI-Council-2.2.1-debug.apk.sha256"               --clobber
           else
-            gh release create v2.2.0               --title "AI Council 2.2.0"               --notes-file "$notes"               "$RUNNER_TEMP/AI-Council-2.2.0-debug.apk"               "$RUNNER_TEMP/AI-Council-2.2.0-debug.apk.sha256"
+            gh release create v2.2.1               --title "AI Council 2.2.1"               --notes-file "$notes"               "$RUNNER_TEMP/AI-Council-2.2.1-debug.apk"               "$RUNNER_TEMP/AI-Council-2.2.1-debug.apk.sha256"
           fi
 
   ui-tests:
