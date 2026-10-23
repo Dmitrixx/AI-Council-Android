@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply all MainActivity policy extracts in one step (patch or sequential v1-v10)."""
+"""Apply all MainActivity policy extracts in one step (patch or sequential v1-v11)."""
 from pathlib import Path
 import subprocess
 import sys
@@ -41,9 +41,10 @@ def main():
     scripts = root / ".github/scripts"
     has_core = "BackupExportPolicy.MAX_BACKUP_BYTES" in src and "CouncilLaunchPolicy.MAX_TASK_CHARS" in src
     has_v10 = "HistoryProjectPolicy.historyCounterLabel" in src
+    has_v11 = "looksLikePartialSuccess" in src
 
-    if has_core and has_v10:
-        print("MainActivity extracts: already applied (v1-v10)")
+    if has_core and has_v10 and has_v11:
+        print("MainActivity extracts: already applied (v1-v11)")
         return
 
     if not has_core:
@@ -67,13 +68,19 @@ def main():
                 run_script(scripts, "apply_mainactivity_extract_v%d.py" % v, root)
             print("MainActivity extracts: applied via v1-v9")
 
-    # Always try v10 if markers missing (deeper history/showHistory/modeIndex)
     src = activity.read_text(encoding="utf-8")
     if "HistoryProjectPolicy.historyCounterLabel" not in src:
         run_script(scripts, "apply_mainactivity_extract_v10.py", root)
         print("MainActivity extract v10: done")
     else:
         print("MainActivity extract v10: already present")
+
+    src = activity.read_text(encoding="utf-8")
+    if "looksLikePartialSuccess" not in src:
+        run_script(scripts, "apply_mainactivity_extract_v11.py", root)
+        print("MainActivity extract v11: done")
+    else:
+        print("MainActivity extract v11: already present")
 
 
 if __name__ == "__main__":
