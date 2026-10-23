@@ -165,6 +165,18 @@ jobs:
           elif 'APP_VERSION = "2.2.0"' not in content:
               raise SystemExit("APP_VERSION constant not found or unexpected")
 
+          # Align static verifier expectations with 2.2.0
+          verify = Path("tools/verify_project.py")
+          vt = verify.read_text(encoding="utf-8")
+          vt = vt.replace('2.1.0 / code 48', '2.2.0 / code 49')
+          vt = vt.replace('versionCode 48', 'versionCode 49')
+          vt = vt.replace("versionName '2.1.0'", "versionName '2.2.0'")
+          vt = vt.replace('APP_VERSION = "2.1.0"', 'APP_VERSION = "2.2.0"')
+          vt = vt.replace("versionName '2.1.0'", "versionName '2.2.0'")
+          vt = vt.replace('до 2.1.0', 'до 2.2.0')
+          vt = vt.replace("AI Council 2.1.0", "AI Council 2.2.0")
+          verify.write_text(vt, encoding="utf-8")
+
           PY
 
       - name: Add user-configurable PDF OCR page limit (5 / 20)
