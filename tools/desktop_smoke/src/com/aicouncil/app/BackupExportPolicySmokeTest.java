@@ -8,6 +8,12 @@ public final class BackupExportPolicySmokeTest {
         else { f++; System.out.println("FAIL " + n); }
     }
 
+    private static String repeatChar(char c, int n) {
+        StringBuilder sb = new StringBuilder(n);
+        for (int i = 0; i < n; i++) sb.append(c);
+        return sb.toString();
+    }
+
     public static void main(String[] a) {
         check("fits", BackupExportPolicy.fitsBackupSize(100)
                 && !BackupExportPolicy.fitsBackupSize(BackupExportPolicy.MAX_BACKUP_BYTES + 1));
@@ -18,7 +24,7 @@ public final class BackupExportPolicySmokeTest {
         check("saved", BackupExportPolicy.savedMessage(true).contains("сокращена")
                 && BackupExportPolicy.savedMessage(false).contains("не включены"));
         check("file base empty", BackupExportPolicy.resultFileBase("").equals("AI_Council_result"));
-        check("file base long", BackupExportPolicy.resultFileBase("a".repeat(100)).length() == 48);
+        check("file base long", BackupExportPolicy.resultFileBase(repeatChar('a', 100)).length() == 48);
         check("title", BackupExportPolicy.backupFileTitle("20260101_1200").startsWith("AI_Council_backup_"));
         System.out.println("BackupExportPolicySmokeTest " + p + "/" + (p + f));
         if (f > 0) System.exit(1);
