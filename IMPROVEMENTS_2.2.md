@@ -3,21 +3,14 @@
 ## Shipped
 
 - versionName **2.2.0** / versionCode **49**
-- English `README.md` for international discoverability
-- Documented that PDF page-limit UI (5/20) is in source
-- CI publishes `AI-Council-2.2.0-debug.apk` to release `v2.2.0`
-- Static verifier and release notes updated
+- English `README.md`
+- Russian README and `verify_project.py` aligned to 2.2.0
+- CI bumps `APP_VERSION` and publishes `AI-Council-2.2.0-debug.apk` → tag `v2.2.0`
+- Configurable PDF page limit (5/20) confirmed in source UI
 
-## Already present (confirmed)
+## Next priorities
 
-- Hybrid PDF OCR with selectable page limit
-- OkHttp on all major network paths + cancellation
-- Hundreds of pure-Java policy/smoke tests
-- GitHub Actions debug APK pipeline
-
-## Next engineering priorities
-
-1. Split `MainActivity` into controllers (providers, history, results)
-2. Device acceptance matrix (TalkBack, font scale, rotation)
-3. Move large root ZIP out of default clone path
-4. On-device GGUF/llama.cpp last
+1. Split MainActivity (providers / history / results controllers)
+2. Device matrix (TalkBack, font scale, rotation)
+3. Keep large root ZIP out of default clone path
+4. On-device GGUF last
