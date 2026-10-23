@@ -72,7 +72,7 @@ jobs:
           if [[ -f "$old_pd" ]]; then sed -i 's/org\.apache\.pdfbox/com.tom_roush.pdfbox/g' "$old_pd"; mv "$old_pd" "$new_pd"; fi
           if [[ -f "$old_ts" ]]; then sed -i 's/org\.apache\.pdfbox/com.tom_roush.pdfbox/g' "$old_ts"; mv "$old_ts" "$new_ts"; fi
 
-      - name: Fix Java compiler errors and align 2.2.3 version metadata
+      - name: Fix Java compiler errors and align 2.2.4 version metadata
         working-directory: ${{ steps.source.outputs.project_dir }}
         shell: bash
         run: |
@@ -131,56 +131,62 @@ jobs:
               activity.write_text(content, encoding="utf-8")
 
           content = activity.read_text(encoding="utf-8")
-          for old_v in ("2.1.0", "2.2.0", "2.2.1", "2.2.2"):
+          for old_v in ("2.1.0", "2.2.0", "2.2.1", "2.2.2", "2.2.3"):
               if 'APP_VERSION = "%s"' % old_v in content:
-                  content = content.replace('APP_VERSION = "%s"' % old_v, 'APP_VERSION = "2.2.3"', 1)
+                  content = content.replace('APP_VERSION = "%s"' % old_v, 'APP_VERSION = "2.2.4"', 1)
                   activity.write_text(content, encoding="utf-8")
                   break
           else:
-              if 'APP_VERSION = "2.2.3"' not in content:
+              if 'APP_VERSION = "2.2.4"' not in content:
                   raise SystemExit("APP_VERSION constant not found or unexpected")
 
           verify = Path("tools/verify_project.py")
           vt = verify.read_text(encoding="utf-8")
           for a, b in [
-              ("2.1.0 / code 48", "2.2.3 / code 52"),
-              ("2.2.0 / code 49", "2.2.3 / code 52"),
-              ("2.2.1 / code 50", "2.2.3 / code 52"),
-              ("2.2.2 / code 51", "2.2.3 / code 52"),
-              ("versionCode 48", "versionCode 52"),
-              ("versionCode 49", "versionCode 52"),
-              ("versionCode 50", "versionCode 52"),
-              ("versionCode 51", "versionCode 52"),
-              ("versionName '2.1.0'", "versionName '2.2.3'"),
-              ("versionName '2.2.0'", "versionName '2.2.3'"),
-              ("versionName '2.2.1'", "versionName '2.2.3'"),
-              ("versionName '2.2.2'", "versionName '2.2.3'"),
-              ('APP_VERSION = "2.1.0"', 'APP_VERSION = "2.2.3"'),
-              ('APP_VERSION = "2.2.0"', 'APP_VERSION = "2.2.3"'),
-              ('APP_VERSION = "2.2.1"', 'APP_VERSION = "2.2.3"'),
-              ('APP_VERSION = "2.2.2"', 'APP_VERSION = "2.2.3"'),
-              ("AI Council 2.1.0", "AI Council 2.2.3"),
-              ("AI Council 2.2.0", "AI Council 2.2.3"),
-              ("AI Council 2.2.1", "AI Council 2.2.3"),
-              ("AI Council 2.2.2", "AI Council 2.2.3"),
-              ("Оболочка 2.1.0", "Оболочка 2.2.3"),
-              ("Оболочка 2.2.0", "Оболочка 2.2.3"),
-              ("Оболочка 2.2.1", "Оболочка 2.2.3"),
-              ("Оболочка 2.2.2", "Оболочка 2.2.3"),
+              ("2.1.0 / code 48", "2.2.4 / code 53"),
+              ("2.2.0 / code 49", "2.2.4 / code 53"),
+              ("2.2.1 / code 50", "2.2.4 / code 53"),
+              ("2.2.2 / code 51", "2.2.4 / code 53"),
+              ("2.2.3 / code 52", "2.2.4 / code 53"),
+              ("versionCode 48", "versionCode 53"),
+              ("versionCode 49", "versionCode 53"),
+              ("versionCode 50", "versionCode 53"),
+              ("versionCode 51", "versionCode 53"),
+              ("versionCode 52", "versionCode 53"),
+              ("versionName '2.1.0'", "versionName '2.2.4'"),
+              ("versionName '2.2.0'", "versionName '2.2.4'"),
+              ("versionName '2.2.1'", "versionName '2.2.4'"),
+              ("versionName '2.2.2'", "versionName '2.2.4'"),
+              ("versionName '2.2.3'", "versionName '2.2.4'"),
+              ('APP_VERSION = "2.1.0"', 'APP_VERSION = "2.2.4"'),
+              ('APP_VERSION = "2.2.0"', 'APP_VERSION = "2.2.4"'),
+              ('APP_VERSION = "2.2.1"', 'APP_VERSION = "2.2.4"'),
+              ('APP_VERSION = "2.2.2"', 'APP_VERSION = "2.2.4"'),
+              ('APP_VERSION = "2.2.3"', 'APP_VERSION = "2.2.4"'),
+              ("AI Council 2.1.0", "AI Council 2.2.4"),
+              ("AI Council 2.2.0", "AI Council 2.2.4"),
+              ("AI Council 2.2.1", "AI Council 2.2.4"),
+              ("AI Council 2.2.2", "AI Council 2.2.4"),
+              ("AI Council 2.2.3", "AI Council 2.2.4"),
+              ("Оболочка 2.1.0", "Оболочка 2.2.4"),
+              ("Оболочка 2.2.0", "Оболочка 2.2.4"),
+              ("Оболочка 2.2.1", "Оболочка 2.2.4"),
+              ("Оболочка 2.2.2", "Оболочка 2.2.4"),
+              ("Оболочка 2.2.3", "Оболочка 2.2.4"),
           ]:
               vt = vt.replace(a, b)
-          if "readme.startswith('# AI Council 2.2.3')" not in vt:
+          if "readme.startswith('# AI Council 2.2.4')" not in vt:
               vt = vt.replace(
                   "readme.startswith('# AI Council 2.1.0')",
-                  "(readme.startswith('# AI Council 2.2.3') or readme.startswith('# AI Council 2.1.0'))",
+                  "(readme.startswith('# AI Council 2.2.4') or readme.startswith('# AI Council 2.1.0'))",
               )
           verify.write_text(vt, encoding="utf-8")
 
           readme = Path("README_RU.md")
           rt = readme.read_text(encoding="utf-8")
-          for old_h in ("2.1.0", "2.2.0", "2.2.1", "2.2.2"):
+          for old_h in ("2.1.0", "2.2.0", "2.2.1", "2.2.2", "2.2.3"):
               if rt.startswith("# AI Council " + old_h):
-                  rt = rt.replace("# AI Council " + old_h, "# AI Council 2.2.3", 1)
+                  rt = rt.replace("# AI Council " + old_h, "# AI Council 2.2.4", 1)
                   readme.write_text(rt, encoding="utf-8")
                   break
           PY
@@ -208,6 +214,12 @@ jobs:
         run: |
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/.github/scripts/apply_mainactivity_extract_v3.py" "${{ steps.source.outputs.project_dir }}"
+
+      - name: Extract StreamingResultPolicy from MainActivity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/.github/scripts/apply_mainactivity_extract_v4.py" "${{ steps.source.outputs.project_dir }}"
 
       - name: Add Android UI instrumentation tests and accessibility state
         shell: bash
@@ -310,21 +322,21 @@ jobs:
           set -euo pipefail
           apk_src="${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$apk_src"
-          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.2.3-debug.apk"
-          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.2.3-debug.apk > AI-Council-2.2.3-debug.apk.sha256)
+          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.2.4-debug.apk"
+          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.2.4-debug.apk > AI-Council-2.2.4-debug.apk.sha256)
           notes="$RUNNER_TEMP/release-notes.md"
           cat > "$notes" <<'EOF'
-          # AI Council 2.2.3
+          # AI Council 2.2.4
 
-          History/Projects UI через HistoryProjectPolicy + ProviderDiagnostics. versionCode 52.
+          StreamingResultPolicy: потоковые карточки экспертов вынесены из MainActivity. versionCode 53.
 
-          Установите `AI-Council-2.2.3-debug.apk` только из этого релиза.
+          Установите `AI-Council-2.2.4-debug.apk` только из этого релиза.
           EOF
           sed -i 's/^          //' "$notes"
-          if gh release view v2.2.3 >/dev/null 2>&1; then
-            gh release upload v2.2.3 "$RUNNER_TEMP/AI-Council-2.2.3-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.3-debug.apk.sha256" --clobber
+          if gh release view v2.2.4 >/dev/null 2>&1; then
+            gh release upload v2.2.4 "$RUNNER_TEMP/AI-Council-2.2.4-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.4-debug.apk.sha256" --clobber
           else
-            gh release create v2.2.3 --title "AI Council 2.2.3" --notes-file "$notes" "$RUNNER_TEMP/AI-Council-2.2.3-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.3-debug.apk.sha256"
+            gh release create v2.2.4 --title "AI Council 2.2.4" --notes-file "$notes" "$RUNNER_TEMP/AI-Council-2.2.4-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.4-debug.apk.sha256"
           fi
 
   ui-tests:
