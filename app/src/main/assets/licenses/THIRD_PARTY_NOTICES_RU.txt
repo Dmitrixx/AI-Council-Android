@@ -1,0 +1,28 @@
+# Сторонние компоненты и лицензии
+
+## Tesseract4Android
+
+- Компонент: `cz.adaptech.tesseract4android:tesseract4android:4.9.0`
+- Назначение: нативный OCR-движок для распознавания текста локально на Android.
+- Репозиторий: https://github.com/adaptech-cz/Tesseract4Android
+- Лицензия: Apache License 2.0. Полный текст находится в `LICENSE-APACHE-2.0.txt`.
+- В проекте используется стандартный, однопоточный вариант библиотеки.
+
+## Языковые модели Tesseract
+
+- Репозиторий: https://github.com/tesseract-ocr/tessdata_fast
+- Используемые файлы: `rus.traineddata` и `ukr.traineddata` из закреплённой версии данных `4.1.0`.
+- Лицензия: Apache License 2.0 согласно README официального репозитория моделей.
+- Модели скачиваются по выбору пользователя и не включены в ZIP исходного проекта или APK.
+
+## Google ML Kit Text Recognition
+
+- Компонент: `com.google.mlkit:text-recognition:16.0.1`
+- Назначение: прежний OCR латинского письма и OCR fallback для сканированных PDF.
+- Документация языков: https://developers.google.com/ml-kit/vision/text-recognition/v2/languages
+
+## PDFBox-Android
+
+- Компонент: `com.tom-roush:pdfbox-android:2.0.27.0`
+- Назначение: извлечение доступного текстового слоя PDF локально на устройстве.
+- Лицензия: Apache License 2.0.

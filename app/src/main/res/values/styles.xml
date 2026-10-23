@@ -1,0 +1,32 @@
+<resources>
+    <!-- Default style follows the Android system day/night resource qualifier. -->
+    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/app_accent_light</item>
+        <item name="android:statusBarColor">#F5F7FA</item>
+        <item name="android:navigationBarColor">#F5F7FA</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@drawable/splash_background_light</item>
+    </style>
+    <style name="AppThemeDark" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/app_accent</item>
+        <item name="android:statusBarColor">#090B10</item>
+        <item name="android:navigationBarColor">#090B10</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
+    <style name="AppThemeLight" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/app_accent_light</item>
+        <item name="android:statusBarColor">#F5F7FA</item>
+        <item name="android:navigationBarColor">#F5F7FA</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@drawable/splash_background_light</item>
+    </style>
+</resources>

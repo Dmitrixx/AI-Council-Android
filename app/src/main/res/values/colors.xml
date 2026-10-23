@@ -1,0 +1,7 @@
+<resources>
+    <color name="ic_launcher_background">#090B10</color>
+    <color name="app_splash_background">#090B10</color>
+    <color name="app_splash_background_light">#F5F7FA</color>
+    <color name="app_accent">#6EE7CD</color>
+    <color name="app_accent_light">#08786C</color>
+</resources>

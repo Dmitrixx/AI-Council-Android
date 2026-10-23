@@ -1,0 +1,21 @@
+# Gradle/Android build output
+.gradle/
+**/build/
+local.properties
+
+# IDE metadata
+.idea/
+*.iml
+.DS_Store
+
+# Generated packages and logs
+*.apk
+*.aab
+*.log
+
+# Signing material and local credentials — never commit these
+*.jks
+*.keystore
+.env
+.env.*
+!.env.example
