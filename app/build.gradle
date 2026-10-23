@@ -4,7 +4,6 @@ plugins {
 
 android {
     namespace 'com.aicouncil.app'
-    // This module currently uses Java only; avoid an unnecessary Kotlin compiler task.
     enableKotlin = false
     compileSdk 36
 
@@ -13,8 +12,8 @@ android {
         applicationId 'com.aicouncil.app'
         minSdk 23
         targetSdk 36
-        versionCode 52
-        versionName '2.2.3'
+        versionCode 53
+        versionName '2.2.4'
     }
 
     compileOptions {
@@ -25,13 +24,9 @@ android {
 
 dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-    // Local PDF text extraction; no upload or OCR is performed by this library.
     implementation 'com.tom-roush:pdfbox-android:2.0.27.0'
-    // Bundled on-device Latin-script OCR. No image upload is performed by this library.
     implementation 'com.google.mlkit:text-recognition:16.0.1'
-    // On-device Cyrillic OCR with locally stored Russian/Ukrainian language data.
     implementation 'cz.adaptech.tesseract4android:tesseract4android:4.9.0'
-    // Reads EXIF orientation so phone photos are rotated before local OCR.
     implementation 'androidx.exifinterface:exifinterface:1.4.2'
 
     androidTestImplementation 'androidx.test:runner:1.6.2'
