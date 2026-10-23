@@ -72,7 +72,7 @@ jobs:
           if [[ -f "$old_pd" ]]; then sed -i 's/org\.apache\.pdfbox/com.tom_roush.pdfbox/g' "$old_pd"; mv "$old_pd" "$new_pd"; fi
           if [[ -f "$old_ts" ]]; then sed -i 's/org\.apache\.pdfbox/com.tom_roush.pdfbox/g' "$old_ts"; mv "$old_ts" "$new_ts"; fi
 
-      - name: Fix Java compiler errors and align 2.2.8 version metadata
+      - name: Fix Java compiler errors and align 2.2.9 version metadata
         working-directory: ${{ steps.source.outputs.project_dir }}
         shell: bash
         run: |
@@ -131,40 +131,40 @@ jobs:
               activity.write_text(content, encoding="utf-8")
 
           content = activity.read_text(encoding="utf-8")
-          for old_v in ("2.1.0", "2.2.0", "2.2.1", "2.2.2", "2.2.3", "2.2.4", "2.2.5", "2.2.6", "2.2.7"):
+          for old_v in ("2.1.0", "2.2.0", "2.2.1", "2.2.2", "2.2.3", "2.2.4", "2.2.5", "2.2.6", "2.2.7", "2.2.8"):
               if 'APP_VERSION = "%s"' % old_v in content:
-                  content = content.replace('APP_VERSION = "%s"' % old_v, 'APP_VERSION = "2.2.8"', 1)
+                  content = content.replace('APP_VERSION = "%s"' % old_v, 'APP_VERSION = "2.2.9"', 1)
                   activity.write_text(content, encoding="utf-8")
                   break
           else:
-              if 'APP_VERSION = "2.2.8"' not in content:
+              if 'APP_VERSION = "2.2.9"' not in content:
                   raise SystemExit("APP_VERSION constant not found or unexpected")
 
           verify = Path("tools/verify_project.py")
           vt = verify.read_text(encoding="utf-8")
           pairs = []
-          for code in range(48, 57):
-              pairs.append(("versionCode %d" % code, "versionCode 57"))
-          for ver, code in [("2.1.0",48),("2.2.0",49),("2.2.1",50),("2.2.2",51),("2.2.3",52),("2.2.4",53),("2.2.5",54),("2.2.6",55),("2.2.7",56)]:
-              pairs.append(("%s / code %d" % (ver, code), "2.2.8 / code 57"))
-              pairs.append(("versionName '%s'" % ver, "versionName '2.2.8'"))
-              pairs.append(('APP_VERSION = "%s"' % ver, 'APP_VERSION = "2.2.8"'))
-              pairs.append(("AI Council %s" % ver, "AI Council 2.2.8"))
-              pairs.append(("Оболочка %s" % ver, "Оболочка 2.2.8"))
+          for code in range(48, 58):
+              pairs.append(("versionCode %d" % code, "versionCode 58"))
+          for ver, code in [("2.1.0",48),("2.2.0",49),("2.2.1",50),("2.2.2",51),("2.2.3",52),("2.2.4",53),("2.2.5",54),("2.2.6",55),("2.2.7",56),("2.2.8",57)]:
+              pairs.append(("%s / code %d" % (ver, code), "2.2.9 / code 58"))
+              pairs.append(("versionName '%s'" % ver, "versionName '2.2.9'"))
+              pairs.append(('APP_VERSION = "%s"' % ver, 'APP_VERSION = "2.2.9"'))
+              pairs.append(("AI Council %s" % ver, "AI Council 2.2.9"))
+              pairs.append(("Оболочка %s" % ver, "Оболочка 2.2.9"))
           for a, b in pairs:
               vt = vt.replace(a, b)
-          if "readme.startswith('# AI Council 2.2.8')" not in vt:
+          if "readme.startswith('# AI Council 2.2.9')" not in vt:
               vt = vt.replace(
                   "readme.startswith('# AI Council 2.1.0')",
-                  "(readme.startswith('# AI Council 2.2.8') or readme.startswith('# AI Council 2.1.0'))",
+                  "(readme.startswith('# AI Council 2.2.9') or readme.startswith('# AI Council 2.1.0'))",
               )
           verify.write_text(vt, encoding="utf-8")
 
           readme = Path("README_RU.md")
           rt = readme.read_text(encoding="utf-8")
-          for old_h in ("2.1.0", "2.2.0", "2.2.1", "2.2.2", "2.2.3", "2.2.4", "2.2.5", "2.2.6", "2.2.7"):
+          for old_h in ("2.1.0", "2.2.0", "2.2.1", "2.2.2", "2.2.3", "2.2.4", "2.2.5", "2.2.6", "2.2.7", "2.2.8"):
               if rt.startswith("# AI Council " + old_h):
-                  rt = rt.replace("# AI Council " + old_h, "# AI Council 2.2.8", 1)
+                  rt = rt.replace("# AI Council " + old_h, "# AI Council 2.2.9", 1)
                   readme.write_text(rt, encoding="utf-8")
                   break
           PY
@@ -222,6 +222,12 @@ jobs:
         run: |
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/.github/scripts/apply_mainactivity_extract_v8.py" "${{ steps.source.outputs.project_dir }}"
+
+      - name: Extract BackupExportPolicy from MainActivity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/.github/scripts/apply_mainactivity_extract_v9.py" "${{ steps.source.outputs.project_dir }}"
 
       - name: Restore static-verify marker strings in MainActivity
         shell: bash
@@ -330,21 +336,21 @@ jobs:
           set -euo pipefail
           apk_src="${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$apk_src"
-          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.2.8-debug.apk"
-          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.2.8-debug.apk > AI-Council-2.2.8-debug.apk.sha256)
+          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.2.9-debug.apk"
+          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.2.9-debug.apk > AI-Council-2.2.9-debug.apk.sha256)
           notes="$RUNNER_TEMP/release-notes.md"
           cat > "$notes" <<'EOF'
-          # AI Council 2.2.8
+          # AI Council 2.2.9
 
-          InputImportPolicy + FollowUpDialoguePolicy. versionCode 57.
+          BackupExportPolicy + expanded verify markers. versionCode 58.
 
-          Установите `AI-Council-2.2.8-debug.apk` только из этого релиза.
+          Установите `AI-Council-2.2.9-debug.apk` только из этого релиза.
           EOF
           sed -i 's/^          //' "$notes"
-          if gh release view v2.2.8 >/dev/null 2>&1; then
-            gh release upload v2.2.8 "$RUNNER_TEMP/AI-Council-2.2.8-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.8-debug.apk.sha256" --clobber
+          if gh release view v2.2.9 >/dev/null 2>&1; then
+            gh release upload v2.2.9 "$RUNNER_TEMP/AI-Council-2.2.9-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.9-debug.apk.sha256" --clobber
           else
-            gh release create v2.2.8 --title "AI Council 2.2.8" --notes-file "$notes" "$RUNNER_TEMP/AI-Council-2.2.8-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.8-debug.apk.sha256"
+            gh release create v2.2.9 --title "AI Council 2.2.9" --notes-file "$notes" "$RUNNER_TEMP/AI-Council-2.2.9-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.9-debug.apk.sha256"
           fi
 
   ui-tests:
