@@ -78,6 +78,12 @@ jobs:
           if [[ -f "$old_pd" ]]; then sed -i 's/org\.apache\.pdfbox/com.tom_roush.pdfbox/g' "$old_pd"; mv "$old_pd" "$new_pd"; fi
           if [[ -f "$old_ts" ]]; then sed -i 's/org\.apache\.pdfbox/com.tom_roush.pdfbox/g' "$old_ts"; mv "$old_ts" "$new_ts"; fi
 
+      - name: Apply MainActivity policy extracts (idempotent; permanent on main)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/.github/scripts/apply_mainactivity_extract_all.py" "${{ steps.source.outputs.project_dir }}"
+
       - name: Fix Java compiler errors and align 2.2.13 version metadata
         working-directory: ${{ steps.source.outputs.project_dir }}
         shell: bash
@@ -198,12 +204,6 @@ jobs:
         run: |
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/.github/scripts/apply_ocr_pdf_page_limit.py" "${{ steps.source.outputs.project_dir }}"
-
-      - name: Apply MainActivity policy extracts (idempotent; permanent on main)
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 "$GITHUB_WORKSPACE/.github/scripts/apply_mainactivity_extract_all.py" "${{ steps.source.outputs.project_dir }}"
 
       - name: Restore static-verify marker strings in MainActivity
         shell: bash
