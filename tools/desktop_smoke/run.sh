@@ -13,6 +13,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/WebPageFetchPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/LocalAiPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ProviderConfigFingerprint.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ProviderDiagnosticsPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ResultReportFormatter.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ResultExportPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/HistoryProjectPolicy.java" \
@@ -46,6 +47,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.WebPageFetchPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.LocalAiPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ProviderConfigFingerprintSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.ProviderDiagnosticsPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ResultReportFormatterSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ResultExportPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.HistoryProjectPolicySmokeTest
