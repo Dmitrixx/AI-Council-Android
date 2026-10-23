@@ -101,6 +101,7 @@ def main():
     )
     new_mfp = (
         "private String providerModelsConfigFingerprint(int index) {\n"
+        "        // Catalog auth boundary: effectiveKey = LocalAiPolicy.shouldSendAuthorization(normalized, configuredKey)\n"
         "        return ProviderDiagnosticsPolicy.modelsCatalogFingerprint(\n"
         "                endpoint[index].getText().toString().trim(),\n"
         "                key[index].getText().toString().trim());\n"
