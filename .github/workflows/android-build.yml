@@ -90,7 +90,13 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/.github/scripts/apply_robust_final_answer.py" "${{ steps.source.outputs.project_dir }}"
 
-      - name: Fix Java compiler errors and align 2.2.14 version metadata
+      - name: Enhance coordinator synthesis and tool-aware prompts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/.github/scripts/apply_enhanced_synthesis.py" "${{ steps.source.outputs.project_dir }}"
+
+      - name: Fix Java compiler errors and align 2.2.15 version metadata
         working-directory: ${{ steps.source.outputs.project_dir }}
         shell: bash
         run: |
@@ -149,11 +155,11 @@ jobs:
               activity.write_text(content, encoding="utf-8")
 
           VERSIONS = [
-              "2.2.13", "2.2.12", "2.2.11", "2.2.10", "2.2.9", "2.2.8", "2.2.7", "2.2.6", "2.2.5",
+              "2.2.14", "2.2.13", "2.2.12", "2.2.11", "2.2.10", "2.2.9", "2.2.8", "2.2.7", "2.2.6", "2.2.5",
               "2.2.4", "2.2.3", "2.2.2", "2.2.1", "2.2.0", "2.1.0",
           ]
-          TARGET = "2.2.14"
-          CODE = 63
+          TARGET = "2.2.15"
+          CODE = 64
 
           content = activity.read_text(encoding="utf-8")
           for old_v in VERSIONS:
@@ -167,7 +173,7 @@ jobs:
 
           verify = Path("tools/verify_project.py")
           vt = verify.read_text(encoding="utf-8")
-          for code in range(62, 47, -1):
+          for code in range(63, 47, -1):
               vt = vt.replace("versionCode %d" % code, "versionCode %d" % CODE)
           for ver in VERSIONS:
               vt = vt.replace("versionName '%s'" % ver, "versionName '%s'" % TARGET)
@@ -175,14 +181,14 @@ jobs:
           for ver, code in [
               ("2.1.0", 48), ("2.2.0", 49), ("2.2.1", 50), ("2.2.2", 51), ("2.2.3", 52),
               ("2.2.4", 53), ("2.2.5", 54), ("2.2.6", 55), ("2.2.7", 56), ("2.2.8", 57),
-              ("2.2.9", 58), ("2.2.10", 59), ("2.2.11", 60), ("2.2.12", 61), ("2.2.13", 62),
+              ("2.2.9", 58), ("2.2.10", 59), ("2.2.11", 60), ("2.2.12", 61), ("2.2.13", 62), ("2.2.14", 63),
           ]:
               vt = vt.replace("%s / code %d" % (ver, code), "%s / code %d" % (TARGET, CODE))
           for ver in VERSIONS:
               vt = vt.replace("# AI Council %s" % ver, "# AI Council %s" % TARGET)
               vt = vt.replace("AI Council %s" % ver, "AI Council %s" % TARGET)
               vt = vt.replace("Оболочка %s" % ver, "Оболочка %s" % TARGET)
-          for bad in ("2.2.120", "2.2.100", "2.2.110", "2.2.111", "2.2.130", "2.2.140"):
+          for bad in ("2.2.120", "2.2.100", "2.2.110", "2.2.111", "2.2.130", "2.2.140", "2.2.150"):
               vt = vt.replace(bad, TARGET)
           needle = "readme.startswith('# AI Council %s')" % TARGET
           if needle not in vt:
@@ -318,21 +324,21 @@ jobs:
           set -euo pipefail
           apk_src="${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$apk_src"
-          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.2.14-debug.apk"
-          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.2.14-debug.apk > AI-Council-2.2.14-debug.apk.sha256)
+          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.2.15-debug.apk"
+          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.2.15-debug.apk > AI-Council-2.2.15-debug.apk.sha256)
           notes="$RUNNER_TEMP/release-notes.md"
           cat > "$notes" <<'EOF'
-          # AI Council 2.2.14
+          # AI Council 2.2.15
 
-          Robust final answer: coordinator recovery when experts fail, partial-success status. versionCode 63.
+          Stronger synthesis, tool-aware routing, fallback & status policies. versionCode 64.
 
-          Установите `AI-Council-2.2.14-debug.apk` только из этого релиза.
+          Установите `AI-Council-2.2.15-debug.apk` только из этого релиза.
           EOF
           sed -i 's/^          //' "$notes"
-          if gh release view v2.2.14 >/dev/null 2>&1; then
-            gh release upload v2.2.14 "$RUNNER_TEMP/AI-Council-2.2.14-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.14-debug.apk.sha256" --clobber
+          if gh release view v2.2.15 >/dev/null 2>&1; then
+            gh release upload v2.2.15 "$RUNNER_TEMP/AI-Council-2.2.15-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.15-debug.apk.sha256" --clobber
           else
-            gh release create v2.2.14 --title "AI Council 2.2.14" --notes-file "$notes" "$RUNNER_TEMP/AI-Council-2.2.14-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.14-debug.apk.sha256"
+            gh release create v2.2.15 --title "AI Council 2.2.15" --notes-file "$notes" "$RUNNER_TEMP/AI-Council-2.2.15-debug.apk" "$RUNNER_TEMP/AI-Council-2.2.15-debug.apk.sha256"
           fi
 
   ui-tests:
