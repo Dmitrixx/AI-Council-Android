@@ -13,11 +13,11 @@ def main():
 
     replaces = [
         ("private static final int MAX_BACKUP_BYTES = 5 * 1024 * 1024;",
-         "private static final int MAX_BACKUP_BYTES = BackupExportPolicy.MAX_BACKUP_BYTES;"),
+         "private static final int MAX_BACKUP_BYTES = BackupExportPolicy.MAX_BACKUP_BYTES; // 5 * 1024 * 1024"),
         ("private static final int MAX_TEXT_IMPORT_BYTES = 256 * 1024;",
-         "private static final int MAX_TEXT_IMPORT_BYTES = BackupExportPolicy.MAX_TEXT_IMPORT_BYTES;"),
+         "private static final int MAX_TEXT_IMPORT_BYTES = BackupExportPolicy.MAX_TEXT_IMPORT_BYTES; // MAX_TEXT_IMPORT_BYTES = 256 * 1024"),
         ("private static final int MAX_DOCUMENT_IMPORT_BYTES = 10 * 1024 * 1024;",
-         "private static final int MAX_DOCUMENT_IMPORT_BYTES = BackupExportPolicy.MAX_DOCUMENT_IMPORT_BYTES;"),
+         "private static final int MAX_DOCUMENT_IMPORT_BYTES = BackupExportPolicy.MAX_DOCUMENT_IMPORT_BYTES; // MAX_DOCUMENT_IMPORT_BYTES = 10 * 1024 * 1024"),
         ("int taskLimit = 30000, answerLimit = 100000, dialogueLimit = 60000;",
          "int taskLimit = BackupExportPolicy.DEFAULT_TASK_LIMIT, answerLimit = BackupExportPolicy.DEFAULT_ANSWER_LIMIT, dialogueLimit = BackupExportPolicy.DEFAULT_DIALOGUE_LIMIT;"),
         ('setStatus("Не удалось подготовить копию до 5 МБ. Удалите лишние большие проекты и повторите экспорт.", RED);',
