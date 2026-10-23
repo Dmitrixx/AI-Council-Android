@@ -1,8 +1,15 @@
-# AI Council 2.2.11
+# AI Council 2.2.13
 
 Современная оболочка 2.1.0: чернильные поверхности, мятный акцент, плавающая навигация и контент от края до края на Android 11+. Debug APK собирается в GitHub Actions и публикуется в Releases.
 
 AI Council — Android-приложение для работы с несколькими ИИ-провайдерами: независимые ответы, аудит, глубокий анализ, локальные серверы, поиск источников, импорт документов и экспорт отчётов.
+
+## 2.2.13 — permanent policy extraction on main
+
+- versionName `2.2.13`, versionCode `62`.
+- MainActivity на main уже содержит делегирование во все policy-классы (ResultExport, ProviderDiagnostics, HistoryProject, StreamingResult, Settings, CouncilLaunch, FollowUpDialogue, InputImport, BackupExport).
+- CI: один шаг `apply_mainactivity_extract_all.py` (idempotent / no-op), без девяти последовательных extract-скриптов.
+- Сборка и smoke без изменения поведения для пользователя.
 
 ## 2.2.11 — policy-рефакторинг и стабильный CI
 
@@ -39,6 +46,6 @@ AI Council — Android-приложение для работы с нескол�
 
 ## Сборка
 
-Debug APK: GitHub Actions → Releases (`AI-Council-2.2.11-debug.apk`).
+Debug APK: GitHub Actions → Releases (`AI-Council-2.2.13-debug.apk`).
 Статическая проверка: `python3 tools/verify_project.py`.
 Desktop smoke: `sh tools/desktop_smoke/run.sh`.
