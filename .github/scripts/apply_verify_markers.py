@@ -10,6 +10,12 @@ MARKERS = [
     "512,1024,2048,4096,8192,16384",
     'detail.setText(buffer.length() == 0 ? "Ожидает потокового ответа…" : buffer.toString())',
     "buffer.length() < 180000",
+    "Частичный результат сохранён",
+    "Остановлено пользователем. Частичный результат сохранён.",
+    "Color.rgb(111, 245, 211)",
+    "webSearchClient.cancelAll()",
+    "PERSONAL AI WORKSPACE",
+    "не является доказательством",
 ]
 
 
