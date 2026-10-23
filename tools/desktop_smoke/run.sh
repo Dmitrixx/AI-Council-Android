@@ -18,6 +18,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ResultExportPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/HistoryProjectPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/StreamingResultPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/SettingsPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilAnalysisPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilExecutionEngine.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertRolePolicy.java" \
@@ -53,6 +54,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.ResultReportFormatterSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ResultExportPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.HistoryProjectPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.StreamingResultPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.SettingsPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilAnalysisPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilExecutionEngineSmokeTest
 
