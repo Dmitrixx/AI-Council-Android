@@ -14,6 +14,8 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/LocalAiPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ProviderConfigFingerprint.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ResultReportFormatter.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ResultExportPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/HistoryProjectPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilAnalysisPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilExecutionEngine.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertRolePolicy.java" \
@@ -45,6 +47,8 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.LocalAiPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ProviderConfigFingerprintSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ResultReportFormatterSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.ResultExportPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.HistoryProjectPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilAnalysisPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilExecutionEngineSmokeTest
 
