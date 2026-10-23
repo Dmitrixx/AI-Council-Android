@@ -34,6 +34,8 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/VoicePromptPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/PromptMetricsPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/TaskRoutingPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/FallbackProviderPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ExpertStatusPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilResultModel.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/OcrModelIntegrityPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ocr/OcrInputPolicy.java" \
@@ -77,6 +79,9 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.PromptPrivacyPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.VoicePromptPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.PromptMetricsPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TaskRoutingPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.FallbackProviderPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertStatusPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.TaskRoutingPolicyExtraSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilResultModelSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.OcrModelIntegrityPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ocr.OcrInputPolicySmokeTest
