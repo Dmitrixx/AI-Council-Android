@@ -1,3 +1,13 @@
+# 2.3.4 — Outside/Inside View, rigorous pre-mortem and uncertainty decomposition
+
+- В `ExpertRolePolicy` default-роли ещё более усилены:
+  - Явное разделение Outside View (базовые ставки, reference class, исторические аналоги) и Inside View.
+  - Более строгий pre-mortem для решений (представь провал и объясни почему).
+  - Более чёткое разделение эпистемической и алеаторной неопределённости в процессе и ответе.
+  - Конкретные условия, которые изменили бы позицию.
+- Версия: versionName 2.3.4, versionCode 68.
+- Цель: ещё более робастное и калиброванное рассуждение без изменения архитектуры.
+
 # 2.3.3 — Self-consistency, Chain-of-Verification, reference class forecasting
 
 - В `ExpertRolePolicy` default-роли усилены:
