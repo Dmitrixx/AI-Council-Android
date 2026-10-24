@@ -22,14 +22,15 @@ public final class TaskRoutingPolicy {
                 "перевір", "перевірити", "перевірка", "помилк", "звір", "фактчек", "аудитуй",
                 "validate", "validation", "debug", "find bugs", "find errors", "найди ошибки", "что не так",
                 "критик", "оцени", "ревью", "red team", "премортем", "pre-mortem");
-        boolean complex = raw.length() > 220 || containsAny(lower,
+        boolean complex = raw.length() > 160 || containsAny(lower,
                 "рассч", "расчет", "расчёт", "сравнен", "спроект", "архитект", "пошаг", "несколько условий", "проанализируй",
                 "calculate", "calculation", "compare", "comparison", "design", "architecture", "step by step",
                 "multi-step", "multiple constraints", "analyze deeply", "analyse deeply", "evaluate options", "trade-off",
                 "порах", "обчисл", "порівня", "спроєкт", "архітект", "покрок", "кілька умов", "проаналізуй",
                 "досліди", "план реалізації", "реалізаці", "стратегія", "стратегия", "оптимизируй", "tradeoffs", "компромисс",
                 "план", "планиров", "strategy", "roadmap", "дорожная карта", "сценарий", "варианты", "alternatives", "креатив", "идеи", "brainstorm",
-                "мультихоп", "multi-hop", "неоднознач", "ambiguous", "этич", "ethical", "решение в условиях неопределённости", "decision under uncertainty");
+                "мультихоп", "multi-hop", "неоднознач", "ambiguous", "этич", "ethical", "решение в условиях неопределённости", "decision under uncertainty",
+                "self-consistency", "chain-of-verification", "reference class", "expected utility", "fermi");
         boolean research = containsAny(lower,
                 "исслед", "обзор литературы", "literature", "research", "state of the art", "сравни подходы",
                 "best practices", "актуальн", "за 202", "latest", "recent papers", "что говорят источники", "systematic review",
@@ -42,12 +43,12 @@ public final class TaskRoutingPolicy {
                 "план действий", "дорожная карта", "roadmap", "этапы", "сроки", "милстоны", "implementation plan", "как сделать", "how to implement",
                 "стратегическое решение", "strategic decision");
         boolean decision = containsAny(lower,
-                "выбрать", "какой вариант", "compare options", "decision", "решение", "trade-off analysis", "анализ компромиссов");
+                "выбрать", "какой вариант", "compare options", "decision", "решение", "trade-off analysis", "анализ компромиссов", "expected utility");
 
         if (audit && expert2) return 2;
         if ((complex || research || coding || highStakes || planning || decision) && expert2 && expert3) return 3;
-        if ((raw.length() > 100 || complex || research || planning || decision) && expert2 && expert3) return 1;
-        if (raw.length() > 70 && expert2) return 1;
+        if ((raw.length() > 80 || complex || research || planning || decision) && expert2 && expert3) return 1;
+        if (raw.length() > 50 && expert2) return 1;
         return 0;
     }
 
@@ -55,7 +56,7 @@ public final class TaskRoutingPolicy {
         String lower = task == null ? "" : task.toLowerCase(Locale.ROOT);
         StringBuilder sb = new StringBuilder();
         if (looksLikeMath(lower)) {
-            sb.append("Задача похожа на расчёт: покажи формулы, промежуточные шаги, единицы измерения; отдели арифметику от допущений и укажи точность.\n");
+            sb.append("Задача похожа на расчёт: покажи формулы, промежуточные шаги, единицы измерения; отдели арифметику от допущений и укажи точность. Примени Fermi-разложение если возможно.\n");
         }
         if (looksLikeCodeTask(lower)) {
             sb.append("Задача связана с кодом: укажи язык, ограничения, краевые случаи, как проверить решение; не утверждай, что код уже выполнен, если исполнения не было.\n");
@@ -70,7 +71,7 @@ public final class TaskRoutingPolicy {
             sb.append("Юридическая тема: это не юридическая консультация. Отметь неопределённости и необходимость проверки у специалиста.\n");
         }
         if (containsAny(lower, "план", "strategy", "roadmap", "как сделать", "implementation", "решение")) {
-            sb.append("Задача на планирование или принятие решения: разбей на этапы, риски, зависимости, метрики успеха и base rates; укажи, что требует проверки в реальных условиях и pre-mortem.\n");
+            sb.append("Задача на планирование или принятие решения: разбей на этапы, риски, зависимости, метрики успеха и base rates; укажи, что требует проверки в реальных условиях и pre-mortem. Оцени expected utility.\n");
         }
         if (containsAny(lower, "этич", "ethical", "стейкхолдер", "stakeholder")) {
             sb.append("Этическая или многосторонная задача: явно рассмотри взгляды разных стейкхолдеров и возможные конфликты ценностей.\n");
