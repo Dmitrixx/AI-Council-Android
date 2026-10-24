@@ -20,21 +20,23 @@ public final class TaskRoutingPolicy {
                 "проверь", "проверить", "проверка", "аудит", "ошибк", "верифиц", "факт-чек", "fact-check",
                 "fact check", "verify", "verify this", "check this", "review this", "audit", "critique",
                 "перевір", "перевірити", "перевірка", "помилк", "звір", "фактчек", "аудитуй",
-                "validate", "validation", "debug", "find bugs", "find errors");
-        boolean complex = raw.length() > 450 || containsAny(lower,
+                "validate", "validation", "debug", "find bugs", "find errors", "найди ошибки", "что не так");
+        boolean complex = raw.length() > 400 || containsAny(lower,
                 "рассч", "расчет", "расчёт", "сравнен", "спроект", "архитект", "пошаг", "несколько условий", "проанализируй",
                 "calculate", "calculation", "compare", "comparison", "design", "architecture", "step by step",
                 "multi-step", "multiple constraints", "analyze deeply", "analyse deeply", "evaluate options", "trade-off",
                 "порах", "обчисл", "порівня", "спроєкт", "архітект", "покрок", "кілька умов", "проаналізуй",
-                "досліди", "план реалізації", "реалізаці", "стратегія", "стратегия");
+                "досліди", "план реалізації", "реалізаці", "стратегія", "стратегия", "оптимизируй", "tradeoffs", "компромисс");
         boolean research = containsAny(lower,
                 "исслед", "обзор литературы", "literature", "research", "state of the art", "сравни подходы",
-                "best practices", "актуальн", "за 202", "latest", "recent papers");
+                "best practices", "актуальн", "за 202", "latest", "recent papers", "что говорят источники", "systematic review");
         boolean coding = looksLikeCodeTask(lower);
+        boolean highStakes = containsAny(lower,
+                "медицин", "здоровь", "диагноз", "лекарств", "юридич", "налог", "финанс", "инвестиц", "безопасность", "medical", "legal", "financial", "diagnosis");
 
         if (audit && expert2) return 2;
-        if ((complex || research || coding) && expert2 && expert3) return 3;
-        if (raw.length() > 120 && expert2 && expert3) return 1;
+        if ((complex || research || coding || highStakes) && expert2 && expert3) return 3;
+        if (raw.length() > 100 && expert2 && expert3) return 1;
         return 0;
     }
 
@@ -42,15 +44,19 @@ public final class TaskRoutingPolicy {
         String lower = task == null ? "" : task.toLowerCase(Locale.ROOT);
         StringBuilder sb = new StringBuilder();
         if (looksLikeMath(lower)) {
-            sb.append("Задача похожа на расчёт: покажи формулы, промежуточные шаги и единицы измерения; "
-                    + "отдели арифметику от допущений.\n");
+            sb.append("Задача похожа на расчёт: покажи формулы, промежуточные шаги, единицы измерения; отдели арифметику от допущений и укажи точность.\n");
         }
         if (looksLikeCodeTask(lower)) {
-            sb.append("Задача связана с кодом: укажи язык, ограничения, краевые случаи и как проверить решение; "
-                    + "не утверждай, что код уже выполнен, если исполнения не было.\n");
+            sb.append("Задача связана с кодом: укажи язык, ограничения, краевые случаи, как проверить решение; не утверждай, что код уже выполнен, если исполнения не было.\n");
         }
-        if (containsAny(lower, "найди в интернете", "поиск", "search the web", "google", "актуальн", "сегодня", "latest news")) {
-            sb.append("Если веб-поиск не подключён, не выдавай свежие факты за проверенные; отметь, что нужна проверка источников.\n");
+        if (containsAny(lower, "найди в интернете", "поиск", "search the web", "google", "актуальн", "сегодня", "latest news", "свежие данные")) {
+            sb.append("Если веб-поиск не подключён, не выдавай свежие факты за проверенные; отметь, что нужна проверка источников и укажи дату актуальности.\n");
+        }
+        if (containsAny(lower, "медицин", "здоровь", "диагноз", "лечени", "medical", "health", "symptom")) {
+            sb.append("Медицинская тема: это не диагноз и не замена врачу. Укажи, что требует профессиональной консультации и какие факты нужно проверить.\n");
+        }
+        if (containsAny(lower, "юридич", "закон", "договор", "legal", "contract", "право")) {
+            sb.append("Юридическая тема: это не юридическая консультация. Отметь неопределённости и необходимость проверки у специалиста.\n");
         }
         return sb.toString().trim();
     }
@@ -60,7 +66,7 @@ public final class TaskRoutingPolicy {
         return containsAny(lower,
                 "посчит", "вычисл", "рассч", "расчет", "расчёт", "формул", "интеграл", "производн",
                 "уравнен", "процент", "probability", "calculate", "equation", "derivative", "integral",
-                "обчисл", "порах", "рівнян");
+                "обчисл", "порах", "рівнян", "сколько будет", "вычисли");
     }
 
     public static boolean looksLikeCodeTask(String lower) {
@@ -68,7 +74,7 @@ public final class TaskRoutingPolicy {
         return containsAny(lower,
                 "напиши код", "напиши функцию", "рефактор", "unit test", "junit", "python", "javascript",
                 "typescript", "kotlin", "java code", "sql query", "regex", "api endpoint", "bugfix",
-                "stack trace", "compile error", "код на", "функцію", "програму");
+                "stack trace", "compile error", "код на", "функцію", "програму", "исправь баг", "debug this");
     }
 
     private static boolean usable(int index, boolean[] configured, boolean freeOnly, boolean[] markedFree) {
