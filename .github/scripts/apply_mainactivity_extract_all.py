@@ -37,6 +37,11 @@ def main():
     if size < MIN_EXPECTED_BYTES or "package com.aicouncil.app" not in src or "class MainActivity" not in src:
         restore_known_good(activity)
         src = activity.read_text(encoding="utf-8")
+        size = len(src.encode("utf-8"))
+
+    if size >= MIN_EXPECTED_BYTES and "class MainActivity" in src and "extends Activity" in src:
+        print("MainActivity is a full activity (%d bytes); skip optional extract rewrites" % size)
+        return
 
     scripts = root / ".github/scripts"
     has_core = "BackupExportPolicy.MAX_BACKUP_BYTES" in src and "CouncilLaunchPolicy.MAX_TASK_CHARS" in src

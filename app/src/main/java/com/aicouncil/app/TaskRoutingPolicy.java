@@ -22,7 +22,7 @@ public final class TaskRoutingPolicy {
                 "перевір", "перевірити", "перевірка", "помилк", "звір", "фактчек", "аудитуй",
                 "validate", "validation", "debug", "find bugs", "find errors", "найди ошибки", "что не так",
                 "критик", "оцени", "ревью", "red team", "премортем", "pre-mortem", "sensitivity", "sensitivity analysis");
-        boolean complex = raw.length() > 120 || containsAny(lower,
+        boolean complex = raw.length() > 480 || containsAny(lower,
                 "рассч", "расчет", "расчёт", "сравнен", "спроект", "архитект", "пошаг", "несколько условий", "проанализируй",
                 "calculate", "calculation", "compare", "comparison", "design", "architecture", "step by step",
                 "multi-step", "multiple constraints", "analyze deeply", "analyse deeply", "evaluate options", "trade-off",

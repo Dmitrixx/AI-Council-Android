@@ -88,6 +88,10 @@ public final class CouncilExecutionEngine {
                 }
             }
             if (callbacks.isCancelled()) throw new InterruptedException("Выполнение остановлено пользователем");
+            String hint = TaskRoutingPolicy.toolAwarenessHint(request.task);
+            if (!hint.isEmpty()) {
+                taskForModels = taskForModels + "\n\nПОДСКАЗКА ПРИЛОЖЕНИЯ (не источник фактов):\n" + hint;
+            }
 
             if (request.mode == 0) {
                 callbacks.onExpertState(0, "◉ Работает", Tone.PRIMARY);
@@ -107,6 +111,10 @@ public final class CouncilExecutionEngine {
         }
         if (callbacks.isCancelled() && result.trim().isEmpty()) result = safe(callbacks.partialReport());
         if (request.webSearchEnabled && !usedSources.isEmpty()) result += "\n\n🌐 ИСТОЧНИКИ, ВОЗВРАЩЁННЫЕ ПОИСКОМ\n" + usedSources;
+        if (!callbacks.isCancelled()) {
+            String localCheck = DeliberationIntelligence.localCheckFooter(result);
+            if (!localCheck.isEmpty()) result += "\n\n" + localCheck;
+        }
         return new Outcome(result, usedSources, callbacks.isCancelled());
     }
 
@@ -114,7 +122,8 @@ public final class CouncilExecutionEngine {
         cb.onExpertState(0, "◉ Решает задачу", Tone.PRIMARY);
         cb.onProgress("Этап 1 из 2 · исходный ответ", Tone.PRIMARY, 15);
         String draft = cb.callApi(0, r.endpoints[0], r.models[0], r.keys[0],
-                "Реши задачу и явно укажи допущения, расчёты и неопределённости. Не утверждай, что использовал внешние источники, если их не было.\n\nЗАДАЧА:\n" + task,
+                "Реши задачу и явно укажи допущения, расчёты и неопределённости. Не утверждай, что использовал внешние источники, если их не было.\n\nЗАДАЧА:\n" + task
+                        + DeliberationIntelligence.expertAddendum(0, r.task),
                 r.roles[0]);
         if (cb.isCancelled()) throw new InterruptedException("Выполнение остановлено пользователем");
         if (cb.isApiFailure(draft)) {
@@ -126,8 +135,10 @@ public final class CouncilExecutionEngine {
         cb.onExpertState(0, "✓ Ответ готов", Tone.PRIMARY);
         cb.onExpertState(1, "◉ Проверяет", Tone.COORDINATOR);
         cb.onProgress("Этап 2 из 2 · независимый аудит", Tone.COORDINATOR, 55);
+        String auditNotes = DeliberationIntelligence.localCheckFooter(draft);
         String review = cb.callApi(1, r.endpoints[1], r.models[1], r.keys[1],
-                "Проведи независимый аудит ответа. Не соглашайся автоматически. Раздели вывод на: 1) подтверждённые ошибки; 2) спорные утверждения; 3) арифметику и допущения; 4) исправленный вариант. Если не можешь проверить факт без источника, прямо так и напиши.\n\nИСХОДНАЯ ЗАДАЧА:\n" + task + "\n\nОТВЕТ ДЛЯ АУДИТА:\n" + draft,
+                "Проведи независимый аудит ответа. Не соглашайся автоматически. Раздели вывод на: 1) подтверждённые ошибки; 2) спорные утверждения; 3) арифметику и допущения; 4) исправленный вариант. Если не можешь проверить факт без источника, прямо так и напиши.\n\nИСХОДНАЯ ЗАДАЧА:\n" + task + "\n\nОТВЕТ ДЛЯ АУДИТА:\n" + draft
+                        + (auditNotes.isEmpty() ? "" : "\n\n" + auditNotes + "\nУчти локальный пересчёт: он сделан приложением, а не экспертом."),
                 r.roles[1]);
         boolean failed = cb.isApiFailure(review);
         cb.onExpertState(1, failed ? "! Ошибка" : "✓ Проверено", failed ? Tone.ERROR : Tone.PRIMARY);
@@ -141,9 +152,11 @@ public final class CouncilExecutionEngine {
         cb.onExpertState(1, "◉ Работает", Tone.SECONDARY);
         cb.onProgress("Этап 1 из 3 · независимые ответы", Tone.PRIMARY, 15);
         Future<String> first = workers.submit(() -> cb.callApi(0, r.endpoints[0], r.models[0], r.keys[0],
-                "Реши задачу самостоятельно. Покажи ключевые шаги, допущения и неопределённости.\n\nЗАДАЧА:\n" + task, r.roles[0]));
+                "Реши задачу самостоятельно. Покажи ключевые шаги, допущения и неопределённости.\n\nЗАДАЧА:\n" + task
+                        + DeliberationIntelligence.expertAddendum(0, r.task), r.roles[0]));
         Future<String> second = workers.submit(() -> cb.callApi(1, r.endpoints[1], r.models[1], r.keys[1],
-                "Независимо реши задачу другим способом, проверь факты и расчёты. Укажи неопределённости.\n\nЗАДАЧА:\n" + task, r.roles[1]));
+                "Независимо реши задачу другим способом, проверь факты и расчёты. Укажи неопределённости.\n\nЗАДАЧА:\n" + task
+                        + DeliberationIntelligence.expertAddendum(1, r.task), r.roles[1]));
         String a = getFuture(first, cb), b = getFuture(second, cb);
         boolean aFailed = cb.isApiFailure(a), bFailed = cb.isApiFailure(b);
         cb.onExpertState(0, aFailed ? "! Ошибка" : "✓ Ответ готов", aFailed ? Tone.ERROR : Tone.PRIMARY);
@@ -180,7 +193,13 @@ public final class CouncilExecutionEngine {
         }
         cb.onExpertState(2, "◉ Сравнивает", Tone.COORDINATOR);
         cb.onProgress(r.mode == 3 ? "Этап 3 из 3 · координатор проверяет ответы и критику" : "Этап 2 из 2 · координатор сравнивает ответы", Tone.COORDINATOR, r.mode == 3 ? 78 : 70);
+        String localMap = "";
+        if (!(aFailed && bFailed)) {
+            localMap = DeliberationIntelligence.formatForCoordinator(
+                    DeliberationIntelligence.analyze(r.task, aFailed ? "" : a, bFailed ? "" : b));
+        }
         String reviewerPrompt = CouncilAnalysisPolicy.buildCoordinatorOpening() +
+                (localMap.isEmpty() ? "" : "\n\nЛОКАЛЬНАЯ КАРТА РАЗНОГЛАСИЙ (посчитана приложением, не моделью; проверь её и не выдавай за внешний источник):\n" + localMap) +
                 "\n\nЗАДАЧА ПОЛЬЗОВАТЕЛЯ:\n" + task + "\n\nОТВЕТ ИИ №1 (" + r.models[0] + "):\n" + a + "\n\nОТВЕТ ИИ №2 (" + r.models[1] + "):\n" + b +
                 (r.mode == 3 ? "\n\nВЗАИМНАЯ КРИТИКА ИИ №1:\n" + critiqueA + "\n\nВЗАИМНАЯ КРИТИКА ИИ №2:\n" + critiqueB +
                         "\n\nОцени критику так же критически: не принимай замечание только потому, что оно высказано. Отдели найденную ошибку от гипотезы, а неразрешённое разногласие оставь явно открытым. Учитывай base rates и то, что изменило бы позицию." : "") +

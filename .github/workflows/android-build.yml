@@ -155,11 +155,12 @@ jobs:
               activity.write_text(content, encoding="utf-8")
 
           VERSIONS = [
-              "2.2.14", "2.2.13", "2.2.12", "2.2.11", "2.2.10", "2.2.9", "2.2.8", "2.2.7", "2.2.6", "2.2.5",
+              "2.3.4", "2.3.3", "2.3.2", "2.3.1", "2.3.0",
+              "2.2.15", "2.2.14", "2.2.13", "2.2.12", "2.2.11", "2.2.10", "2.2.9", "2.2.8", "2.2.7", "2.2.6", "2.2.5",
               "2.2.4", "2.2.3", "2.2.2", "2.2.1", "2.2.0", "2.1.0",
           ]
-          TARGET = "2.2.15"
-          CODE = 64
+          TARGET = "2.4.0"
+          CODE = 69
 
           content = activity.read_text(encoding="utf-8")
           for old_v in VERSIONS:
@@ -173,7 +174,7 @@ jobs:
 
           verify = Path("tools/verify_project.py")
           vt = verify.read_text(encoding="utf-8")
-          for code in range(63, 47, -1):
+          for code in range(68, 47, -1):
               vt = vt.replace("versionCode %d" % code, "versionCode %d" % CODE)
           for ver in VERSIONS:
               vt = vt.replace("versionName '%s'" % ver, "versionName '%s'" % TARGET)

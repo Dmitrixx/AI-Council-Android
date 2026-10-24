@@ -56,7 +56,7 @@ public final class ExpertRolePolicy {
 
     public static String sanitizeRole(String role) {
         if (role == null) return "";
-        String value = role.replace(String.valueOf((char) 0), "").replace("\\r\\n", "\\n").replace('\\r', '\\n').trim();
+        String value = role.replace(String.valueOf((char) 0), "").replace("\r\n", "\n").replace('\r', '\n').trim();
         if (value.length() > MAX_ROLE_CHARS) value = value.substring(0, MAX_ROLE_CHARS).trim();
         return value;
     }
