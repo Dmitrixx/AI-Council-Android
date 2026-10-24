@@ -1,12 +1,11 @@
-# Improvements applied in 2.2.0
+# Improvements applied in 2.2.x
 
-## Shipped
+## Shipped (recent autonomous)
 
-- versionName **2.2.0** / versionCode **49**
-- English `README.md`
-- Russian README and `verify_project.py` aligned to 2.2.0
-- CI bumps `APP_VERSION` and publishes `AI-Council-2.2.0-debug.apk` → tag `v2.2.0`
-- Configurable PDF page limit (5/20) confirmed in source UI
+- **Smarter auto-routing** (`TaskRoutingPolicy`): better detection of planning, research, multi-faceted and high-stakes tasks → more often Council / Deep analysis when experts are available.
+- **Stronger coordinator & critique** (`CouncilAnalysisPolicy`): explicit confidence calibration (0–100%), evidence grading (fact / inference / assumption / unverified), bias awareness, counterfactuals, self-revision in peer review.
+- **Improved default roles & system prompts** (`ExpertRolePolicy`): step-by-step reasoning first, explicit assumptions and uncertainty, tighter anti-hallucination rules.
+- CI continues to apply synthesis patches and publish debug APKs.
 
 ## Next priorities
 
@@ -14,3 +13,4 @@
 2. Device matrix (TalkBack, font scale, rotation)
 3. Keep large root ZIP out of default clone path
 4. On-device GGUF last
+5. Further refine fallback recovery and tool-use hints based on real runs
