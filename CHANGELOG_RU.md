@@ -1,3 +1,15 @@
+# 2.3.3 — Self-consistency, Chain-of-Verification, reference class forecasting
+
+- В `ExpertRolePolicy` default-роли усилены:
+  - Обязательная self-consistency (2 независимых внутренних пути разными методами с последующим согласованием).
+  - Chain-of-Verification (проверочные вопросы к собственным утверждениям).
+  - Reference class forecasting для прогнозов и оценок.
+  - Expected utility / expected value язык для решений.
+- В `CouncilAnalysisPolicy`: усилены требования к верификации и остаточному риску в критике и координаторе.
+- В `TaskRoutingPolicy`: снижены пороги длины и усилена агрессивность deep-analysis для reasoning-heavy задач.
+- Версия: versionName 2.3.3, versionCode 67.
+- Цель: сделать внутреннее рассуждение ещё более устойчивым к галлюцинациям и лучше калиброванным без изменения архитектуры.
+
 # 2.3.2 — Tree-of-Thoughts, Fermi-оценки и усиленная калибровка неопределённости
 
 - В `ExpertRolePolicy` default-роли усилены:
