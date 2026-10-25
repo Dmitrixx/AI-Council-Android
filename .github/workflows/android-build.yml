@@ -61,7 +61,7 @@ jobs:
             echo "project_dir=$(dirname "$settings")" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Align version metadata to 2.4.2
+      - name: Align version metadata to 2.5.0
         working-directory: ${{ steps.source.outputs.project_dir }}
         shell: bash
         run: |
@@ -69,8 +69,8 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import re
-          TARGET = "2.4.2"
-          CODE = 71
+          TARGET = "2.5.0"
+          CODE = 72
           activity = Path("app/src/main/java/com/aicouncil/app/MainActivity.java")
           content = activity.read_text(encoding="utf-8")
           content2, n = re.subn(r'APP_VERSION = "[^"]+"', 'APP_VERSION = "%s"' % TARGET, content, count=1)
@@ -84,18 +84,18 @@ jobs:
           gradle.write_text(gt, encoding="utf-8")
           verify = Path("tools/verify_project.py")
           vt = verify.read_text(encoding="utf-8")
-          for code in range(72, 47, -1):
+          for code in range(73, 47, -1):
               vt = vt.replace("versionCode %d" % code, "versionCode %d" % CODE)
-          for old in ("2.4.1", "2.4.0", "2.3.4", "2.3.3", "2.3.2"):
+          for old in ("2.4.2", "2.4.1", "2.4.0", "2.3.4", "2.3.3", "2.3.2"):
               vt = vt.replace("versionName '%s'" % old, "versionName '%s'" % TARGET)
               vt = vt.replace('APP_VERSION = "%s"' % old, 'APP_VERSION = "%s"' % TARGET)
               vt = vt.replace("# AI Council %s" % old, "# AI Council %s" % TARGET)
               vt = vt.replace("Версия Java — %s" % old, "Версия Java — %s" % TARGET)
               vt = vt.replace("до %s" % old, "до %s" % TARGET)
-              vt = vt.replace("%s / code 69" % old, "%s / code %d" % (TARGET, CODE))
+              vt = vt.replace("%s / code 71" % old, "%s / code %d" % (TARGET, CODE))
               vt = vt.replace("%s / code 70" % old, "%s / code %d" % (TARGET, CODE))
-              vt = vt.replace("— %s / code 69" % old, "— %s / code %d" % (TARGET, CODE))
-          vt = vt.replace("2.4.0 / code 69", "%s / code %d" % (TARGET, CODE))
+              vt = vt.replace("— %s / code 71" % old, "— %s / code %d" % (TARGET, CODE))
+          vt = vt.replace("2.4.2 / code 71", "%s / code %d" % (TARGET, CODE))
           vt = vt.replace("2.4.1 / code 70", "%s / code %d" % (TARGET, CODE))
           verify.write_text(vt, encoding="utf-8")
           for name in ("README.md", "README_RU.md"):
