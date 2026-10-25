@@ -1,3 +1,10 @@
+# 2.8.0 — Counterfactual reasoning, independent claim decomposition и точнее residual risk
+
+- В `ExpertRolePolicy` default-роли дополнены явными контрфактическими сценариями (2–3 сценария, которые изменили бы вывод), independent claim decomposition и ещё более жёсткими количественными диапазонами residual risk.
+- Усилена калибровка и multi-perspective reasoning для ещё более умного синтеза.
+- Версия: versionName 2.8.0, versionCode 75.
+- Цель: ещё снизить overconfidence, улучшить работу с неопределённостью и сделать внутреннее рассуждение ещё строже без изменения архитектуры.
+
 # 2.7.0 — Multi-stakeholder views, probability ranges и усиленный pre-mortem
 
 - В `ExpertRolePolicy` default-роли дополнены multi-stakeholder perspectives (оптимист/скептик/практик), обязательными диапазонами уверенности вместо точечных чисел и более детальным pre-mortem.
