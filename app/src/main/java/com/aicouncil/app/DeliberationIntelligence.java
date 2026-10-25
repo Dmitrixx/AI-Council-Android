@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 /**
  * Deterministic council brain: shared sub-questions, numeric disagreements,
  * and local arithmetic checks. No network and no Android types.
+ * Enhanced with better relative conflict detection and agreement scoring.
  */
 public final class DeliberationIntelligence {
     private static final int MAX_SUBQUESTIONS = 6;
@@ -58,15 +59,17 @@ public final class DeliberationIntelligence {
         public final List<String> missing;
         public final int scoreA;
         public final int scoreB;
+        public final int agreementScore;
 
         Brief(List<String> subquestions, List<String> conflicts, List<ArithmeticFault> arithmetic,
-              List<String> missing, int scoreA, int scoreB) {
+              List<String> missing, int scoreA, int scoreB, int agreementScore) {
             this.subquestions = subquestions;
             this.conflicts = conflicts;
             this.arithmetic = arithmetic;
             this.missing = missing;
             this.scoreA = scoreA;
             this.scoreB = scoreB;
+            this.agreementScore = agreementScore;
         }
     }
 
@@ -121,16 +124,18 @@ public final class DeliberationIntelligence {
         if (faults.size() > MAX_FAULTS) faults = new ArrayList<ArithmeticFault>(faults.subList(0, MAX_FAULTS));
         List<String> conflicts = numericConflicts(a, b);
         List<String> missing = missingCoverage(questions, a, b);
-        return new Brief(questions, conflicts, faults, missing, substance(a), substance(b));
+        int agreement = computeAgreementScore(a, b, conflicts.size());
+        return new Brief(questions, conflicts, faults, missing, substance(a), substance(b), agreement);
     }
 
     public static String formatForCoordinator(Brief brief) {
         if (brief == null) return "";
-        if (brief.conflicts.isEmpty() && brief.arithmetic.isEmpty() && brief.missing.isEmpty()) return "";
+        if (brief.conflicts.isEmpty() && brief.arithmetic.isEmpty() && brief.missing.isEmpty() && brief.agreementScore > 80) return "";
         StringBuilder out = new StringBuilder();
-        out.append("Плотность ответа: ИИ №1 ").append(brief.scoreA).append("/100, ИИ №2 ").append(brief.scoreB).append("/100.\n");
+        out.append("Плотность ответа: ИИ №1 ").append(brief.scoreA).append("/100, ИИ №2 ").append(brief.scoreB).append("/100. ");
+        out.append("Оценка согласованности (локальная): ").append(brief.agreementScore).append("/100.\n");
         if (!brief.conflicts.isEmpty()) {
-            out.append("ЧИСЛОВЫЕ РАСХОЖДЕНИЯ (проверь по тексту, не сглаживай):\n");
+            out.append("ЧИСЛОВЫЕ РАСХОЖДЕНИЯ (проверь по тексту, не сглаживай; учти относительную разницу):\n");
             for (String conflict : brief.conflicts) out.append("- ").append(conflict).append('\n');
         }
         if (!brief.arithmetic.isEmpty()) {
@@ -144,9 +149,9 @@ public final class DeliberationIntelligence {
             out.append("ПОДВОПРОСЫ БЕЗ ЯВНОГО ПОКРЫТИЯ:\n");
             for (String miss : brief.missing) out.append("- ").append(miss).append('\n');
         }
-        out.append("Не цитируй эту карту как внешний источник. Если расхождение ложное, так и напиши.\n");
+        out.append("Не цитируй эту карту как внешний источник. Если расхождение ложное, так и напиши. Используй оценку согласованности для калибровки итога.\n");
         String text = out.toString().trim();
-        return text.length() > 2400 ? text.substring(0, 2400).trim() : text;
+        return text.length() > 2800 ? text.substring(0, 2800).trim() : text;
     }
 
     public static String localCheckFooter(String text) {
@@ -191,7 +196,7 @@ public final class DeliberationIntelligence {
             Double claimed = parse(binary.group(4));
             if (left == null || right == null || claimed == null) continue;
             String op = binary.group(2);
-            if ((" /".trim().equals(op) || "÷".equals(op)) && Math.abs(right) < 1e-12) continue;
+            if (("/ ".trim().equals(op) || "÷".equals(op)) && Math.abs(right) < 1e-12) continue;
             Double expected = apply(left, op, right);
             if (expected == null || Double.isNaN(expected) || Double.isInfinite(expected)) continue;
             if (!close(expected, claimed)) {
@@ -214,6 +219,25 @@ public final class DeliberationIntelligence {
         return Math.max(0, Math.min(100, score));
     }
 
+    private static int computeAgreementScore(String a, String b, int conflictCount) {
+        if (a.isEmpty() || b.isEmpty()) return 0;
+        int base = 70;
+        base -= conflictCount * 15;
+        // Simple word overlap bonus
+        Set<String> wordsA = new HashSet<String>();
+        for (String w : a.toLowerCase(Locale.ROOT).split("\\W+")) if (w.length() > 4) wordsA.add(w);
+        Set<String> wordsB = new HashSet<String>();
+        for (String w : b.toLowerCase(Locale.ROOT).split("\\W+")) if (w.length() > 4) wordsB.add(w);
+        int overlap = 0;
+        for (String w : wordsA) if (wordsB.contains(w)) overlap++;
+        int totalUnique = wordsA.size() + wordsB.size() - overlap;
+        if (totalUnique > 0) {
+            double ratio = (double) overlap / totalUnique;
+            base += (int) (ratio * 30);
+        }
+        return Math.max(0, Math.min(100, base));
+    }
+
     private static List<String> numericConflicts(String a, String b) {
         List<Claim> left = claims(a);
         List<Claim> right = claims(b);
@@ -226,8 +250,11 @@ public final class DeliberationIntelligence {
                 int need = x.unit.isEmpty() && y.unit.isEmpty() ? 2 : 1;
                 if (shared < need) continue;
                 if (close(x.value, y.value)) continue;
+                double relDiff = Math.abs(x.value - y.value) / Math.max(Math.abs(x.value), Math.abs(y.value) + 1e-6);
+                if (relDiff < 0.05) continue; // ignore small relative differences
                 conflicts.add("около «" + preview(x.keywords, y.keywords) + "»: "
-                        + format(x.value) + unitSuffix(x.unit) + " против " + format(y.value) + unitSuffix(y.unit));
+                        + format(x.value) + unitSuffix(x.unit) + " против " + format(y.value) + unitSuffix(y.unit)
+                        + " (относит. разница ~" + (int)(relDiff * 100) + "%)");
             }
         }
         return conflicts;
