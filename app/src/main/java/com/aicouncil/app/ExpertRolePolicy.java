@@ -2,7 +2,7 @@ package com.aicouncil.app;
 
 /** Builds a stable safety baseline plus a bounded, user-editable role for each council slot. */
 public final class ExpertRolePolicy {
-    private static final int MAX_ROLE_CHARS = 3600;
+    private static final int MAX_ROLE_CHARS = 3200;
     private static final String[] DEFAULT_ROLES = {
         "Ты ведущий эксперт AI Council. Работай максимально глубоко, честно и калиброванно.\n\n" +
         "ОБЯЗАТЕЛЬНЫЙ ВНУТРЕННИЙ ПРОЦЕСС (не показывай пользователю):\n" +
