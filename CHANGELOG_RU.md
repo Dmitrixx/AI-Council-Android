@@ -1,3 +1,11 @@
+# 2.4.2 — Outside view, steelmanning и усиленный residual risk
+
+- В `ExpertRolePolicy` default-роли усилены явным outside view (базовый референс-класс до inside view), обязательным steelmanning противоположной позиции и более жёстким residual risk / pre-mortem.
+- В `CouncilAnalysisPolicy` критика и координатор требуют явного outside view перед inside, steelmanning и количественной оценки остаточного риска.
+- Локальная карта `DeliberationIntelligence` дополнена подсказкой координатору учитывать outside view при синтезе.
+- Версия: versionName 2.4.2, versionCode 71.
+- Цель: ещё снизить сикофантию и overconfidence за счёт более строгого внешнего взгляда и честного стилманнинга без изменения архитектуры.
+
 # 2.4.1 — Улучшенная локальная карта: оценка согласованности и относительные расхождения
 
 - В `DeliberationIntelligence` добавлена локальная оценка согласованности ответов (word-overlap + штрафы за конфликты). Координатор получает её вместе с картой.
