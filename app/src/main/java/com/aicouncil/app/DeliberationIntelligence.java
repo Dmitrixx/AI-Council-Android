@@ -12,23 +12,25 @@ import java.util.regex.Pattern;
 
 /**
  * Deterministic council brain: shared sub-questions, numeric disagreements,
- * and local arithmetic checks. No network and no Android types.
- * Enhanced with better relative conflict detection and agreement scoring.
+ * qualitative polarity conflicts and local arithmetic checks. No network and no Android types.
+ * Enhanced with Jaccard-based agreement scoring for better calibration.
  */
 public final class DeliberationIntelligence {
     private static final int MAX_SUBQUESTIONS = 6;
     private static final int MAX_CLAIMS = 12;
     private static final int MAX_CONFLICTS = 6;
     private static final int MAX_FAULTS = 6;
-    private static final Pattern ITEM = Pattern.compile("(?i)^(?:\\d+[\\).]|[-*•])\\s+(.+)$");
+    private static final Pattern ITEM = Pattern.compile("(?i)^(?:\\d+[\\).]|[-*\u2022])\\s+(.+)$");
     private static final Pattern PERCENT = Pattern.compile(
             "(?i)(\\d+(?:[.,]\\d+)?)\\s*%\\s*(?:от|of)\\s*(\\d+(?:[.,]\\d+)?)\\s*=\\s*(\\d+(?:[.,]\\d+)?)");
     private static final Pattern BINARY = Pattern.compile(
-            "(\\d+(?:[.,]\\d+)?)\\s*([+\\-*/×÷])\\s*(\\d+(?:[.,]\\d+)?)\\s*=\\s*(\\d+(?:[.,]\\d+)?)");
+            "(\\d+(?:[.,]\\d+)?)\\s*([+\\-*/\u00d7\u00f7])\\s*(\\d+(?:[.,]\\d+)?)\\s*=\\s*(\\d+(?:[.,]\\d+)?)");
     private static final Pattern NUMBER = Pattern.compile(
             "(?i)(\\d+(?:[.,]\\d+)?)(?:\\s*(%|₽|\\$|руб(?:лей|ля|\\.)?|usd|eur|кг|килограмм\\w*|км|километр\\w*|шт\\.?))?");
 
     private static final Set<String> STOP = new HashSet<String>();
+    private static final Set<String> POSITIVE = new HashSet<String>();
+    private static final Set<String> NEGATIVE = new HashSet<String>();
     static {
         String[] words = {
                 "этот", "этого", "этой", "этим", "которая", "который", "которые", "также", "только",
@@ -36,6 +38,10 @@ public final class DeliberationIntelligence {
                 "после", "перед", "между", "если", "когда", "чтобы", "потому", "стоит", "надо"
         };
         for (String word : words) STOP.add(word);
+        String[] pos = {"рост", "увеличение", "положительный", "высокий", "лучше", "рекомендуется", "поддерживаю", "согласен"};
+        for (String word : pos) POSITIVE.add(word);
+        String[] neg = {"падение", "уменьшение", "отрицательный", "низкий", "хуже", "не рекомендуется", "против", "не согласен"};
+        for (String word : neg) NEGATIVE.add(word);
     }
 
     private DeliberationIntelligence() {}
@@ -121,6 +127,8 @@ public final class DeliberationIntelligence {
         faults.addAll(findArithmetic(b));
         if (faults.size() > MAX_FAULTS) faults = new ArrayList<ArithmeticFault>(faults.subList(0, MAX_FAULTS));
         List<String> conflicts = numericConflicts(a, b);
+        conflicts.addAll(qualitativeConflicts(a, b));
+        if (conflicts.size() > MAX_CONFLICTS) conflicts = new ArrayList<String>(conflicts.subList(0, MAX_CONFLICTS));
         List<String> missing = missingCoverage(questions, a, b);
         int agreement = computeAgreementScore(a, b, conflicts.size());
         return new Brief(questions, conflicts, faults, missing, substance(a), substance(b), agreement);
@@ -128,14 +136,12 @@ public final class DeliberationIntelligence {
 
     public static String formatForCoordinator(Brief brief) {
         if (brief == null) return "";
-        // Empty map only when there is nothing actionable for the coordinator.
-        // Agreement score alone must not force a map (smoke test + real quiet cases).
         if (brief.conflicts.isEmpty() && brief.arithmetic.isEmpty() && brief.missing.isEmpty()) return "";
         StringBuilder out = new StringBuilder();
         out.append("Плотность ответа: ИИ №1 ").append(brief.scoreA).append("/100, ИИ №2 ").append(brief.scoreB).append("/100. ");
-        out.append("Оценка согласованности (локальная): ").append(brief.agreementScore).append("/100.\n");
+        out.append("Оценка согласованности (Jaccard + конфликты): ").append(brief.agreementScore).append("/100.\n");
         if (!brief.conflicts.isEmpty()) {
-            out.append("ЧИСЛОВЫЕ РАСХОЖДЕНИЯ (проверь по тексту, не сглаживай; учти относительную разницу):\n");
+            out.append("РАСХОЖДЕНИЯ (числовые и качественные полярные; проверь по тексту, не сглаживай):\n");
             for (String conflict : brief.conflicts) out.append("- ").append(conflict).append('\n');
         }
         if (!brief.arithmetic.isEmpty()) {
@@ -191,8 +197,8 @@ public final class DeliberationIntelligence {
             double expected;
             if ("+".equals(op)) expected = left + right;
             else if ("-".equals(op)) expected = left - right;
-            else if ("*".equals(op) || "×".equals(op)) expected = left * right;
-            else if ("/".equals(op) || "÷".equals(op)) expected = right == 0 ? Double.NaN : left / right;
+            else if ("*".equals(op) || "\u00d7".equals(op)) expected = left * right;
+            else if ("/".equals(op) || "\u00f7".equals(op)) expected = right == 0 ? Double.NaN : left / right;
             else continue;
             if (Double.isNaN(expected)) continue;
             if (Math.abs(expected - claimed) > 0.01 * Math.max(1.0, Math.abs(expected))) {
@@ -214,11 +220,45 @@ public final class DeliberationIntelligence {
         if (a == null) a = "";
         if (b == null) b = "";
         if (a.isEmpty() || b.isEmpty()) return 0;
-        int base = 70;
-        if (conflictCount == 0) base = 90;
-        else if (conflictCount == 1) base = 55;
-        else base = Math.max(20, 50 - conflictCount * 10);
-        return base;
+        Set<String> wordsA = significantWords(a);
+        Set<String> wordsB = significantWords(b);
+        if (wordsA.isEmpty() || wordsB.isEmpty()) return 40;
+        int intersection = 0;
+        for (String w : wordsA) if (wordsB.contains(w)) intersection++;
+        int union = wordsA.size() + wordsB.size() - intersection;
+        double jaccard = union == 0 ? 0 : (double) intersection / union;
+        int base = (int) (jaccard * 100);
+        base -= conflictCount * 12;
+        return Math.max(0, Math.min(100, base));
+    }
+
+    private static Set<String> significantWords(String text) {
+        Set<String> set = new HashSet<String>();
+        if (text == null) return set;
+        String[] parts = text.toLowerCase(Locale.ROOT).split("[^\\p{L}]+");
+        for (String part : parts) {
+            if (part.length() >= 5 && !STOP.contains(part)) set.add(part);
+        }
+        return set;
+    }
+
+    private static List<String> qualitativeConflicts(String a, String b) {
+        List<String> conflicts = new ArrayList<String>();
+        String la = a == null ? "" : a.toLowerCase(Locale.ROOT);
+        String lb = b == null ? "" : b.toLowerCase(Locale.ROOT);
+        boolean posA = hasAny(la, POSITIVE);
+        boolean negA = hasAny(la, NEGATIVE);
+        boolean posB = hasAny(lb, POSITIVE);
+        boolean negB = hasAny(lb, NEGATIVE);
+        if ((posA && negB) || (negA && posB)) {
+            conflicts.add("Качественная полярность: один ответ более положительный/рост, другой отрицательный/падение по ключевым темам");
+        }
+        return conflicts;
+    }
+
+    private static boolean hasAny(String text, Set<String> set) {
+        for (String w : set) if (text.contains(w)) return true;
+        return false;
     }
 
     private static List<String> numericConflicts(String a, String b) {
@@ -282,7 +322,7 @@ public final class DeliberationIntelligence {
             int end = Math.min(text.length(), m.end() + 20);
             String ctx = text.substring(start, end).toLowerCase(Locale.ROOT);
             List<String> keys = new ArrayList<String>();
-            for (String w : ctx.split("[^\\p{L}\\p{N}]+") ) {
+            for (String w : ctx.split("[^\\p{L}\\p{N}]+")) {
                 if (w.length() >= 3 && !STOP.contains(w)) keys.add(w);
             }
             if (keys.isEmpty()) continue;
@@ -323,7 +363,7 @@ public final class DeliberationIntelligence {
         if (u.startsWith("руб")) return " руб";
         if (u.equals("%")) return "%";
         if (u.equals("$") || u.equals("usd")) return " $";
-        if (u.equals("eur")) return " €";
+        if (u.equals("eur")) return " \u20ac";
         return " " + u;
     }
 
