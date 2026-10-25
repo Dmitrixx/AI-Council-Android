@@ -221,20 +221,19 @@ public final class DeliberationIntelligence {
 
     private static int computeAgreementScore(String a, String b, int conflictCount) {
         if (a.isEmpty() || b.isEmpty()) return 0;
-        int base = 70;
-        base -= conflictCount * 15;
-        // Simple word overlap bonus
+        int base = 65;
+        base -= Math.min(conflictCount * 12, 40);
+        // Jaccard similarity on significant words for better agreement estimate
         Set<String> wordsA = new HashSet<String>();
-        for (String w : a.toLowerCase(Locale.ROOT).split("\\W+")) if (w.length() > 4) wordsA.add(w);
+        for (String w : a.toLowerCase(Locale.ROOT).split("\\W+")) if (w.length() > 3 && !STOP.contains(w)) wordsA.add(w);
         Set<String> wordsB = new HashSet<String>();
-        for (String w : b.toLowerCase(Locale.ROOT).split("\\W+")) if (w.length() > 4) wordsB.add(w);
-        int overlap = 0;
-        for (String w : wordsA) if (wordsB.contains(w)) overlap++;
-        int totalUnique = wordsA.size() + wordsB.size() - overlap;
-        if (totalUnique > 0) {
-            double ratio = (double) overlap / totalUnique;
-            base += (int) (ratio * 30);
-        }
+        for (String w : b.toLowerCase(Locale.ROOT).split("\\W+")) if (w.length() > 3 && !STOP.contains(w)) wordsB.add(w);
+        if (wordsA.isEmpty() || wordsB.isEmpty()) return Math.max(0, Math.min(100, base));
+        int intersection = 0;
+        for (String w : wordsA) if (wordsB.contains(w)) intersection++;
+        int union = wordsA.size() + wordsB.size() - intersection;
+        double jaccard = union == 0 ? 0.0 : (double) intersection / union;
+        base += (int) (jaccard * 35);
         return Math.max(0, Math.min(100, base));
     }
 
