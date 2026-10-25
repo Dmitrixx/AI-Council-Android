@@ -1,4 +1,4 @@
-# AI Council 2.4.1
+# AI Council 2.9.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
