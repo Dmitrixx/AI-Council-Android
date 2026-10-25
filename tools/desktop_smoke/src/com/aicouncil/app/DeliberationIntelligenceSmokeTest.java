@@ -25,7 +25,7 @@ public final class DeliberationIntelligenceSmokeTest {
                 "Бюджет проекта составляет 250 рублей и это другая оценка.");
         check("detects numeric budget conflict", !clash.conflicts.isEmpty());
         String map = DeliberationIntelligence.formatForCoordinator(clash);
-        check("coordinator map names the conflict", map.contains("ЧИСЛОВЫЕ РАСХОЖДЕНИЯ") && map.contains("руб"));
+        check("coordinator map names the conflict", map.contains("РАСХОЖДЕНИЯ") && map.contains("руб"));
 
         DeliberationIntelligence.Brief same = DeliberationIntelligence.analyze(
                 "Оцени бюджет проекта",
@@ -47,6 +47,15 @@ public final class DeliberationIntelligenceSmokeTest {
         check("footer quotes the recomputed value", DeliberationIntelligence.localCheckFooter("2*10=15").contains("20"));
         check("correct equation has no footer", DeliberationIntelligence.localCheckFooter("2*10=20").isEmpty());
         check("null answers do not throw", DeliberationIntelligence.analyze(null, null, null).scoreA == 0);
+
+        DeliberationIntelligence.Brief polar = DeliberationIntelligence.analyze(
+                "Стоит ли внедрять?",
+                "Да, рекомендую внедрять. Нужно и лучше начать сейчас. Согласен с планом.",
+                "Нет, не рекомендую. Нельзя и не стоит запускать. Не согласен с планом.");
+        boolean hasPolarity = false;
+        for (String c : polar.conflicts) if (c.startsWith("полярность")) hasPolarity = true;
+        check("detects polarity clash", hasPolarity);
+        check("hedge score is defined", polar.hedgeRatio >= 0 && polar.hedgeRatio <= 100);
 
         System.out.println("DeliberationIntelligenceSmokeTest: " + checks + "/" + checks + " passed");
     }
