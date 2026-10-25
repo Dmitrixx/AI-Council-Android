@@ -12,13 +12,13 @@ import java.util.regex.Pattern;
 
 /**
  * Deterministic council brain: shared sub-questions, numeric disagreements,
- * and local arithmetic checks. No network and no Android types.
- * Enhanced with better relative conflict detection and agreement scoring.
+ * polarity conflicts, hedge/absolute calibration signals, and local arithmetic checks.
+ * No network and no Android types.
  */
 public final class DeliberationIntelligence {
     private static final int MAX_SUBQUESTIONS = 6;
     private static final int MAX_CLAIMS = 12;
-    private static final int MAX_CONFLICTS = 6;
+    private static final int MAX_CONFLICTS = 8;
     private static final int MAX_FAULTS = 6;
     private static final Pattern ITEM = Pattern.compile("(?i)^(?:\\d+[\\).]|[-*•])\\s+(.+)$");
     private static final Pattern PERCENT = Pattern.compile(
@@ -29,6 +29,24 @@ public final class DeliberationIntelligence {
             "(?i)(\\d+(?:[.,]\\d+)?)(?:\\s*(%|₽|\\$|руб(?:лей|ля|\\.)?|usd|eur|кг|килограмм\\w*|км|километр\\w*|шт\\.?))?");
 
     private static final Set<String> STOP = new HashSet<String>();
+    private static final String[] AFFIRM = {
+            "да", "верно", "правильно", "согласен", "рекомендую", "следует", "нужно", "лучше",
+            "yes", "correct", "agree", "recommend", "should", "must", "prefer", "лучше выбрать"
+    };
+    private static final String[] DENY = {
+            "нет", "неверно", "неправильно", "не согласен", "не рекомендую", "не следует", "нельзя",
+            "no", "incorrect", "disagree", "not recommend", "should not", "must not", "avoid", "не стоит"
+    };
+    private static final String[] HEDGE = {
+            "возможно", "вероятно", "скорее", "примерно", "около", "допущ", "неопредел", "может быть",
+            "perhaps", "maybe", "likely", "approximately", "uncertain", "estimate", "range", "диапазон",
+            "кажется", "похоже", "условно", "hypothetically"
+    };
+    private static final String[] ABSOLUTE = {
+            "точно", "всегда", "никогда", "гарантированно", "бесспорно", "однозначно", "100%",
+            "always", "never", "guaranteed", "certainly", "definitely", "undeniable", "абсолютно"
+    };
+
     static {
         String[] words = {
                 "этот", "этого", "этой", "этим", "которая", "который", "которые", "также", "только",
@@ -60,9 +78,11 @@ public final class DeliberationIntelligence {
         public final int scoreA;
         public final int scoreB;
         public final int agreementScore;
+        /** 0–100: higher means more hedging language relative to absolutes (avg of both answers). */
+        public final int hedgeRatio;
 
         Brief(List<String> subquestions, List<String> conflicts, List<ArithmeticFault> arithmetic,
-              List<String> missing, int scoreA, int scoreB, int agreementScore) {
+              List<String> missing, int scoreA, int scoreB, int agreementScore, int hedgeRatio) {
             this.subquestions = subquestions;
             this.conflicts = conflicts;
             this.arithmetic = arithmetic;
@@ -70,6 +90,7 @@ public final class DeliberationIntelligence {
             this.scoreA = scoreA;
             this.scoreB = scoreB;
             this.agreementScore = agreementScore;
+            this.hedgeRatio = hedgeRatio;
         }
     }
 
@@ -123,19 +144,27 @@ public final class DeliberationIntelligence {
         faults.addAll(findArithmetic(b));
         if (faults.size() > MAX_FAULTS) faults = new ArrayList<ArithmeticFault>(faults.subList(0, MAX_FAULTS));
         List<String> conflicts = numericConflicts(a, b);
+        polarityConflicts(a, b, conflicts);
         List<String> missing = missingCoverage(questions, a, b);
-        int agreement = computeAgreementScore(a, b, conflicts.size());
-        return new Brief(questions, conflicts, faults, missing, substance(a), substance(b), agreement);
+        int polarityHits = 0;
+        for (String c : conflicts) if (c.startsWith("полярность")) polarityHits++;
+        int agreement = computeAgreementScore(a, b, conflicts.size(), polarityHits);
+        int hedge = (hedgeScore(a) + hedgeScore(b)) / 2;
+        return new Brief(questions, conflicts, faults, missing, substance(a), substance(b), agreement, hedge);
     }
 
     public static String formatForCoordinator(Brief brief) {
         if (brief == null) return "";
-        if (brief.conflicts.isEmpty() && brief.arithmetic.isEmpty() && brief.missing.isEmpty() && brief.agreementScore > 80) return "";
+        if (brief.conflicts.isEmpty() && brief.arithmetic.isEmpty() && brief.missing.isEmpty()
+                && brief.agreementScore > 80 && brief.hedgeRatio >= 40 && brief.hedgeRatio <= 75) {
+            return "";
+        }
         StringBuilder out = new StringBuilder();
         out.append("Плотность ответа: ИИ №1 ").append(brief.scoreA).append("/100, ИИ №2 ").append(brief.scoreB).append("/100. ");
-        out.append("Оценка согласованности (локальная): ").append(brief.agreementScore).append("/100.\n");
+        out.append("Оценка согласованности (локальная): ").append(brief.agreementScore).append("/100. ");
+        out.append("Калибровка языка (hedge vs absolute, 0–100, выше = больше оговорок): ").append(brief.hedgeRatio).append(".\n");
         if (!brief.conflicts.isEmpty()) {
-            out.append("ЧИСЛОВЫЕ РАСХОЖДЕНИЯ (проверь по тексту, не сглаживай; учти относительную разницу):\n");
+            out.append("РАСХОЖДЕНИЯ (числа и полярность; проверь по тексту, не сглаживай):\n");
             for (String conflict : brief.conflicts) out.append("- ").append(conflict).append('\n');
         }
         if (!brief.arithmetic.isEmpty()) {
@@ -149,9 +178,14 @@ public final class DeliberationIntelligence {
             out.append("ПОДВОПРОСЫ БЕЗ ЯВНОГО ПОКРЫТИЯ:\n");
             for (String miss : brief.missing) out.append("- ").append(miss).append('\n');
         }
-        out.append("Не цитируй эту карту как внешний источник. Если расхождение ложное, так и напиши. Используй оценку согласованности для калибровки итога.\n");
+        if (brief.hedgeRatio < 25) {
+            out.append("Сигнал: оба ответа звучат слишком категорично — потребуй диапазоны уверенности и residual risk.\n");
+        } else if (brief.hedgeRatio > 85) {
+            out.append("Сигнал: много оговорок — уточни, где неопределённость эпистемическая, а где алеаторная.\n");
+        }
+        out.append("Не цитируй эту карту как внешний источник. Если расхождение ложное, так и напиши. Используй оценку согласованности и калибровку языка для итога.\n");
         String text = out.toString().trim();
-        return text.length() > 2800 ? text.substring(0, 2800).trim() : text;
+        return text.length() > 3200 ? text.substring(0, 3200).trim() : text;
     }
 
     public static String localCheckFooter(String text) {
@@ -219,11 +253,60 @@ public final class DeliberationIntelligence {
         return Math.max(0, Math.min(100, score));
     }
 
-    private static int computeAgreementScore(String a, String b, int conflictCount) {
+    /** 0 = very absolute, 100 = heavily hedged. */
+    public static int hedgeScore(String answer) {
+        if (answer == null || answer.trim().isEmpty()) return 50;
+        String lower = answer.toLowerCase(Locale.ROOT);
+        int h = countHits(lower, HEDGE);
+        int a = countHits(lower, ABSOLUTE);
+        if (h + a == 0) return 50;
+        return Math.max(0, Math.min(100, (int) (100.0 * h / (h + a + 0.5))));
+    }
+
+    private static int countHits(String lower, String[] needles) {
+        int n = 0;
+        for (String s : needles) if (lower.contains(s)) n++;
+        return n;
+    }
+
+    private static void polarityConflicts(String a, String b, List<String> conflicts) {
+        if (conflicts.size() >= MAX_CONFLICTS) return;
+        String la = a.toLowerCase(Locale.ROOT);
+        String lb = b.toLowerCase(Locale.ROOT);
+        int affA = countHits(la, AFFIRM);
+        int denA = countHits(la, DENY);
+        int affB = countHits(lb, AFFIRM);
+        int denB = countHits(lb, DENY);
+        // Strong opposite polarity: one side affirms more than denies, the other does the reverse
+        boolean aPositive = affA > denA && affA >= 2;
+        boolean aNegative = denA > affA && denA >= 2;
+        boolean bPositive = affB > denB && affB >= 2;
+        boolean bNegative = denB > affB && denB >= 2;
+        if ((aPositive && bNegative) || (aNegative && bPositive)) {
+            conflicts.add("полярность: один эксперт склоняется к «да/рекомендую», другой — к «нет/не рекомендую» "
+                    + "(аффирмации/отрицания: ИИ1 " + affA + "/" + denA + ", ИИ2 " + affB + "/" + denB + ")");
+        }
+        // Opening yes/no clash in first 120 chars (common for direct answers)
+        String headA = la.length() > 120 ? la.substring(0, 120) : la;
+        String headB = lb.length() > 120 ? lb.substring(0, 120) : lb;
+        boolean yesA = headA.contains("да,") || headA.startsWith("да ") || headA.startsWith("yes") || headA.contains("рекомендую");
+        boolean noA = headA.contains("нет,") || headA.startsWith("нет ") || headA.startsWith("no ") || headA.contains("не рекомендую");
+        boolean yesB = headB.contains("да,") || headB.startsWith("да ") || headB.startsWith("yes") || headB.contains("рекомендую");
+        boolean noB = headB.contains("нет,") || headB.startsWith("нет ") || headB.startsWith("no ") || headB.contains("не рекомендую");
+        if (((yesA && noB) || (noA && yesB)) && conflicts.size() < MAX_CONFLICTS) {
+            boolean already = false;
+            for (String c : conflicts) if (c.startsWith("полярность")) { already = true; break; }
+            if (!already) {
+                conflicts.add("полярность: прямые ответы в начале текста расходятся (да/нет или рекомендовать/не рекомендовать)");
+            }
+        }
+    }
+
+    private static int computeAgreementScore(String a, String b, int conflictCount, int polarityHits) {
         if (a.isEmpty() || b.isEmpty()) return 0;
         int base = 65;
-        base -= Math.min(conflictCount * 12, 40);
-        // Jaccard similarity on significant words for better agreement estimate
+        base -= Math.min(conflictCount * 10, 35);
+        base -= Math.min(polarityHits * 15, 25);
         Set<String> wordsA = new HashSet<String>();
         for (String w : a.toLowerCase(Locale.ROOT).split("\\W+")) if (w.length() > 3 && !STOP.contains(w)) wordsA.add(w);
         Set<String> wordsB = new HashSet<String>();
@@ -250,7 +333,7 @@ public final class DeliberationIntelligence {
                 if (shared < need) continue;
                 if (close(x.value, y.value)) continue;
                 double relDiff = Math.abs(x.value - y.value) / Math.max(Math.abs(x.value), Math.abs(y.value) + 1e-6);
-                if (relDiff < 0.05) continue; // ignore small relative differences
+                if (relDiff < 0.05) continue;
                 conflicts.add("около «" + preview(x.keywords, y.keywords) + "»: "
                         + format(x.value) + unitSuffix(x.unit) + " против " + format(y.value) + unitSuffix(y.unit)
                         + " (относит. разница ~" + (int)(relDiff * 100) + "%)");

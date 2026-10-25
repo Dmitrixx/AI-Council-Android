@@ -1,4 +1,4 @@
-# AI Council 2.9.0
+# AI Council 2.11.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
@@ -27,6 +27,7 @@ Additional capabilities:
 - **Local AI** — Ollama / LM Studio over Wi-Fi (loopback and private LAN policies)
 - **Privacy** — encrypted API keys, secret redaction in errors and before send, optional “local only” mode
 - **History & projects** in local SQLite, voice draft, themes (system / light / dark), accessibility live regions
+- **Local deliberation intelligence** — shared sub-questions, numeric + polarity conflict map, arithmetic verification, Jaccard agreement score, hedge/absolute calibration signals for the coordinator
 
 ## Supported providers (OpenAI-compatible)
 
@@ -60,6 +61,7 @@ Most business logic is deliberately kept **Android-independent** and covered by 
 - `ocr/OcrDocumentProcessor` + `OcrInputPolicy` + `OcrModelManager` — hybrid PDF/image OCR
 - `ChatCompletionsClient`, `ProviderModelsClient` — network with cancellation, size limits, secret redaction
 - `LocalDataStore` — SQLite history/projects/drafts
+- `DeliberationIntelligence` — local disagreement map and arithmetic checks
 - `SecretRedactor`, `ProviderErrorFormatter`, `PromptPrivacyPolicy`, `TaskRoutingPolicy`, …
 
 `MainActivity` still owns UI construction and some coordination (this is the largest remaining technical debt).
