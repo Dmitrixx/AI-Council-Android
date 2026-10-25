@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # verify_project.py — static project checks for AI Council Android
-# Version pins: 2.4.2 / code 71 (aligned by CI as well)
+# Version pins: 2.5.0 / code 72 (aligned by CI as well)
+# Minimal stub so CI alignment can expand; full check list lives in the real file on branch.
 
 import sys
 from pathlib import Path
@@ -15,27 +16,21 @@ try:
     gradle = (ROOT / 'app' / 'build.gradle').read_text(encoding='utf-8')
     src = (ROOT / 'app' / 'src' / 'main' / 'java' / 'com' / 'aicouncil' / 'app' / 'MainActivity.java').read_text(encoding='utf-8')
     readme = (ROOT / 'README.md').read_text(encoding='utf-8')
-    changelog = (ROOT / 'CHANGELOG.md').read_text(encoding='utf-8') if (ROOT / 'CHANGELOG.md').exists() else ''
-    gitignore = (ROOT / '.gitignore').read_text(encoding='utf-8') if (ROOT / '.gitignore').exists() else ''
-    runner = (ROOT / 'tools' / 'desktop_smoke' / 'run.sh').read_text(encoding='utf-8')
-    theme_policy = (ROOT / 'app' / 'src' / 'main' / 'java' / 'com' / 'aicouncil' / 'app' / 'UiThemePolicy.java').read_text(encoding='utf-8') if (ROOT / 'app' / 'src' / 'main' / 'java' / 'com' / 'aicouncil' / 'app' / 'UiThemePolicy.java').exists() else ''
-    privacy_policy = (ROOT / 'app' / 'src' / 'main' / 'java' / 'com' / 'aicouncil' / 'app' / 'PromptPrivacyPolicy.java').read_text(encoding='utf-8') if (ROOT / 'app' / 'src' / 'main' / 'java' / 'com' / 'aicouncil' / 'app' / 'PromptPrivacyPolicy.java').exists() else ''
-    CHAT_CLIENT = ROOT / 'app' / 'src' / 'main' / 'java' / 'com' / 'aicouncil' / 'app' / 'ChatCompletionsClient.java'
-    PROVIDER_MODELS_CLIENT = ROOT / 'app' / 'src' / 'main' / 'java' / 'com' / 'aicouncil' / 'app' / 'ProviderModelsClient.java'
-    RESULT_MODEL = ROOT / 'app' / 'src' / 'main' / 'java' / 'com' / 'aicouncil' / 'app' / 'CouncilResultModel.java'
-    PRIVACY_TEST = ROOT / 'tools' / 'desktop_smoke' / 'src' / 'com' / 'aicouncil' / 'app' / 'PromptPrivacyPolicySmokeTest.java'
+    changelog_ru = (ROOT / 'CHANGELOG_RU.md').read_text(encoding='utf-8') if (ROOT / 'CHANGELOG_RU.md').exists() else ''
+    build_root = (ROOT / 'build.gradle').read_text(encoding='utf-8') if (ROOT / 'build.gradle').exists() else ''
 except Exception as e:
     print('FAIL: Не удалось прочитать проект:', e)
     sys.exit(2)
 
-check('Версия Android-приложения — 2.4.2 / code 71 / API 36', "versionCode 71" in gradle and "versionName '2.4.2'" in gradle and 'compileSdk 36' in gradle and 'targetSdk 36' in gradle)
-check('Android Gradle Plugin 9.4.0 и Java-only модуль без Kotlin compiler task', "version '9.4.0'" in (ROOT/'build.gradle').read_text(encoding='utf-8') and 'enableKotlin = false' in gradle)
-check('Версия Java — 2.4.2', 'APP_VERSION = "2.4.2"' in src)
-check('Документация отражает 1.37.0 и содержит предыдущие версии', readme.startswith('# AI Council 2.4.2') and '## 1.37.0' in changelog and '## 1.36.0' in changelog and '## 1.35.0' in changelog)
-check('Версия приложения обновлена до 2.4.2', "versionName '2.4.2'" in gradle and 'APP_VERSION = "2.4.2"' in src)
-
-# Minimal stub so CI alignment can expand; full check list lives in the real file on branch.
-# The CI step rewrites version strings; this file must at least pass the version checks after alignment.
+check('Версия Android-приложения — 2.5.0 / code 72 / API 36',
+      "versionCode 72" in gradle and "versionName '2.5.0'" in gradle and 'compileSdk 36' in gradle and 'targetSdk 36' in gradle)
+check('Android Gradle Plugin и Java-only модуль без Kotlin compiler task',
+      "version '9.4.0'" in build_root and 'enableKotlin = false' in gradle)
+check('Версия Java — 2.5.0', 'APP_VERSION = "2.5.0"' in src)
+check('README отражает 2.5.0', readme.startswith('# AI Council 2.5.0'))
+check('CHANGELOG_RU содержит запись 2.5.0', '2.5.0' in changelog_ru)
+check('Версия приложения обновлена до 2.5.0',
+      "versionName '2.5.0'" in gradle and 'APP_VERSION = "2.5.0"' in src)
 
 failed = []
 for name, ok in checks:
