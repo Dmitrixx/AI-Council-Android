@@ -1,4 +1,4 @@
-# AI Council 2.11.0
+# AI Council 2.14.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
@@ -27,7 +27,7 @@ Additional capabilities:
 - **Local AI** — Ollama / LM Studio over Wi-Fi (loopback and private LAN policies)
 - **Privacy** — encrypted API keys, secret redaction in errors and before send, optional “local only” mode
 - **History & projects** in local SQLite, voice draft, themes (system / light / dark), accessibility live regions
-- **Local deliberation intelligence** — shared sub-questions, numeric + polarity conflict map, arithmetic verification, Jaccard agreement score, hedge/absolute calibration signals for the coordinator
+- **Local deliberation intelligence** — shared sub-questions, numeric, polarity and directional conflicts, confidence mismatch, causation vs correlation, time horizon, scope, clashing years, premise forks, reversibility gaps, arithmetic verification, Jaccard agreement and hedge/absolute calibration for the coordinator
 
 ## Supported providers (OpenAI-compatible)
 

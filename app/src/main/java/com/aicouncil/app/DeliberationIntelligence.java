@@ -12,7 +12,9 @@ import java.util.regex.Pattern;
 
 /**
  * Deterministic council brain: shared sub-questions, numeric disagreements,
- * polarity conflicts, hedge/absolute calibration signals, and local arithmetic checks.
+ * polarity and directional conflicts, confidence mismatch, causal vs correlation,
+ * time-horizon and scope splits, year clashes, premise forks, reversibility gaps,
+ * hedge/absolute calibration, and local arithmetic checks.
  * No network and no Android types.
  */
 public final class DeliberationIntelligence {
@@ -46,6 +48,48 @@ public final class DeliberationIntelligence {
             "точно", "всегда", "никогда", "гарантированно", "бесспорно", "однозначно", "100%",
             "always", "never", "guaranteed", "certainly", "definitely", "undeniable", "абсолютно"
     };
+    /** Directional antonym pairs (RU/EN). A hit counts only when the two experts take opposite sides. */
+    private static final String[][] DIRECTIONAL = {
+            {"рост", "падение"}, {"увеличи", "уменьш"}, {"повыс", "пониж"}, {"рост", "снижен"},
+            {"рекоменд", "избег"}, {"принят", "отклон"}, {"запуск", "отлож"},
+            {"высокий риск", "низкий риск"}, {"increase", "decrease"}, {"grow", "shrink"},
+            {"recommend", "avoid"}, {"approve", "reject"}, {"bullish", "bearish"},
+            {"optimistic", "pessimistic"}, {"upside", "downside"}
+    };
+    private static final Pattern CONF_RANGE = Pattern.compile(
+            "(?iu)(?:уверенн(?:ость|ости)?|confidence|вероятност[ьи])[^0-9%]{0,28}(\\d{1,3})\\s*[-–—]\\s*(\\d{1,3})\\s*%?");
+    private static final Pattern CONF_SINGLE = Pattern.compile(
+            "(?iu)(?:уверенн(?:ость|ости)?|confidence)[^0-9%]{0,24}(\\d{1,3})\\s*%");
+    private static final String[] CAUSE = {
+            "вызывает", "приводит к", "является причиной", "causes", "leads to", "results in", "из-за этого"
+    };
+    private static final String[] CAUSE_DENY = {
+            "не вызывает", "не является причиной", "не причин", "корреляц", "correlation",
+            "associated with", "связан с", "ассоциац", "does not cause"
+    };
+    private static final String[] SHORT_H = {
+            "краткосроч", "в ближайш", "short-term", "short term", "near-term", "near term",
+            "в этом квартал", "на этой неделе"
+    };
+    private static final String[] LONG_H = {
+            "долгосроч", "в перспективе", "long-term", "long term", "через несколько лет", "на горизонте лет"
+    };
+    private static final String[] INDIV = {
+            "в этом случае", "конкретно этот", "данный пациент", "this specific", "этот клиент", "именно этот"
+    };
+    private static final String[] POP = {
+            "в среднем", "base rate", "по популяции", "статистически", "reference class", "типичных случаях"
+    };
+    private static final String[] REVERSE = {
+            "обратим", "необратим", "откат", "можно отменить", "reversib", "one-way", "two-way",
+            "rollback", "отменить решение"
+    };
+    private static final String[] DECISION_TASK = {
+            "стоит ли", "выбрать", "внедр", "запускать", "approve", "launch", "купить", "инвестир", "отказаться от"
+    };
+    private static final Pattern YEAR = Pattern.compile("(?<!\\d)((?:19|20)\\d{2})(?!\\d)");
+    private static final Pattern PREMISE = Pattern.compile(
+            "(?iu)(потому что|потому, что|because|assuming|если допустить|при условии|исходя из)([^.]{8,180})");
 
     static {
         String[] words = {
@@ -145,6 +189,16 @@ public final class DeliberationIntelligence {
         if (faults.size() > MAX_FAULTS) faults = new ArrayList<ArithmeticFault>(faults.subList(0, MAX_FAULTS));
         List<String> conflicts = numericConflicts(a, b);
         polarityConflicts(a, b, conflicts);
+        String la = a.toLowerCase(Locale.ROOT);
+        String lb = b.toLowerCase(Locale.ROOT);
+        directionalConflicts(la, lb, conflicts);
+        confidenceMismatch(a, b, conflicts);
+        causalMismatch(la, lb, conflicts);
+        horizonSplit(la, lb, conflicts);
+        scopeSplit(la, lb, conflicts);
+        yearConflicts(a, b, conflicts);
+        premiseFork(a, b, conflicts);
+        reversibilityGap(task, a, b, conflicts);
         List<String> missing = missingCoverage(questions, a, b);
         int polarityHits = 0;
         for (String c : conflicts) if (c.startsWith("полярность")) polarityHits++;
@@ -164,7 +218,7 @@ public final class DeliberationIntelligence {
         out.append("Оценка согласованности (локальная): ").append(brief.agreementScore).append("/100. ");
         out.append("Калибровка языка (hedge vs absolute, 0–100, выше = больше оговорок): ").append(brief.hedgeRatio).append(".\n");
         if (!brief.conflicts.isEmpty()) {
-            out.append("РАСХОЖДЕНИЯ (числа и полярность; проверь по тексту, не сглаживай):\n");
+            out.append("РАСХОЖДЕНИЯ (числа, полярность, направление, уверенность, причина, горизонт, масштаб, даты; проверь по тексту, не сглаживай):\n");
             for (String conflict : brief.conflicts) out.append("- ").append(conflict).append('\n');
         }
         if (!brief.arithmetic.isEmpty()) {
@@ -183,7 +237,8 @@ public final class DeliberationIntelligence {
         } else if (brief.hedgeRatio > 85) {
             out.append("Сигнал: много оговорок — уточни, где неопределённость эпистемическая, а где алеаторная.\n");
         }
-        out.append("Не цитируй эту карту как внешний источник. Если расхождение ложное, так и напиши. Используй оценку согласованности и калибровку языка для итога.\n");
+        out.append("Не цитируй эту карту как внешний источник. Если расхождение ложное, так и напиши. "
+                + "Метки «горизонт», «причина», «даты», «масштаб», «предпосылки» и «обратимость» не усредняй в один вывод.\n");
         String text = out.toString().trim();
         return text.length() > 3200 ? text.substring(0, 3200).trim() : text;
     }
@@ -302,15 +357,193 @@ public final class DeliberationIntelligence {
         }
     }
 
+    private static void directionalConflicts(String la, String lb, List<String> conflicts) {
+        if (conflicts.size() >= MAX_CONFLICTS) return;
+        for (String[] pair : DIRECTIONAL) {
+            String left = pair[0];
+            String right = pair[1];
+            boolean aLeft = la.contains(left);
+            boolean aRight = la.contains(right);
+            boolean bLeft = lb.contains(left);
+            boolean bRight = lb.contains(right);
+            if ((aLeft && !aRight && bRight && !bLeft) || (aRight && !aLeft && bLeft && !bRight)) {
+                conflicts.add("направление: эксперты расходятся по оси «" + left + "» ↔ «" + right + "»");
+                if (conflicts.size() >= MAX_CONFLICTS) return;
+            }
+        }
+    }
+
+    private static void confidenceMismatch(String a, String b, List<String> conflicts) {
+        if (conflicts.size() >= MAX_CONFLICTS) return;
+        int[] ca = extractConfidence(a);
+        int[] cb = extractConfidence(b);
+        if (ca == null || cb == null) return;
+        int midA = (ca[0] + ca[1]) / 2;
+        int midB = (cb[0] + cb[1]) / 2;
+        if (Math.abs(midA - midB) >= 25) {
+            conflicts.add("уверенность: заявленные уровни сильно расходятся (ИИ1 ~"
+                    + midA + "%, ИИ2 ~" + midB + "%) — сверь калибровку и base rates");
+        }
+    }
+
+    private static int[] extractConfidence(String text) {
+        if (text == null || text.isEmpty()) return null;
+        Matcher m = CONF_RANGE.matcher(text);
+        if (m.find()) {
+            Integer lo = parseIntSafe(m.group(1));
+            Integer hi = parseIntSafe(m.group(2));
+            if (lo != null && hi != null && lo <= hi && hi <= 100) return new int[]{lo, hi};
+        }
+        Matcher s = CONF_SINGLE.matcher(text);
+        if (s.find()) {
+            Integer v = parseIntSafe(s.group(1));
+            if (v != null && v <= 100) return new int[]{Math.max(0, v - 5), Math.min(100, v + 5)};
+        }
+        return null;
+    }
+
+    private static Integer parseIntSafe(String raw) {
+        if (raw == null) return null;
+        try {
+            return Integer.valueOf(raw.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static void causalMismatch(String la, String lb, List<String> conflicts) {
+        if (conflicts.size() >= MAX_CONFLICTS) return;
+        boolean causeA = hasCause(la);
+        boolean denyA = countHits(la, CAUSE_DENY) > 0;
+        boolean causeB = hasCause(lb);
+        boolean denyB = countHits(lb, CAUSE_DENY) > 0;
+        if ((causeA && denyB && !denyA) || (causeB && denyA && !denyB)) {
+            conflicts.add("причина: один эксперт утверждает причинную связь, другой говорит лишь о корреляции или отрицает причину — не сглаживай в «влияние»");
+        }
+    }
+
+    private static boolean hasCause(String lower) {
+        String scrub = lower;
+        for (String deny : CAUSE_DENY) scrub = scrub.replace(deny, " ");
+        return countHits(scrub, CAUSE) > 0;
+    }
+
+    private static void horizonSplit(String la, String lb, List<String> conflicts) {
+        if (conflicts.size() >= MAX_CONFLICTS) return;
+        int shortA = countHits(la, SHORT_H);
+        int longA = countHits(la, LONG_H);
+        int shortB = countHits(lb, SHORT_H);
+        int longB = countHits(lb, LONG_H);
+        if ((shortA > 0 && longA == 0 && longB > 0 && shortB == 0)
+                || (shortB > 0 && longB == 0 && longA > 0 && shortA == 0)) {
+            conflicts.add("горизонт: один эксперт смотрит на краткосрочный эффект, другой — на долгосрочный; раздели итог по горизонтам, не усредняй");
+        }
+    }
+
+    private static void scopeSplit(String la, String lb, List<String> conflicts) {
+        if (conflicts.size() >= MAX_CONFLICTS) return;
+        int indA = countHits(la, INDIV);
+        int popA = countHits(la, POP);
+        int indB = countHits(lb, INDIV);
+        int popB = countHits(lb, POP);
+        if ((indA > 0 && popA == 0 && popB > 0 && indB == 0)
+                || (indB > 0 && popB == 0 && popA > 0 && indA == 0)) {
+            conflicts.add("масштаб: один отвечает про конкретный случай, другой — про базовый класс; не усредняй их в одну вероятность");
+        }
+    }
+
+    private static void yearConflicts(String a, String b, List<String> conflicts) {
+        if (conflicts.size() >= MAX_CONFLICTS || a == null || b == null) return;
+        List<int[]> yearsA = yearHits(a);
+        List<int[]> yearsB = yearHits(b);
+        if (yearsA.isEmpty() || yearsB.isEmpty()) return;
+        Set<Integer> setA = new HashSet<Integer>();
+        Set<Integer> setB = new HashSet<Integer>();
+        for (int[] hit : yearsA) setA.add(Integer.valueOf(hit[0]));
+        for (int[] hit : yearsB) setB.add(Integer.valueOf(hit[0]));
+        if (setA.equals(setB)) return;
+        for (int[] left : yearsA) {
+            for (int[] right : yearsB) {
+                if (Math.abs(left[0] - right[0]) < 2) continue;
+                List<String> keysA = keywords(window(a, left[1]));
+                List<String> keysB = keywords(window(b, right[1]));
+                if (shared(keysA, keysB) < 1) continue;
+                conflicts.add("даты: рядом с «" + preview(keysA, keysB) + "» названы разные годы ("
+                        + left[0] + " против " + right[0] + ")");
+                return;
+            }
+        }
+    }
+
+    private static List<int[]> yearHits(String text) {
+        List<int[]> hits = new ArrayList<int[]>();
+        Matcher matcher = YEAR.matcher(text);
+        while (matcher.find() && hits.size() < 8) {
+            Integer year = parseIntSafe(matcher.group(1));
+            if (year == null) continue;
+            hits.add(new int[]{year.intValue(), matcher.start()});
+        }
+        return hits;
+    }
+
+    private static String window(String text, int at) {
+        int from = Math.max(0, at - 48);
+        int to = Math.min(text.length(), at + 4);
+        return text.substring(from, to);
+    }
+
+    private static void premiseFork(String a, String b, List<String> conflicts) {
+        if (conflicts.size() >= MAX_CONFLICTS) return;
+        boolean opposed = false;
+        for (String conflict : conflicts) {
+            if (conflict.startsWith("полярность") || conflict.startsWith("направление")) {
+                opposed = true;
+                break;
+            }
+        }
+        if (!opposed) return;
+        List<String> keysA = premiseKeys(a);
+        List<String> keysB = premiseKeys(b);
+        if (keysA.isEmpty() || keysB.isEmpty()) return;
+        int sharedKeys = shared(keysA, keysB);
+        if (sharedKeys >= 2) {
+            conflicts.add("предпосылки: общий фундамент, но противоположный вывод — приоритетный конфликт, не косметика");
+        } else if (sharedKeys == 0) {
+            conflicts.add("предпосылки: выводы опираются на разные основания; сначала согласуй допущения, потом рекомендацию");
+        }
+    }
+
+    private static List<String> premiseKeys(String text) {
+        List<String> keys = new ArrayList<String>();
+        if (text == null) return keys;
+        Matcher matcher = PREMISE.matcher(text);
+        while (matcher.find() && keys.size() < 6) {
+            for (String key : keywords(matcher.group(2))) {
+                if (!keys.contains(key)) keys.add(key);
+                if (keys.size() >= 6) break;
+            }
+        }
+        return keys;
+    }
+
+    private static void reversibilityGap(String task, String a, String b, List<String> conflicts) {
+        if (conflicts.size() >= MAX_CONFLICTS) return;
+        String lowerTask = task == null ? "" : task.toLowerCase(Locale.ROOT);
+        if (countHits(lowerTask, DECISION_TASK) == 0) return;
+        String blob = ((a == null ? "" : a) + "\n" + (b == null ? "" : b)).toLowerCase(Locale.ROOT);
+        if (countHits(blob, REVERSE) > 0) return;
+        conflicts.add("обратимость: задача похожа на решение, но ни один эксперт не оценил, можно ли его откатить (one-way vs two-way)");
+    }
+
     private static int computeAgreementScore(String a, String b, int conflictCount, int polarityHits) {
         if (a.isEmpty() || b.isEmpty()) return 0;
         int base = 65;
         base -= Math.min(conflictCount * 10, 35);
         base -= Math.min(polarityHits * 15, 25);
         Set<String> wordsA = new HashSet<String>();
-        for (String w : a.toLowerCase(Locale.ROOT).split("\\W+")) if (w.length() > 3 && !STOP.contains(w)) wordsA.add(w);
+        for (String w : a.toLowerCase(Locale.ROOT).split("[^\\p{L}\\p{N}]+")) if (w.length() > 3 && !STOP.contains(w)) wordsA.add(w);
         Set<String> wordsB = new HashSet<String>();
-        for (String w : b.toLowerCase(Locale.ROOT).split("\\W+")) if (w.length() > 3 && !STOP.contains(w)) wordsB.add(w);
+        for (String w : b.toLowerCase(Locale.ROOT).split("[^\\p{L}\\p{N}]+")) if (w.length() > 3 && !STOP.contains(w)) wordsB.add(w);
         if (wordsA.isEmpty() || wordsB.isEmpty()) return Math.max(0, Math.min(100, base));
         int intersection = 0;
         for (String w : wordsA) if (wordsB.contains(w)) intersection++;

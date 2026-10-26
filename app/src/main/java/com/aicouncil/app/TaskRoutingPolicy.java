@@ -38,7 +38,8 @@ public final class TaskRoutingPolicy {
         boolean coding = looksLikeCodeTask(lower);
         boolean highStakes = containsAny(lower,
                 "медицин", "здоровь", "диагноз", "лекарств", "юридич", "налог", "финанс", "инвестиц", "безопасность", "medical", "legal", "financial", "diagnosis",
-                "риск", "безопасности", "критичное решение", "high stakes", "safety", "этическ", "ethical dilemma");
+                "риск", "безопасности", "критичное решение", "high stakes", "safety", "этическ", "ethical dilemma",
+                "необратим", "irreversible");
         boolean planning = containsAny(lower,
                 "план действий", "дорожная карта", "roadmap", "этапы", "сроки", "милстоны", "implementation plan", "как сделать", "how to implement",
                 "стратегическое решение", "strategic decision");

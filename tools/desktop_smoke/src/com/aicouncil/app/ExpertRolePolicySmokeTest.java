@@ -16,7 +16,7 @@ public final class ExpertRolePolicySmokeTest {
         check("empty role falls back to slot default", ExpertRolePolicy.buildSystemPrompt(2, "  ").contains(ExpertRolePolicy.defaultRole(2)));
         check("connection test baseline does not pretend to be expert one", !ExpertRolePolicy.buildSystemPrompt(-1, "").contains(ExpertRolePolicy.defaultRole(0)));
         check("sanitizer removes NUL", !ExpertRolePolicy.sanitizeRole("safe" + (char) 0 + "unsafe").contains(String.valueOf((char) 0)));
-        check("role length capped at 3200", ExpertRolePolicy.sanitizeRole(new String(new char[4000]).replace('\0', 'x')).length() == 3200);
+        check("role length capped at 3600", ExpertRolePolicy.sanitizeRole(new String(new char[4000]).replace('\0', 'x')).length() == 3600);
         check("null role becomes empty", ExpertRolePolicy.sanitizeRole(null).isEmpty());
         System.out.println("ExpertRolePolicySmokeTest: " + checks + "/10 passed");
     }

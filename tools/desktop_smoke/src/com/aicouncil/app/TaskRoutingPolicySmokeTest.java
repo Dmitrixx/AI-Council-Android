@@ -26,6 +26,7 @@ public final class TaskRoutingPolicySmokeTest {
         check("free-only policy allows marked audit expert", TaskRoutingPolicy.chooseMode("проверь ошибки", all, true, free) == 2);
         check("missing capability arrays are safe", TaskRoutingPolicy.chooseMode("audit this", null, false, null) == 0);
         check("length threshold selects council when team configured", TaskRoutingPolicy.chooseMode(repeat("detail ", 20), all, false, free) == 1);
+        check("irreversible decision selects deep analysis", TaskRoutingPolicy.chooseMode("Стоит ли принять необратимое решение о запуске продукта", all, false, free) == 3);
         System.out.println("TaskRoutingPolicySmokeTest: " + checks + "/" + checks + " passed");
     }
     private static String repeat(String value, int count) {

@@ -57,6 +57,52 @@ public final class DeliberationIntelligenceSmokeTest {
         check("detects polarity clash", hasPolarity);
         check("hedge score is defined", polar.hedgeRatio >= 0 && polar.hedgeRatio <= 100);
 
+        DeliberationIntelligence.Brief causal = DeliberationIntelligence.analyze(
+                "Почему выросла выручка?",
+                "Новая цена вызывает рост выручки, потому что спрос неэластичен в этом сегменте.",
+                "Это корреляция: цена связан с выручкой, но не вызывает её сама по себе.");
+        check("detects causation vs correlation", containsPrefix(causal.conflicts, "причина"));
+
+        DeliberationIntelligence.Brief horizon = DeliberationIntelligence.analyze(
+                "Оцени эффект изменения цены",
+                "В ближайшие месяцы эффект краткосрочный и заметный для кассы.",
+                "На горизонте лет эффект долгосрочный и другой по знаку.");
+        check("splits short-term and long-term", containsPrefix(horizon.conflicts, "горизонт"));
+
+        DeliberationIntelligence.Brief years = DeliberationIntelligence.analyze(
+                "Когда вышел стандарт",
+                "Стандарт вышел в 2018 году и действует для новых внедрений.",
+                "Стандарт вышел в 2022 году и действует для новых внедрений.");
+        check("flags nearby year clash", containsPrefix(years.conflicts, "даты"));
+        DeliberationIntelligence.Brief sameYear = DeliberationIntelligence.analyze(
+                "Когда вышел стандарт",
+                "Стандарт вышел в 2018 году.",
+                "Стандарт подтверждён в 2018 году.");
+        check("same year is not a date clash", !containsPrefix(sameYear.conflicts, "даты"));
+
+        DeliberationIntelligence.Brief door = DeliberationIntelligence.analyze(
+                "Стоит ли внедрять систему?",
+                "Да, рекомендую внедрять сейчас, эффект понятен.",
+                "Да, тоже рекомендую внедрять сейчас, эффект понятен.");
+        check("decision without rollback is flagged", containsPrefix(door.conflicts, "обратимость"));
+        DeliberationIntelligence.Brief reversible = DeliberationIntelligence.analyze(
+                "Стоит ли внедрять систему?",
+                "Да, рекомендую: решение обратимо, можно отменить за неделю.",
+                "Да, тоже рекомендую: откат описан и решение обратимо.");
+        check("reversibility mention suppresses the gap", !containsPrefix(reversible.conflicts, "обратимость"));
+
+        DeliberationIntelligence.Brief confidence = DeliberationIntelligence.analyze(
+                "Оцени шанс успеха",
+                "Уверенность 90% при текущих данных и узком сценарии.",
+                "Уверенность 40% при текущих данных и узком сценарии.");
+        check("flags confidence mismatch", containsPrefix(confidence.conflicts, "уверенность"));
+
+        DeliberationIntelligence.Brief direction = DeliberationIntelligence.analyze(
+                "Что будет с выручкой?",
+                "Ожидаю рост выручки и рекомендую запуск.",
+                "Ожидаю падение выручки и советую избегнуть запуска.");
+        check("flags directional antonyms", containsPrefix(direction.conflicts, "направление"));
+
         System.out.println("DeliberationIntelligenceSmokeTest: " + checks + "/" + checks + " passed");
     }
 
@@ -72,5 +118,10 @@ public final class DeliberationIntelligenceSmokeTest {
             if (fault.expression.replace(" ", "").contains(part.replace(" ", ""))) return fault.expected;
         }
         return "";
+    }
+
+    private static boolean containsPrefix(List<String> conflicts, String prefix) {
+        for (String conflict : conflicts) if (conflict.startsWith(prefix)) return true;
+        return false;
     }
 }
