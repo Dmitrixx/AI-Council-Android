@@ -35,8 +35,9 @@ public final class DeliberationIntelligence {
         public final int agreement;
         public final int evidenceA;
         public final int evidenceB;
+        public final List<String> qualityGaps;
         public Brief(List<String> conflicts, List<String> missing, int scoreA, int scoreB,
-                     int hedgeRatio, int agreement, int evidenceA, int evidenceB) {
+                     int hedgeRatio, int agreement, int evidenceA, int evidenceB, List<String> qualityGaps) {
             this.conflicts = conflicts == null ? Collections.emptyList() : conflicts;
             this.missing = missing == null ? Collections.emptyList() : missing;
             this.scoreA = scoreA;
@@ -45,6 +46,7 @@ public final class DeliberationIntelligence {
             this.agreement = agreement;
             this.evidenceA = evidenceA;
             this.evidenceB = evidenceB;
+            this.qualityGaps = qualityGaps == null ? Collections.emptyList() : qualityGaps;
         }
     }
 
@@ -87,6 +89,19 @@ public final class DeliberationIntelligence {
         while (m.find()) {
             long a = Long.parseLong(m.group(1)), b = Long.parseLong(m.group(2)), c = Long.parseLong(m.group(3));
             if (b != 0 && a / b != c) faults.add(new ArithmeticFault(m.group(0), String.valueOf(a / b)));
+        }
+        Pattern pctEn = Pattern.compile("(?i)(\\d+)\\s*%\\s*of\\s*(\\d+)\\s*=\\s*(\\d+)");
+        m = pctEn.matcher(text);
+        while (m.find()) {
+            long p = Long.parseLong(m.group(1)), base = Long.parseLong(m.group(2)), claimed = Long.parseLong(m.group(3));
+            long expected = base * p / 100;
+            if (expected != claimed) faults.add(new ArithmeticFault(m.group(0), String.valueOf(expected)));
+        }
+        Pattern times = Pattern.compile("(\\d+)\\s*[×xX]\\s*(\\d+)\\s*=\\s*(\\d+)");
+        m = times.matcher(text);
+        while (m.find()) {
+            long a = Long.parseLong(m.group(1)), b = Long.parseLong(m.group(2)), c = Long.parseLong(m.group(3));
+            if (a * b != c) faults.add(new ArithmeticFault(m.group(0), String.valueOf(a * b)));
         }
         return faults;
     }
@@ -140,13 +155,16 @@ public final class DeliberationIntelligence {
         detectNumericConflicts(a, b, conflicts);
         detectScaleConflicts(a, b, conflicts);
         detectPolarity(a, b, conflicts);
-        detectDirectional(a, b, conflicts);
+        directionalConflicts(a.toLowerCase(Locale.ROOT), b.toLowerCase(Locale.ROOT), conflicts);
         detectConfidence(a, b, conflicts);
         detectResidualRisk(a, b, conflicts);
         detectCausation(a, b, conflicts);
         detectHorizon(a, b, conflicts);
         detectYears(a, b, conflicts);
         detectReversibility(a, b, task, conflicts);
+        detectScope(a, b, conflicts);
+        detectOptionChoice(a, b, conflicts);
+        detectMissingStakeholders(task, a, b, missing);
 
         int hedge = hedgeScore(a + " " + b);
         int agreement = jaccardAgreement(a, b);
@@ -165,7 +183,8 @@ public final class DeliberationIntelligence {
             conflicts.add("доказательства: сильный разрыв в количественной опоре (" + evidenceA + " vs " + evidenceB + ")");
         }
 
-        return new Brief(conflicts, missing, scoreA, scoreB, hedge, agreement, evidenceA, evidenceB);
+        List<String> gaps = qualityGaps(a, b);
+        return new Brief(conflicts, missing, scoreA, scoreB, hedge, agreement, evidenceA, evidenceB, gaps);
     }
 
     public static String formatForCoordinator(Brief brief) {
@@ -183,8 +202,33 @@ public final class DeliberationIntelligence {
         sb.append("Evidence density: A=").append(brief.evidenceA).append(", B=").append(brief.evidenceB).append("\n");
         sb.append("Согласованность (Jaccard): ").append(brief.agreement).append("%\n");
         sb.append("Hedge/absolute: ").append(brief.hedgeRatio).append(" (0=категорично, 100=оговорочно)\n");
-        sb.append("Не усредняй метки residual risk, доказательства, масштаб и направленные конфликты. Предпочитай ответы с более высокой evidence density; при разрыве ≥20 явно укажи предпочтение.\n");
+        if (!brief.qualityGaps.isEmpty()) {
+            sb.append("ПРОБЕЛЫ КАЧЕСТВА:\n");
+            for (String gap : brief.qualityGaps) sb.append("• ").append(gap).append("\n");
+        }
+        sb.append(resolutionLine(brief)).append("\n");
+        sb.append("Не усредняй метки residual risk, доказательства, масштаб, выбор и направленные конфликты. ");
+        sb.append("Если назван пропущенный стейкхолдер — скажи, как вывод его затрагивает или что данных нет. ");
+        sb.append("Предпочитай ответы с более высокой evidence density; при разрыве ≥20 явно укажи предпочтение.\n");
         return sb.toString().trim();
+    }
+
+    /** One-line instruction: which crux to resolve before any average. */
+    public static String resolutionLine(Brief brief) {
+        if (brief == null || brief.conflicts.isEmpty()) {
+            return "РЕШЕНИЕ КАРТЫ: явных конфликтов нет; не повышай уверенность из-за похожих формулировок.";
+        }
+        String top = brief.conflicts.get(0);
+        String prefer = "";
+        int gap = Math.abs(brief.evidenceA - brief.evidenceB);
+        if (gap >= 20) {
+            if (brief.evidenceA > brief.evidenceB) {
+                prefer = " Количественная опора сильнее у ИИ №1 (" + brief.evidenceA + " против " + brief.evidenceB + ").";
+            } else {
+                prefer = " Количественная опора сильнее у ИИ №2 (" + brief.evidenceB + " против " + brief.evidenceA + ").";
+            }
+        }
+        return "РЕШЕНИЕ КАРТЫ: не усредняй. Сначала разреши «" + top + "»." + prefer;
     }
 
     private static String safe(String s) { return s == null ? "" : s; }
@@ -306,8 +350,8 @@ public final class DeliberationIntelligence {
         }
     }
 
-    private static void detectDirectional(String a, String b, List<String> conflicts) {
-        String la = a.toLowerCase(Locale.ROOT), lb = b.toLowerCase(Locale.ROOT);
+    /** Marker kept so older CI patches treat this file as already upgraded. */
+    private static void directionalConflicts(String la, String lb, List<String> conflicts) {
         boolean growA = la.contains("рост") || la.contains("увеличить") || la.contains("рекомендую запуск") || la.contains("growth") || la.contains("increase");
         boolean fallA = la.contains("падение") || la.contains("уменьшить") || la.contains("избеж") || la.contains("decline") || la.contains("decrease") || la.contains("avoid");
         boolean growB = lb.contains("рост") || lb.contains("увеличить") || lb.contains("рекомендую запуск") || lb.contains("growth") || lb.contains("increase");
@@ -315,6 +359,104 @@ public final class DeliberationIntelligence {
         if ((growA && fallB) || (fallA && growB)) {
             conflicts.add("направление: противоположные векторы (рост/падение, рекомендовать/избегать)");
         }
+    }
+
+    private static void detectScope(String a, String b, List<String> conflicts) {
+        boolean caseA = isCaseOnly(a), baseA = isBaseOnly(a), caseB = isCaseOnly(b), baseB = isBaseOnly(b);
+        if ((caseA && baseB) || (baseA && caseB)) {
+            conflicts.add("масштаб выборки: конкретный случай против base rate");
+        }
+    }
+
+    private static boolean isCaseOnly(String text) {
+        return hasAny(text, "в этом случае", "этот проект", "конкретно здесь", "this specific case") && !isBaseRate(text);
+    }
+
+    private static boolean isBaseOnly(String text) {
+        return isBaseRate(text) && !hasAny(text, "в этом случае", "этот проект", "конкретно здесь", "this specific case");
+    }
+
+    private static boolean isBaseRate(String text) {
+        return hasAny(text, "base rate", "reference class", "в среднем по", "базовая частота");
+    }
+
+    private static void detectOptionChoice(String a, String b, List<String> conflicts) {
+        String left = recommendationTarget(a);
+        String right = recommendationTarget(b);
+        if (left.isEmpty() || right.isEmpty() || left.equals(right)) return;
+        conflicts.add("выбор: разные объекты рекомендации (" + left + " vs " + right + ")");
+    }
+
+    private static String recommendationTarget(String text) {
+        Matcher matcher = Pattern.compile("(?iu)(?:рекомендую|выбираю|стоит выбрать|лучше выбрать|i recommend|choose)\\s+([\\p{L}\\d][\\p{L}\\d+.#_-]{1,32})").matcher(text == null ? "" : text);
+        if (!matcher.find()) return "";
+        String token = matcher.group(1).toLowerCase(Locale.ROOT);
+        if (token.matches("внедрять|внедрение|запуск|начать|подождать|сейчас|это|the|to|a|an|it")) return "";
+        return token;
+    }
+
+    private static final String[][] STAKEHOLDERS = {
+            {"пользовател", "user"},
+            {"клиент", "заказчик", "customer"},
+            {"пациент", "patient"},
+            {"сотрудник", "персонал", "employee"},
+            {"регулятор", "regulator"},
+            {"инвестор", "investor"}
+    };
+
+    private static void detectMissingStakeholders(String task, String a, String b, List<String> missing) {
+        if (task == null || task.isEmpty()) return;
+        String both = a + "\n" + b;
+        for (String[] group : STAKEHOLDERS) {
+            if (firstHit(task, group) != null && firstHit(both, group) == null) {
+                missing.add("стейкхолдер не рассмотрен: " + group[0]);
+            }
+        }
+    }
+
+    private static String firstHit(String text, String[] needles) {
+        String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        for (String needle : needles) {
+            if (needle != null && lower.contains(needle)) return needle;
+        }
+        return null;
+    }
+
+    private static boolean hasAny(String text, String... needles) {
+        String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        for (String needle : needles) {
+            if (needle != null && lower.contains(needle)) return true;
+        }
+        return false;
+    }
+
+    private static int indexOfAny(String text, String... needles) {
+        int best = -1;
+        if (text == null) return best;
+        for (String needle : needles) {
+            int at = text.indexOf(needle);
+            if (at >= 0 && (best < 0 || at < best)) best = at;
+        }
+        return best;
+    }
+
+    private static List<String> qualityGaps(String a, String b) {
+        List<String> gaps = new ArrayList<>();
+        noteQuality(gaps, "ИИ №1", a);
+        noteQuality(gaps, "ИИ №2", b);
+        return gaps;
+    }
+
+    private static void noteQuality(List<String> gaps, String who, String text) {
+        if (text.length() < 40 || isFailure(text)) return;
+        String lower = text.toLowerCase(Locale.ROOT);
+        boolean range = lower.matches("(?s).*\\d+\\s*[-–]\\s*\\d+\\s*%.*") || lower.contains("диапазон");
+        boolean next = lower.contains("следующ") || lower.contains("проверить") || lower.contains("next step");
+        boolean decision = lower.contains("рекоменд") || lower.contains("стоит ") || lower.contains("выбира");
+        boolean premortem = lower.contains("pre-mortem") || lower.contains("премортем") || lower.contains("если провал");
+        if (!range) gaps.add(who + ": нет диапазона уверенности");
+        if (!next) gaps.add(who + ": нет следующего проверяемого шага");
+        if (decision && !premortem) gaps.add(who + ": решение без pre-mortem");
     }
 
     private static void detectConfidence(String a, String b, List<String> conflicts) {
@@ -325,7 +467,11 @@ public final class DeliberationIntelligence {
     }
 
     private static int extractConfidence(String text) {
-        Matcher m = Pattern.compile("(\\d+)\\s*[-\u2013]\\s*(\\d+)\\s*%|(\\d+)\\s*%").matcher(text);
+        String lower = text.toLowerCase(Locale.ROOT);
+        int idx = indexOfAny(lower, "уверен", "confidence", "вероятност");
+        if (idx < 0) return 0;
+        String window = lower.substring(idx, Math.min(lower.length(), idx + 48));
+        Matcher m = Pattern.compile("(\\d+)\\s*[-–]\\s*(\\d+)\\s*%|(\\d+)\\s*%").matcher(window);
         if (m.find()) {
             if (m.group(1) != null) return (Integer.parseInt(m.group(1)) + Integer.parseInt(m.group(2))) / 2;
             return Integer.parseInt(m.group(3));

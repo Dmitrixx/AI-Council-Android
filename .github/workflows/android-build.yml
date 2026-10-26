@@ -161,32 +161,34 @@ jobs:
               activity.write_text(content, encoding="utf-8")
 
           VERSIONS = [
+              "2.19.0", "2.18.0", "2.17.0", "2.16.0", "2.15.0", "2.14.0",
               "2.13.0", "2.12.0", "2.11.0", "2.9.0", "2.4.1", "2.4.0",
               "2.3.4", "2.3.3", "2.3.2", "2.3.1", "2.3.0",
               "2.2.15", "2.2.14", "2.2.13", "2.2.12", "2.2.11", "2.2.10", "2.2.9", "2.2.8", "2.2.7", "2.2.6", "2.2.5",
               "2.2.4", "2.2.3", "2.2.2", "2.2.1", "2.2.0", "2.1.0",
           ]
-          TARGET = "2.14.0"
-          CODE = 81
+          TARGET = "2.20.0"
+          CODE = 87
 
           content = activity.read_text(encoding="utf-8")
-          for old_v in VERSIONS:
-              if 'APP_VERSION = "%s"' % old_v in content:
-                  content = content.replace('APP_VERSION = "%s"' % old_v, 'APP_VERSION = "%s"' % TARGET, 1)
-                  activity.write_text(content, encoding="utf-8")
-                  break
-          else:
-              if ('APP_VERSION = "%s"' % TARGET) not in content:
-                  # best-effort: leave as-is if constant uses another form
-                  pass
+          if ('APP_VERSION = "%s"' % TARGET) not in content:
+              for old_v in VERSIONS:
+                  if 'APP_VERSION = "%s"' % old_v in content:
+                      content = content.replace('APP_VERSION = "%s"' % old_v, 'APP_VERSION = "%s"' % TARGET, 1)
+                      activity.write_text(content, encoding="utf-8")
+                      break
 
           gradle = Path("app/build.gradle")
           gt = gradle.read_text(encoding="utf-8")
-          if "versionName '2.14.0'" not in gt:
+          if "versionName '%s'" % TARGET not in gt:
               import re
-              gt2 = re.sub(r"versionCode\\s+\\d+", "versionCode 81", gt, count=1)
-              gt2 = re.sub(r"versionName\\s+'[^']+'", "versionName '2.14.0'", gt2, count=1)
-              gradle.write_text(gt2, encoding="utf-8")
+              current = re.search(r"versionName\s+'([^']+)'", gt)
+              name = current.group(1) if current else ""
+              # Never downgrade a release that is already newer than this pin.
+              if name in VERSIONS or name == "":
+                  gt2 = re.sub(r"versionCode\s+\d+", "versionCode %d" % CODE, gt, count=1)
+                  gt2 = re.sub(r"versionName\s+'[^']+'", "versionName '%s'" % TARGET, gt2, count=1)
+                  gradle.write_text(gt2, encoding="utf-8")
           PY
 
       - name: Add user-configurable PDF OCR page limit (5 / 20)

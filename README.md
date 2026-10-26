@@ -1,4 +1,4 @@
-# AI Council 2.19.0
+# AI Council 2.20.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
@@ -27,7 +27,7 @@ Additional capabilities:
 - **Local AI** — Ollama / LM Studio over Wi-Fi (loopback and private LAN policies)
 - **Privacy** — encrypted API keys, secret redaction in errors and before send, optional “local only” mode
 - **History & projects** in local SQLite, voice draft, themes (system / light / dark), accessibility live regions
-- **Local deliberation intelligence** — full local (no-network) disagreement map: arithmetic verification (now including subtraction and division), numeric/relative/scale conflicts, polarity (RU+EN), directional antonyms, confidence & residual-risk range mismatches, causation vs correlation, time horizon, year clashes, reversibility gaps, uncovered sub-questions, Jaccard agreement, hedge/absolute calibration, substance & evidence density scoring (0–100). Coordinator receives the map and is instructed not to average critical signals and to prefer higher-evidence answers.
+- **Local deliberation intelligence** — full local (no-network) disagreement map: arithmetic verification (addition, subtraction, multiplication, division, Russian and English percents), numeric/relative/scale conflicts, polarity (RU+EN), directional antonyms, confidence only when the answer actually states it, residual-risk range mismatches, causation vs correlation, time horizon, year clashes, reversibility gaps, case vs base rate, recommendation-target clashes, missing stakeholders, uncovered sub-questions, Jaccard agreement, hedge/absolute calibration, substance and evidence density (0–100). The coordinator receives a resolution line and is instructed not to average critical signals.
 
 ## Supported providers (OpenAI-compatible)
 

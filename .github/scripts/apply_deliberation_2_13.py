@@ -11,7 +11,7 @@ def main():
         print("SKIP: DeliberationIntelligence.java missing")
         return 0
     src = TARGET.read_text(encoding="utf-8")
-    if "directionalConflicts" in src and "extractConfidence" in src:
+    if ("directionalConflicts" in src and "extractConfidence" in src) or "масштаб выборки" in src:
         print("OK: already patched")
         return 0
 
