@@ -1,4 +1,4 @@
-# AI Council 2.15.0
+# AI Council 2.16.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
@@ -27,7 +27,7 @@ Additional capabilities:
 - **Local AI** — Ollama / LM Studio over Wi-Fi (loopback and private LAN policies)
 - **Privacy** — encrypted API keys, secret redaction in errors and before send, optional “local only” mode
 - **History & projects** in local SQLite, voice draft, themes (system / light / dark), accessibility live regions
-- **Local deliberation intelligence** — shared sub-questions, numeric, polarity and directional conflicts, confidence mismatch, causation vs correlation, time horizon, scope, clashing years, premise forks, reversibility gaps, arithmetic verification, Jaccard agreement, hedge/absolute calibration **and quantitative evidence density** for the coordinator
+- **Local deliberation intelligence** — shared sub-questions, numeric, polarity and directional conflicts, confidence mismatch, residual risk ranges, causation vs correlation, time horizon, scope, clashing years, premise forks, reversibility gaps, arithmetic verification, Jaccard agreement, hedge/absolute calibration **and quantitative evidence density scoring** for the coordinator
 
 ## Supported providers (OpenAI-compatible)
 
@@ -61,7 +61,7 @@ Most business logic is deliberately kept **Android-independent** and covered by 
 - `ocr/OcrDocumentProcessor` + `OcrInputPolicy` + `OcrModelManager` — hybrid PDF/image OCR
 - `ChatCompletionsClient`, `ProviderModelsClient` — network with cancellation, size limits, secret redaction
 - `LocalDataStore` — SQLite history/projects/drafts
-- `DeliberationIntelligence` — local disagreement map, arithmetic checks and evidence density scoring
+- `DeliberationIntelligence` — local disagreement map, arithmetic checks, residual risk detection and evidence density scoring
 - `SecretRedactor`, `ProviderErrorFormatter`, `PromptPrivacyPolicy`, `TaskRoutingPolicy`, …
 
 `MainActivity` still owns UI construction and some coordination (this is the largest remaining technical debt).
