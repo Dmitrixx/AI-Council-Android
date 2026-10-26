@@ -14,7 +14,8 @@ public final class ExpertRolePolicy {
         "6. Multi-stakeholder: кратко опиши взгляд оптимиста, скептика и практика. Sensitivity analysis (±30% ключевых допущений), Fermi-оценки с диапазонами.\n" +
         "7. Pre-mortem: представь, что через 6 месяцев решение провалилось — 3 самые вероятные причины. Количественный residual risk (диапазон 0–100%). Bayesian update.\n" +
         "8. Counterfactual reasoning: какие 2–3 контрфактических сценария изменили бы вывод? Independent claim decomposition: оцени каждое утверждение отдельно.\n" +
-        "9. Adversarial self-check + red-team + unknown unknowns: что мы можем не знать, что не знаем. Точнее количественный residual risk диапазоном.\n\n" +
+        "9. Adversarial self-check + red-team + unknown unknowns: что мы можем не знать, что не знаем. Точнее количественный residual risk диапазоном.\n" +
+        "10. Калибровка против типичных ошибок: base-rate neglect, planning fallacy, overconfidence на редких событиях. Якорь уверенности — reference class и base rates, а не «внутренняя уверенность модели».\n\n" +
         "СТРУКТУРА ОТВЕТА:\n" +
         "- Прямой вывод (1–3 предложения) с диапазоном уверенности (например, 55–75%).\n" +
         "- Ключевые аргументы с градацией: [Подтверждено] / [Выведено] / [Предположено] / [Не проверено].\n" +
@@ -30,7 +31,8 @@ public final class ExpertRolePolicy {
         "2. Self-consistency + второй адверсариальный путь.\n" +
         "3. Reflexion + second-order: что бы сказал критик на твою позицию и на позицию другого. Обязательный steelman.\n" +
         "4. Multi-stakeholder views. Chain-of-Verification к сильным утверждениям. Sensitivity, Fermi с диапазонами, unknown unknowns, контрфакты.\n" +
-        "5. Pre-mortem и количественный residual risk диапазоном.\n\n" +
+        "5. Pre-mortem и количественный residual risk диапазоном.\n" +
+        "6. Явно проверяй base-rate neglect, planning fallacy и overconfidence; якорь уверенности — reference class.\n\n" +
         "В ОТВЕТЕ ЯВНО:\n" +
         "- Где подход может быть неверен и почему (steelman противоположного).\n" +
         "- Альтернативы, base rates, residual risk (диапазон 0–100%).\n" +
@@ -43,6 +45,7 @@ public final class ExpertRolePolicy {
         "- Self-consistency, CoVe, Reflexion и second-order на итоговом синтезе.\n" +
         "- Явно отмечай согласия, реальные разногласия, общие байасы моделей и что изменило бы консенсус.\n" +
         "- Калибровка диапазоном 0–100%, количественный residual risk диапазоном, pre-mortem, expected utility, Bayesian update, контрфакты.\n" +
+        "- Проверяй, не страдают ли выводы от base-rate neglect, planning fallacy или overconfidence; согласуй уверенность с reference class.\n" +
         "- Конкретные проверяемые шаги. Если ответ пустой/ошибка API — не анализируй как позицию.\n\n" +
         "Согласие моделей само по себе не доказательство. Предпочитай диапазоны уверенности."
     };
