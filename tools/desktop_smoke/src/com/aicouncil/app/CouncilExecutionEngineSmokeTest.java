@@ -14,7 +14,7 @@ public final class CouncilExecutionEngineSmokeTest {
     public static void main(String[] args) {
         testQuickModeUsesOnlyPrimaryExpert();
         testAuditModeUsesTwoSlotsWithoutCoordinator();
-        testCouncilRunsTwoExpertsAndCoordinator();
+        testCouncilRunsThreeExpertsAndCoordinator();
         testStructuredClaimsReachCoordinator();
         testDeepAnalysisAddsMutualCritique();
         testSingleExpertFailureDoesNotSuppressCoordinator();
@@ -45,7 +45,7 @@ public final class CouncilExecutionEngineSmokeTest {
         } finally { f.close(); }
     }
 
-    private static void testCouncilRunsTwoExpertsAndCoordinator() {
+    private static void testCouncilRunsThreeExpertsAndCoordinator() {
         Fake f = new Fake();
         try {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(1, false), f);
@@ -74,7 +74,8 @@ public final class CouncilExecutionEngineSmokeTest {
         try {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(3, false), f);
             check(o.text.contains("ВЗАИМНАЯ КРИТИКА · ИИ №1 проверяет ИИ №2"), "deep analysis has first critique section");
-            check(o.text.contains("ВЗАИМНАЯ КРИТИКА · ИИ №2 проверяет ИИ №1"), "deep analysis has second critique section");
+            check(o.text.contains("ВЗАИМНАЯ КРИТИКА · ИИ №2 проверяет ИИ №3"), "deep analysis has second critique section");
+            check(o.text.contains("ВЗАИМНАЯ КРИТИКА · ИИ №3 проверяет ИИ №1"), "deep analysis has third critique section");
             check(f.promptsContaining("взаимная критика").size() >= 1, "coordinator receives critique context");
             check(f.slotCalls(2) >= 2 && f.slotCalls(3) == 1, "deep analysis runs third reviewer and fourth-slot coordinator after critique stage");
         } finally { f.close(); }
