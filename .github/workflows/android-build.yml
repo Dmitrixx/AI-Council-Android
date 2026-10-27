@@ -161,14 +161,14 @@ jobs:
               activity.write_text(content, encoding="utf-8")
 
           VERSIONS = [
-              "2.26.0", "2.25.0", "2.24.0", "2.23.0", "2.22.0", "2.21.0", "2.20.0", "2.19.0", "2.18.0", "2.17.0", "2.16.0", "2.15.0", "2.14.0",
+              "2.34.0", "2.33.0", "2.32.0", "2.31.0", "2.30.0", "2.29.0", "2.28.0", "2.27.0", "2.26.0", "2.25.0", "2.24.0", "2.23.0", "2.22.0", "2.21.0", "2.20.0", "2.19.0", "2.18.0", "2.17.0", "2.16.0", "2.15.0", "2.14.0",
               "2.13.0", "2.12.0", "2.11.0", "2.9.0", "2.4.1", "2.4.0",
               "2.3.4", "2.3.3", "2.3.2", "2.3.1", "2.3.0",
               "2.2.15", "2.2.14", "2.2.13", "2.2.12", "2.2.11", "2.2.10", "2.2.9", "2.2.8", "2.2.7", "2.2.6", "2.2.5",
               "2.2.4", "2.2.3", "2.2.2", "2.2.1", "2.2.0", "2.1.0",
           ]
-          TARGET = "2.27.0"
-          CODE = 94
+          TARGET = "2.35.0"
+          CODE = 102
 
           content = activity.read_text(encoding="utf-8")
           if ('APP_VERSION = "%s"' % TARGET) not in content:
@@ -304,18 +304,18 @@ jobs:
           set -euo pipefail
           apk_src="${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$apk_src"
-          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.27.0-debug.apk"
-          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.27.0-debug.apk > AI-Council-2.27.0-debug.apk.sha256)
+          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.35.0-debug.apk"
+          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.35.0-debug.apk > AI-Council-2.27.0-debug.apk.sha256)
           notes="$RUNNER_TEMP/release-notes.md"
           cat > "$notes" <<'EOF'
           # AI Council 2.27.0
 
-          The local brain is whole again. It refuses to average step order, necessary versus sufficient conditions, who decides, the burden of proof, and a swapped cause and effect. versionCode 94.
+          The local brain is whole again. It refuses to average step order, necessary versus sufficient conditions, who decides, the burden of proof, and a swapped cause and effect. versionCode 102.
 
           Установите `AI-Council-2.27.0-debug.apk` только из этого релиза.
           EOF
           sed -i 's/^          //' "$notes"
-          if gh release view v2.27.0 >/dev/null 2>&1; then
+          if gh release view v2.35.0 >/dev/null 2>&1; then
             gh release upload v2.27.0 "$RUNNER_TEMP/AI-Council-2.27.0-debug.apk" "$RUNNER_TEMP/AI-Council-2.27.0-debug.apk.sha256" --clobber
           else
             gh release create v2.27.0 --title "AI Council 2.25.0" --notes-file "$notes" "$RUNNER_TEMP/AI-Council-2.27.0-debug.apk" "$RUNNER_TEMP/AI-Council-2.27.0-debug.apk.sha256"
@@ -326,7 +326,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -368,6 +367,11 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           script: |
-            set -euo pipefail
+            set -eu
             cd "$GITHUB_WORKSPACE/${{ steps.source.outputs.project_dir }}"
-            if [[ -f ./gradlew ]]; then chmod +x ./gradlew; ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest || true
+            if [ ! -f ./gradlew ]; then
+              echo "Gradle wrapper not found in selected project directory." >&2
+              exit 1
+            fi
+            chmod +x ./gradlew
+            ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
