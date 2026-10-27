@@ -1737,6 +1737,11 @@ public class MainActivity extends Activity {
                     .putString("providerModelsStatusMessage2", "Список моделей не проверен")
                     .putInt("providerModelsStatusColor2", MUTED)
                     .putString("providerModelsConfigFingerprint2", "");
+        } else if (legacyHasData && slotFourHasData
+                && (oldRole.trim().isEmpty() || oldRole.toLowerCase(java.util.Locale.ROOT).contains("координатор"))) {
+            // Keep both configured endpoints; make the legacy third provider's
+            // new role explicit rather than leaving the old coordinator system prompt attached to it.
+            edit.putString("expertRole2", ExpertRolePolicy.defaultRole(2));
         }
         edit.putBoolean("fourSlotTeamMigration", true).apply();
     }
