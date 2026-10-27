@@ -2750,7 +2750,7 @@ public class MainActivity extends Activity {
         StringBuilder report = new StringBuilder(processInterrupted
                 ? "⚠️ Задача прервана системой. Ниже сохранён текст, который успел прийти до прерывания.\n\n"
                 : "■ Остановлено пользователем. Ниже частичные ответы, полученные до отмены.\n\n");
-        String[] titles = {"ИИ №1 · основной эксперт", "ИИ №2 · независимый эксперт", "ИИ №3 · координатор"};
+        String[] titles = {"ИИ №1 · основной эксперт", "ИИ №2 · независимый эксперт", "ИИ №3 · аудитор доказательств", "ИИ №4 · координатор"};
         boolean any = false;
         for (int i = 0; i < streamingExpertBuffers.length; i++) {
             String partial = "";
