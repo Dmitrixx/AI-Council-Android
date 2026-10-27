@@ -6,7 +6,7 @@ public final class CouncilAnalysisPolicy {
 
     /** Builds a peer-review request without allowing the reviewed answer to override the task. */
     public static String buildCritiquePrompt(String task, String ownAnswer, String peerAnswer, int reviewerNumber) {
-        int reviewer = reviewerNumber == 2 ? 2 : 1;
+        int reviewer = Math.max(1, Math.min(3, reviewerNumber));
         return "Ты независимый эксперт AI Council №" + reviewer + " на втором раунде проверки. " +
                 "Отвечай на языке исходной задачи. Не соглашайся и не спорь автоматически: проверяй конкретные тезисы по отдельности. " +
                 "Сначала кратко продумай шаг за шагом (внутренний монолог), примени self-consistency, Chain-of-Verification, first principles, Reflexion, second-order thinking и sensitivity analysis, затем дай структурированный ответ.\n\n" +
