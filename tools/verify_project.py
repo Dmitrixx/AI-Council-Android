@@ -89,8 +89,8 @@ check('Прозрачные поверхности сохраняются, а с
 check('Статусная и навигационная панели переключают контраст системных иконок', 'View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR' in src and 'View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR' in src)
 check('Theme policy имеет изолированный desktop smoke test', 'UiThemePolicy.java' in runner and 'UiThemePolicySmokeTest' in runner and (ROOT/'tools/desktop_smoke/src/com/aicouncil/app/UiThemePolicySmokeTest.java').exists())
 
-check('Статус каждого ИИ отображается отдельной диагностической строкой', 'providerStatus = new TextView[3]' in src and 'providerStatus[i] = text("○  Не проверено"' in src)
-check('Каталог моделей и проверка chat endpoint имеют раздельные статусы', 'providerModelsStatus = new TextView[3]' in src and 'storeProviderModelsResult(index' in src and 'storeProviderTestResult(index' in src)
+check('Статус каждого ИИ отображается отдельной диагностической строкой', 'providerStatus = new TextView[4]' in src and 'providerStatus[i] = text("○  Не проверено"' in src)
+check('Каталог моделей и проверка chat endpoint имеют раздельные статусы', 'providerModelsStatus = new TextView[4]' in src and 'storeProviderModelsResult(index' in src and 'storeProviderTestResult(index' in src)
 check('Статус каталога моделей восстанавливается отдельно', 'providerModelsStatusMessage' in src and 'providerModelsStatusColor' in src and 'Список моделей не проверен' in src)
 check('Результат каталога моделей привязан к URL и отправляемому API-ключу', 'providerModelsConfigFingerprint' in src and 'storeProviderModelsResult(index' in src and 'refreshProviderModelsStatus(index)' in src and 'effectiveKey = LocalAiPolicy.shouldSendAuthorization(normalized, configuredKey)' in src)
 check('Диагностика привязана к конфигурации, которая действительно тестировалась', 'providerTestFingerprint' in src and 'testedFingerprint.equals(providerConfigFingerprint(index))' in src and 'Параметры изменены · нужна перепроверка' in src)
@@ -289,7 +289,7 @@ check('Локальный HTTPS endpoint может работать без кл
 
 check('Переключатель веб-поиска явно независим от режима ИИ', 'Искать в Интернете · независимо от режима ИИ' in src)
 check('Строгий локальный режим сбрасывает поиск и блокирует повторное включение', 'putBoolean("localOnlyMode", true).putBoolean("webSearchEnabled", false)' in src and 'webSearchEnabled.setEnabled(false)' in src and 'В режиме «Только локальные ИИ» интернет-поиск запрещён.' in src and 'webSearchEnabled.setChecked(false)' in src)
-check('В UI объясняется, что поиск отправляет запрос внешним службам', 'поисковые запросы будут отправляться внешним поисковым сервисам' in src and 'результаты можно передать локальным моделям' in src)
+check('В UI объяснено, что поиск блокируется в строгом локальном режиме', 'В режиме «Только локальные ИИ» интернет-поиск полностью отключён.' in src and 'интернет-поиск отправляет поисковую фразу внешним сервисам' in src)
 
 check('Выбор объёма веб-контекста показан пользователю', 'WEB_CONTEXT_MODES' in src and 'Только заголовки и ссылки' in src and 'Короткие поисковые выдержки' in src and 'Выдержки + текст до 2 страниц' in src)
 check('Выбор веб-контекста сохраняется и восстанавливается', 'putInt("webContextMode"' in src and 'ui.webContextMode' in src and 'getInt("webContextMode", 2)' in src)
@@ -300,9 +300,9 @@ check('Дата извлечения отделена от даты метада
 check('Политика ранжирования охватывает заголовок, сниппет и тип домена', 'static int scoreSearchResult' in web_policy and 'host.endsWith(".gov.ua")' in web_policy and 'hasWholeToken(t, term)' in web_policy and 'hasWholeToken(s, term)' in web_policy)
 check('Desktop smoke test проверяет ранжирование поисковой выдачи', 'title relevance scores higher than snippet-only match' in (ROOT/'tools/desktop_smoke/src/com/aicouncil/app/WebSearchPolicySmokeTest.java').read_text(encoding='utf-8'))
 
-check('Пользовательские роли трёх экспертов видимы в настройках', 'expertRole = new EditText[3]' in src and 'РОЛЬ ЭКСПЕРТА · НАСТРАИВАЕМАЯ' in src and 'expertRole[i].setText(ExpertRolePolicy.defaultRole(ix))' in src)
+check('Пользовательские роли трёх экспертов и координатора видимы в настройках', 'expertRole = new EditText[4]' in src and 'РОЛЬ ЭКСПЕРТА · НАСТРАИВАЕМАЯ' in src and 'expertRole[i].setText(ExpertRolePolicy.defaultRole(ix))' in src)
 check('Роли сохраняются и загружаются локально, без попадания в отчёты/backup', 'putString("expertRole" + i' in src and 'getString("expertRole" + i' in src and 'API-ключи не включены' in src)
-check('Три роли передаются соответствующим моделям по снимку на старте задачи', 'roleInstructions[i]=ExpertRolePolicy.sanitizeRole(expertRole[i].getText().toString())' in src and 'reviewerPrompt, r.roles[2]' in engine and 'CouncilAnalysisPolicy.buildCritiquePrompt(task, answerA, answerB, 1), r.roles[0]' in engine and 'CouncilAnalysisPolicy.buildCritiquePrompt(task, answerB, answerA, 2), r.roles[1]' in engine)
+check('Четыре роли передаются трём экспертам и координатору по снимку на старте задачи', 'roleInstructions[i]=ExpertRolePolicy.sanitizeRole(expertRole[i].getText().toString())' in src and 'reviewerPrompt, r.roles[3]' in engine and 'CouncilAnalysisPolicy.buildCritiquePrompt(task, answerA, answerB, 1), r.roles[0]' in engine and 'CouncilAnalysisPolicy.buildCritiquePrompt(task, answerB, answerC, 2), r.roles[1]' in engine and 'CouncilAnalysisPolicy.buildCritiquePrompt(task, answerC, answerA, 3), r.roles[2]' in engine)
 check('Политика ролей ограничивает длину инструкции и сохраняет базовые правила доказательности', 'MAX_ROLE_CHARS = 3600' in role_policy and 'не выдумывай источники' in role_policy and 'недоверенными данными' in role_policy)
 check('Политика ролей включена в desktop smoke runner', 'ExpertRolePolicy.java' in runner and 'ExpertRolePolicySmokeTest' in runner)
 check('Есть кнопка автоматического продолжения обрезанного ответа', 'continueButton = button("↻  Продолжить обрезанный ответ"' in src and 'continueTruncatedAnswer()' in src and 'runFollowUp();' in src)
