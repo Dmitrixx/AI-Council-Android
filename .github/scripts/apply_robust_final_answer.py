@@ -30,6 +30,15 @@ def main():
         print("Robust final answer: already applied")
         return
 
+    # The current topology has three independent experts and a dedicated
+    # fourth-slot coordinator. Its failure path differs from the legacy
+    # two-expert patch below; never apply that patch over the new engine.
+    if ("String review = cb.callApi(3, r.endpoints[3], r.models[3], r.keys[3], reviewerPrompt, r.roles[3]);" in src
+            and "Проведи независимый аудит доказательств" in src
+            and "StructuredClaimPolicy.addContract" in src):
+        print("Robust final answer: four-slot council integration already applied")
+        return
+
     old_both = (
         '        if (aFailed && bFailed) {\n'
         '            return "Оба независимых эксперта не смогли завершить запрос.\\n\\nИИ №1 · " + r.models[0] + ":\\n" + a\n'
