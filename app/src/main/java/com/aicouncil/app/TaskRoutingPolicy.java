@@ -50,7 +50,7 @@ public final class TaskRoutingPolicy {
         if (audit && expert2) return 2;
         if ((complex || research || coding || highStakes || planning || decision) && expert2 && expert3 && coordinator) return 3;
         if ((raw.length() > 60 || complex || research || planning || decision) && expert2 && expert3 && coordinator) return 1;
-        if (raw.length() > 40 && expert2) return 1;
+        if (raw.length() > 40 && expert2 && expert3 && coordinator) return 1;
         return 0;
     }
 
