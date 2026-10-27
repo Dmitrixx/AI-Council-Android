@@ -6,11 +6,11 @@ public final class TruncatedAnswerPolicy {
 
     private static final String[] HEADINGS = {
         "⚡ БЫСТРЫЙ ОТВЕТ", "📝 ИСХОДНЫЙ ОТВЕТ", "🛡 НЕЗАВИСИМЫЙ АУДИТ",
-        "✦ ИИ №1", "✦ ИИ №2", "🔎 ВЗАИМНАЯ КРИТИКА · ИИ №1",
-        "🔎 ВЗАИМНАЯ КРИТИКА · ИИ №2", "🏁 ИТОГ КООРДИНАТОРА",
+        "✦ ИИ №1", "✦ ИИ №2", "✦ ИИ №3", "🔎 ВЗАИМНАЯ КРИТИКА · ИИ №1",
+        "🔎 ВЗАИМНАЯ КРИТИКА · ИИ №2", "🔎 ВЗАИМНАЯ КРИТИКА · ИИ №3", "🏁 ИТОГ КООРДИНАТОРА",
         "🧠 ДОПОЛНЕНИЕ ИИ №1", "🧠 ДОПОЛНЕНИЕ ИИ №2", "🧠 ДОПОЛНЕНИЕ ИИ №3"
     };
-    private static final int[] SLOTS = {0, 0, 1, 0, 1, 0, 1, 2, 0, 1, 2};
+    private static final int[] SLOTS = {0, 0, 1, 2, 0, 1, 2, 3, 0, 1, 2};
 
     private TruncatedAnswerPolicy() {}
 
@@ -18,7 +18,7 @@ public final class TruncatedAnswerPolicy {
         return answer != null && answer.contains(TRUNCATION_MARKER);
     }
 
-    /** Returns the best matching expert slot (0..2), or -1 when there is no truncation marker. */
+    /** Returns the best matching provider slot (0..3), or -1 when there is no truncation marker. */
     public static int chooseExpertSlot(String answer) {
         if (!hasTruncatedAnswer(answer)) return -1;
         int markerAt = answer.lastIndexOf(TRUNCATION_MARKER);
