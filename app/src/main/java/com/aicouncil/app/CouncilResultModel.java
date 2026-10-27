@@ -71,15 +71,17 @@ public final class CouncilResultModel {
             String combined = (heading + "\n" + body).toLowerCase(Locale.ROOT);
             boolean isCoordinator = heading.contains("КООРДИНАТОРА") || heading.contains("КООРДИНАТОР")
                     || heading.startsWith("🏁 ИТОГ") || heading.contains("ИТОГ КООРДИНАТОРА");
+            boolean isEvidenceExpert = heading.contains("ИИ №3") || heading.contains("АУДИТ ДОКАЗАТЕЛЬСТВ");
             String role = isCoordinator ? "Координатор"
+                    : (isEvidenceExpert ? "Аудитор доказательств"
                     : (heading.contains("ИИ №2") || heading.contains("НЕЗАВИСИМЫЙ АУДИТ") ? "Независимый эксперт"
-                    : (heading.contains("ИИ №1") || heading.contains("ИСХОДНЫЙ ОТВЕТ") ? "Основной эксперт" : "Этап " + (i + 1)));
+                    : (heading.contains("ИИ №1") || heading.contains("ИСХОДНЫЙ ОТВЕТ") ? "Основной эксперт" : "Этап " + (i + 1))));
             boolean failed = containsAny(combined, "ошибка api", "не смог", "не получен", "не выполнена", "не удалось", "ошибка запроса");
             boolean truncated = containsAny(combined, "обрезан лимитом", "ответ обрезан", "вероятно, обрезан", "частично");
             String status = interrupted ? "interrupted" : (failed ? "error" : (truncated ? "partial" : "complete"));
             String error = failed ? body : "";
             List<String> markers = explicitMarkers(combined);
-            int slot = isCoordinator ? 2 : ("Независимый эксперт".equals(role) ? 1 : 0);
+            int slot = isCoordinator ? 3 : ("Аудитор доказательств".equals(role) ? 2 : ("Независимый эксперт".equals(role) ? 1 : 0));
             long duration = durationByExpertMs == null || slot >= durationByExpertMs.length || durationByExpertMs[slot] <= 0L ? -1L : durationByExpertMs[slot];
             ExpertResult item = new ExpertResult(role, heading, status, body, error, duration, truncated, markers, isCoordinator);
             if (isCoordinator) coordinator = item;
