@@ -39,6 +39,8 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertStatusPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilResultModel.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertClaim.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ExpertClaimJsonParser.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/StructuredClaimAnalyzer.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/OcrModelIntegrityPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ocr/OcrInputPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ocr/OcrDocumentProcessor.java" \
@@ -87,6 +89,8 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertStatusPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TaskRoutingPolicyExtraSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilResultModelSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertClaimSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertClaimJsonParserSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.StructuredClaimAnalyzerSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.OcrModelIntegrityPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ocr.OcrInputPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ocr.OcrDocumentProcessorSmokeTest
