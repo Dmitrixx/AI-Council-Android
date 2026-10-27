@@ -62,10 +62,10 @@ public class MainActivity extends Activity {
         {"Локальная модель · Ollama по Wi-Fi", "http://192.168.1.100:11434/v1"},
         {"Локальная модель · LM Studio по Wi-Fi", "http://192.168.1.100:1234/v1"}
     };
-    private EditText[] endpoint = new EditText[3], model = new EditText[3], key = new EditText[3], expertRole = new EditText[3];
-    private Button[] testButtons = new Button[3], presetButtons = new Button[3], modelListButtons = new Button[3];
-    private TextView[] providerStatus = new TextView[3], providerModelsStatus = new TextView[3];
-    private CheckBox[] providerFree = new CheckBox[3];
+    private EditText[] endpoint = new EditText[4], model = new EditText[3], key = new EditText[3], expertRole = new EditText[3];
+    private Button[] testButtons = new Button[4], presetButtons = new Button[3], modelListButtons = new Button[3];
+    private TextView[] providerStatus = new TextView[4], providerModelsStatus = new TextView[3];
+    private CheckBox[] providerFree = new CheckBox[4];
     private CheckBox freeOnly;
     private volatile boolean working = false;
     private volatile int runningMode = 0;
@@ -110,8 +110,8 @@ public class MainActivity extends Activity {
     private final ProviderModelsClient providerModelsClient = new ProviderModelsClient();
     private final CouncilExecutionEngine executionEngine = new CouncilExecutionEngine(pool);
     private final TextView[] streamingExpertText = new TextView[3];
-    private final StringBuilder[] streamingExpertBuffers = {new StringBuilder(), new StringBuilder(), new StringBuilder()};
-    private final long[] streamingExpertDurationMs = new long[3];
+    private final StringBuilder[] streamingExpertBuffers = {new StringBuilder(), new StringBuilder(), new StringBuilder(), new StringBuilder()};
+    private final long[] streamingExpertDurationMs = new long[4];
     private volatile boolean streamingMainTaskActive = false;
     private volatile long lastPartialPersistMs = 0L;
     private final long[] lastStreamUiUpdateMs = new long[3];
@@ -119,8 +119,8 @@ public class MainActivity extends Activity {
     private final Runnable pendingDraftSave = () -> persistDraftNow();
     private final android.os.Handler promptMetricsHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     private final Runnable pendingPromptMetricsUpdate = () -> refreshPromptMetricsEstimate();
-    private static final String[] MODES = {"⚡ Быстрый ответ · 1 ИИ", "🤝 Совет ИИ · 3 ИИ", "🛡 Проверка ответа · 2 ИИ", "🔬 Глубокий анализ · 3 ИИ", "🤖 Автовыбор команды"};
-    private static final String[] PROVIDERS = {"ИИ №1  ·  Основной эксперт", "ИИ №2  ·  Независимый эксперт", "ИИ №3  ·  Координатор"};
+    private static final String[] MODES = {"⚡ Быстрый ответ · 1 ИИ", "🤝 Совет ИИ · 3 эксперта + координатор", "🛡 Проверка ответа · 2 ИИ", "🔬 Глубокий анализ · 3 эксперта + координатор", "🤖 Автовыбор команды"};
+    private static final String[] PROVIDERS = {"ИИ №1 · Основной эксперт", "ИИ №2 · Независимый эксперт", "ИИ №3 · Аудитор доказательств", "ИИ №4 · Координатор"};
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -503,7 +503,7 @@ public class MainActivity extends Activity {
         LinearLayout progressHead = row(); progressCard.addView(progressHead); progressHead.addView(text("Эксперты", 14, TEXT, true), new LinearLayout.LayoutParams(0,-2,1));
         taskProgress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal); taskProgress.setMax(100); taskProgress.setProgress(0); taskProgress.setContentDescription("Прогресс выполнения задачи"); if (android.os.Build.VERSION.SDK_INT >= 21) taskProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(TEAL)); progressHead.addView(taskProgress, lp(88,5));
         expertStatusPanel = column(); progressCard.addView(expertStatusPanel, withTop(lp(-1,-2), 7));
-        for (int i=0;i<3;i++) { LinearLayout line=row(); line.setPadding(0,dp(5),0,dp(5)); TextView name=text(new String[]{"Эксперт","Критик","Координатор"}[i],12,TEXT,false); line.addView(name,new LinearLayout.LayoutParams(0,-2,1)); expertStatus[i]=text("· ждёт",11,MUTED,false); line.addView(expertStatus[i]); expertStatusPanel.addView(line); }
+        for (int i=0;i<4;i++) { LinearLayout line=row(); line.setPadding(0,dp(5),0,dp(5)); TextView name=text(new String[]{"Основной эксперт","Независимый эксперт","Аудитор доказательств","Координатор"}[i],12,TEXT,false); line.addView(name,new LinearLayout.LayoutParams(0,-2,1)); expertStatus[i]=text("· ждёт",11,MUTED,false); line.addView(expertStatus[i]); expertStatusPanel.addView(line); }
         resultCards = column(); resultCard.addView(resultCards);
 
         LinearLayout followUpCard = column(); followUpCard.setPadding(dp(13), dp(13), dp(13), dp(14));
@@ -608,12 +608,12 @@ public class MainActivity extends Activity {
             prefs.edit().putBoolean("webSearchEnabled", isChecked).apply();
             setStatus(isChecked ? "Интернет-поиск включён." : "Интернет-поиск выключен.", TEAL);
         });
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             final int ix = i;
             LinearLayout providerCard = column(); providerCard.setPadding(dp(13), dp(12), dp(13), dp(13)); providerCard.setBackground(shape(Color.rgb(12, 18, 33), 17, Color.rgb(43, 55, 81)));
             LinearLayout.LayoutParams providerP = lp(-1, -2); providerP.topMargin = dp(13); settingsCard.addView(providerCard, providerP);
             LinearLayout providerHead = row(); providerCard.addView(providerHead);
-            TextView dot = text(i == 2 ? "✦" : "●", 13, i == 2 ? PURPLE : TEAL, true); dot.setGravity(Gravity.CENTER); dot.setBackground(shape(i == 2 ? Color.rgb(46, 37, 72) : Color.rgb(24, 54, 55), 11, 0)); providerHead.addView(dot, lp(30, 30));
+            TextView dot = text(i == 3 ? "✦" : "●", 13, i == 2 ? PURPLE : TEAL, true); dot.setGravity(Gravity.CENTER); dot.setBackground(shape(i == 2 ? Color.rgb(46, 37, 72) : Color.rgb(24, 54, 55), 11, 0)); providerHead.addView(dot, lp(30, 30));
             TextView pLabel = text(PROVIDERS[i], 13, i == 2 ? PURPLE : TEXT, true); LinearLayout.LayoutParams pl = lp(-2, -2); pl.leftMargin = dp(9); providerHead.addView(pLabel, pl);
             providerStatus[i] = text("○  Не проверено", 11, MUTED, true);
             providerStatus[i].setPadding(dp(10), dp(7), dp(10), dp(7));
@@ -2318,7 +2318,7 @@ public class MainActivity extends Activity {
     }
 
     private int chooseAutomaticMode(String task) {
-        boolean[] configuredProviders = new boolean[3];
+        boolean[] configuredProviders = new boolean[4];
         boolean[] markedFree = new boolean[3];
         for (int i = 0; i < 3; i++) {
             configuredProviders[i] = configured(i);
@@ -2410,7 +2410,7 @@ public class MainActivity extends Activity {
         final boolean doWebSearch = LocalAiPolicy.shouldUseWebSearch(localOnlyRequested, webSearchEnabled.isChecked()); // Defensive privacy invariant: local-only always disables external search.
         final int selectedWebContextMode = webContextModeSpinner == null ? 2 : Math.max(0, Math.min(WEB_CONTEXT_MODES.length - 1, webContextModeSpinner.getSelectedItemPosition()));
         if (localOnlyRequested) {
-            int[] required = mode == 0 ? new int[]{0} : (mode == 2 ? new int[]{0,1} : new int[]{0,1,2});
+            int[] required = mode == 0 ? new int[]{0} : (mode == 2 ? new int[]{0,1} : new int[]{0,1,2,3});
             for (int requiredIndex : required) {
                 if (!isLocalEndpoint(endpoint[requiredIndex].getText().toString())) {
                     setStatus("Включён режим «Только локальные ИИ»: URL ИИ №" + (requiredIndex + 1) + " не распознан как локальный. Запрос не отправлен. Настройте localhost / .local / приватный IP либо отключите режим.", RED);
@@ -2420,9 +2420,10 @@ public class MainActivity extends Activity {
         }
         if (!configured(0) || (freeOnly.isChecked() && !providerFree[0].isChecked())) { setStatus(freeOnly.isChecked() ? "ИИ №1 не настроен или не отмечен как бесплатный. Проверьте настройки режима бесплатных источников." : "Настройте ИИ №1: URL и ID модели; для облачного API нужен ключ.", RED); return; }
         if ((mode == 1 || mode == 2 || mode == 3) && (!configured(1) || (freeOnly.isChecked() && !providerFree[1].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №2, отмеченный как бесплатный." : "Для этого режима настройте ИИ №2: URL и ID модели (для облачного API нужен ключ).", RED); return; }
-        if ((mode == 1 || mode == 3) && (!configured(2) || (freeOnly.isChecked() && !providerFree[2].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №3, отмеченный как бесплатный." : "Для этого режима настройте ИИ №3 — координатора (для облачного API нужен ключ).", RED); return; }
+        if ((mode == 1 || mode == 3) && (!configured(2) || (freeOnly.isChecked() && !providerFree[2].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №3, отмеченный как бесплатный." : "Для этого режима настройте ИИ №3 — аудитора доказательств (для облачного API нужен ключ).", RED); return; }
+        if ((mode == 1 || mode == 3) && (!configured(3) || (freeOnly.isChecked() && !providerFree[3].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №4, отмеченный как бесплатный." : "Для этого режима настройте ИИ №4 — координатора (для облачного API нужен ключ).", RED); return; }
         if (selectedMode == 4) setStatus("Автовыбор: " + MODES[mode] + (freeOnly.isChecked() ? " · только отмеченные бесплатными" : "") + (localOnlyMode != null && localOnlyMode.isChecked() ? " · локальные модели" : ""), TEAL);
-        final String[] urls = new String[3], models = new String[3], keys = new String[3], roleInstructions = new String[3];
+        final String[] urls = new String[4], models = new String[3], keys = new String[3], roleInstructions = new String[3];
         try { for (int i=0;i<3;i++) { urls[i]=endpoint[i].getText().toString().trim(); models[i]=model[i].getText().toString().trim(); keys[i]=decrypt(prefs.getString("key"+i, "")); roleInstructions[i]=ExpertRolePolicy.sanitizeRole(expertRole[i].getText().toString()); } }
         catch (Exception e) { setStatus("Ошибка чтения зашифрованных ключей. Введите их заново.", RED); return; }
         ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(prompt.getWindowToken(), 0);
