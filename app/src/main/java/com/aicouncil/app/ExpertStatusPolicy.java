@@ -32,12 +32,12 @@ public final class ExpertStatusPolicy {
             return "Этап 2 из 2 · независимый аудит";
         }
         if (mode == 3) {
-            if (stageIndex <= 1) return "Этап 1 из 3 · независимые ответы";
-            if (stageIndex == 2) return "Этап 2 из 3 · взаимная критика";
-            return "Этап 3 из 3 · координатор";
+            if (stageIndex <= 1) return "Этап 1 из 3 · три независимых эксперта";
+            if (stageIndex == 2) return "Этап 2 из 3 · циклическая критика трёх экспертов";
+            return "Этап 3 из 3 · координатор (ИИ №4)";
         }
-        if (stageIndex <= 1) return "Этап 1 из 2 · независимые ответы";
-        return "Этап 2 из 2 · координатор сравнивает ответы";
+        if (stageIndex <= 1) return "Этап 1 из 2 · три независимых эксперта";
+        return "Этап 2 из 2 · координатор (ИИ №4) синтезирует ответы";
     }
 
     public static String finalBanner(boolean cancel, boolean totalFailure, boolean partialSuccess) {
