@@ -62,7 +62,7 @@ Most business logic is deliberately kept **Android-independent** and covered by 
 - `ChatCompletionsClient`, `ProviderModelsClient` — network with cancellation, size limits, secret redaction
 - `LocalDataStore` — SQLite history/projects/drafts
 - `DeliberationIntelligence` — local disagreement map, arithmetic checks, residual-risk detection, evidence-density scoring and calibration signals
-- `ExpertClaim` — new Android-independent typed claim contract (numeric value + unit, polarity, horizon, confidence, evidence class, stakeholders, reversibility and source quote/id). The contract and JVM smoke tests are in place; provider JSON extraction, graph persistence/UI and conflict migration remain follow-up work.
+- `ExpertClaim` + `ExpertClaimJsonParser` — Android-independent typed claim contract with strict, versioned JSON parsing; `StructuredClaimAnalyzer` conservatively compares like-for-like statements and normalizes supported units. The council requests marked JSON from the two independent experts, strips valid metadata from the visible answer and passes typed conflicts to the coordinator; malformed/missing JSON falls back to prose. Persistent claim graphs, expandable conflict UI and the additional expert slot remain follow-up work.
 - `SecretRedactor`, `ProviderErrorFormatter`, `PromptPrivacyPolicy`, `TaskRoutingPolicy`, …
 
 `MainActivity` still owns UI construction and some coordination (this is the largest remaining technical debt).
