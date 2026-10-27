@@ -3,7 +3,7 @@ package com.aicouncil.app;
 /** Extra smoke for tool-aware TaskRoutingPolicy helpers. */
 public final class TaskRoutingPolicyExtraSmokeTest {
     public static void main(String[] args) {
-        boolean[] cfg = new boolean[]{true, true, true};
+        boolean[] cfg = new boolean[]{true, true, true, true};
         boolean[] free = new boolean[]{true, true, true};
         int mode = TaskRoutingPolicy.chooseMode("напиши код на python для сортировки", cfg, false, free);
         if (mode != 3) throw new AssertionError("code task should prefer deep analysis, got " + mode);
