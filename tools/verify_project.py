@@ -41,6 +41,8 @@ STYLES = ROOT / 'app/src/main/res/values/styles.xml'
 NIGHT_STYLES = ROOT / 'app/src/main/res/values-night/styles.xml'
 LIGHT_SPLASH = ROOT / 'app/src/main/res/drawable/splash_background_light.xml'
 TEST_RUNNER = ROOT / 'tools/desktop_smoke/run.sh'
+FALLACY_POLICY = ROOT / 'app/src/main/java/com/aicouncil/app/ReasoningFallacyPolicy.java'
+FALLACY_TEST = ROOT / 'tools/desktop_smoke/src/com/aicouncil/app/ReasoningFallacyPolicySmokeTest.java'
 checks=[]
 def check(name, condition): checks.append((name, bool(condition)))
 try:
@@ -60,9 +62,9 @@ try:
     theme_policy=THEME_POLICY.read_text(encoding='utf-8'); error_formatter=PROVIDER_ERROR_FORMATTER.read_text(encoding='utf-8'); styles=STYLES.read_text(encoding='utf-8'); night_styles=NIGHT_STYLES.read_text(encoding='utf-8'); light_splash=LIGHT_SPLASH.read_text(encoding='utf-8')
 except Exception as e:
     print('FAIL: Не удалось прочитать проект:', e); sys.exit(2)
-check('Версия Android-приложения — 2.35.0 / code 102 / API 36', "versionCode 102" in gradle and "versionName '2.35.0'" in gradle and 'compileSdk 36' in gradle and 'targetSdk 36' in gradle)
+check('Версия Android-приложения — 2.36.0 / code 103 / API 36', "versionCode 103" in gradle and "versionName '2.36.0'" in gradle and 'compileSdk 36' in gradle and 'targetSdk 36' in gradle)
 check('Android Gradle Plugin 9.4.0 и Java-only модуль без Kotlin compiler task', "version '9.4.0'" in (ROOT/'build.gradle').read_text(encoding='utf-8') and 'enableKotlin = false' in gradle)
-check('Версия Java — 2.35.0', 'APP_VERSION = "2.35.0"' in src)
+check('Версия Java — 2.36.0', 'APP_VERSION = "2.36.0"' in src)
 check('Облачные chat-запросы используют OkHttp и SSE stream=true вне Activity', CHAT_CLIENT.exists() and 'OkHttpClient' in CHAT_CLIENT.read_text(encoding='utf-8') and 'body.put("stream", true)' in src and 'HttpURLConnection' not in CHAT_CLIENT.read_text(encoding='utf-8'))
 check('Получение списка моделей вынесено из Activity в ограниченный OkHttp-клиент', PROVIDER_MODELS_CLIENT.exists() and 'providerModelsClient.fetch(base, apiKey, localOnlyRequested' in src and 'HttpURLConnection' not in src)
 check('Оркестрация поиска, ранжирование и HTML извлечение вынесены из Activity', 'private String searchBrave' not in src and 'private String rankSearchResults' not in src and 'public String search(' in search_service and 'android.' not in search_service and 'webSearchService.search(rawQuery, contextMode, braveKey, tavilyKey' in src)
@@ -76,9 +78,10 @@ check('Результат формируется через отдельную �
 check('Пакетный импорт до восьми материалов и локальный multilingual OCR имеют ограничения и тесты', 'REQUEST_OPEN_MATERIALS' in src and 'selectedMaterialUris(data)' in src and 'handleTaskMaterialsImport' in src and 'MAX_SELECTED_FILES = 8' in (ROOT/'app/src/main/java/com/aicouncil/app/MaterialImportPolicy.java').read_text(encoding='utf-8') and 'MAX_BATCH_TEXT_CHARS = 70_000' in (ROOT/'app/src/main/java/com/aicouncil/app/MaterialImportPolicy.java').read_text(encoding='utf-8') and 'MaterialImportPolicySmokeTest' in runner)
 check('Три эксперта выдают типизированные claims JSON, а нарушения схемы сохраняют prose fallback', (ROOT/'app/src/main/java/com/aicouncil/app/ExpertClaimJsonParser.java').exists() and 'StructuredClaimPolicy.addContract' in engine and 'StructuredClaimPolicy.parseResponse' in engine and 'StructuredClaimPolicySmokeTest' in runner)
 check('Явные арифметические задачи проходят через bounded локальный калькулятор до запуска моделей', (ROOT/'app/src/main/java/com/aicouncil/app/DeterministicCalculatorPolicy.java').exists() and 'DeterministicCalculatorPolicy.evaluateExplicitRequest(request.task)' in engine and 'DeterministicCalculatorPolicySmokeTest' in runner)
+check('Локальные сигналы логических ошибок подключены к карте разногласий и не объявляются доказанным вердиктом', FALLACY_POLICY.exists() and 'ReasoningFallacyPolicy.detect(a, b, conflicts)' in (ROOT/'app/src/main/java/com/aicouncil/app/DeliberationSignals.java').read_text(encoding='utf-8') and 'возможный сигнал' in FALLACY_POLICY.read_text(encoding='utf-8') and 'ReasoningFallacyPolicySmokeTest' in runner and FALLACY_TEST.exists())
 
 check('Стриминг имеет per-expert колонки до завершения генерации', 'initializeStreamingCards(mode, true)' in src and 'onApiToken(expertSlot, token)' in src and 'detail.setText(buffer.length() == 0 ? "Ожидает потокового ответа…" : buffer.toString())' in src)
-check('Документация отражает текущую версию и сохраняет прошлый журнал', readme.startswith('# AI Council 2.35.0') and '# 2.31.0' in changelog and '# 2.30.0' in changelog)
+check('Документация отражает текущую версию и сохраняет предыдущий журнал', readme.startswith('# AI Council 2.36.0') and '# 2.35.0' in changelog and '# 2.31.0' in changelog)
 check('Git игнорирует Android build output и локальные ключи подписи', all(x in gitignore for x in ['**/build/', 'local.properties', '*.jks', '*.keystore', '.env']))
 check('Настройка темы сохраняет system/light/dark и безопасно нормализует неизвестные значения', all(x in theme_policy for x in ['SYSTEM = "system"', 'LIGHT = "light"', 'DARK = "dark"', 'normalizeMode', 'useLightTheme']))
 check('Выбор темы доступен в настройках и сохраняется локально', 'Цветовая тема AI Council' in src and 'putString("appTheme", selectedMode)' in src and 'modeIndex(activeTheme)' in src)
@@ -348,6 +351,7 @@ check('Скобки Java сбалансированы: ChatCompletionsClient', b
 check('Скобки Java сбалансированы: ProviderModelsClient', balanced_java(PROVIDER_MODELS_CLIENT.read_text(encoding='utf-8')))
 check('Скобки Java сбалансированы: LocalDataStore', balanced_java(LOCAL_DATA_STORE.read_text(encoding='utf-8')))
 check('Скобки Java сбалансированы: CouncilResultModel', balanced_java(RESULT_MODEL.read_text(encoding='utf-8')))
+check('Скобки Java сбалансированы: ReasoningFallacyPolicy', balanced_java(FALLACY_POLICY.read_text(encoding='utf-8')))
 check('Полный local deliberation engine восстановлен без placeholder', 'Full implementation as written in /tmp' not in (ROOT/'app/src/main/java/com/aicouncil/app/DeliberationIntelligence.java').read_text(encoding='utf-8') and len((ROOT/'app/src/main/java/com/aicouncil/app/DeliberationIntelligence.java').read_text(encoding='utf-8')) > 40_000)
 check('Скобки Java сбалансированы: EndpointPolicy', balanced_java(endpoint_policy))
 check('Скобки Java сбалансированы: WebSearchPolicy', balanced_java(web_policy))
@@ -395,7 +399,7 @@ check('Пользователь выбирает маскировать, отп�
 check('PromptPrivacyPolicy переиспользует общий SecretRedactor без сетевых вызовов', 'SecretRedactor.redact(value, "")' in privacy_policy and 'HttpURLConnection' not in privacy_policy)
 check('Проверка учитывает сохранённые ключи провайдеров Brave и Tavily', 'collectConfiguredSecretsForPrivacyScan()' in src and 'braveSearchKey' in src and 'tavilySearchKey' in src and 'PromptPrivacyPolicy.redact(original, knownSecrets)' in src)
 check('Автономный smoke test privacy guard добавлен в runner', 'PromptPrivacyPolicy.java' in runner and 'PromptPrivacyPolicySmokeTest' in runner and PRIVACY_TEST.exists())
-check('Версия приложения синхронизирована на 2.35.0', "versionName '2.35.0'" in gradle and 'APP_VERSION = "2.35.0"' in src)
+check('Версия приложения синхронизирована на 2.36.0', "versionName '2.36.0'" in gradle and 'APP_VERSION = "2.36.0"' in src)
 failed=[]
 for name,ok in checks:
     print(('PASS' if ok else 'FAIL')+': '+name)
