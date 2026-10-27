@@ -78,7 +78,7 @@ check('Три эксперта выдают типизированные claims 
 check('Явные арифметические задачи проходят через bounded локальный калькулятор до запуска моделей', (ROOT/'app/src/main/java/com/aicouncil/app/DeterministicCalculatorPolicy.java').exists() and 'DeterministicCalculatorPolicy.evaluateExplicitRequest(request.task)' in engine and 'DeterministicCalculatorPolicySmokeTest' in runner)
 
 check('Стриминг имеет per-expert колонки до завершения генерации', 'initializeStreamingCards(mode, true)' in src and 'onApiToken(expertSlot, token)' in src and 'detail.setText(buffer.length() == 0 ? "Ожидает потокового ответа…" : buffer.toString())' in src)
-check('Документация отражает текущую версию и предыдущий журнал', readme.startswith('# AI Council 2.35.0') and '# 2.34.0' in changelog and '# 2.33.0' in changelog)
+check('Документация отражает текущую версию и сохраняет прошлый журнал', readme.startswith('# AI Council 2.35.0') and '# 2.31.0' in changelog and '# 2.30.0' in changelog)
 check('Git игнорирует Android build output и локальные ключи подписи', all(x in gitignore for x in ['**/build/', 'local.properties', '*.jks', '*.keystore', '.env']))
 check('Настройка темы сохраняет system/light/dark и безопасно нормализует неизвестные значения', all(x in theme_policy for x in ['SYSTEM = "system"', 'LIGHT = "light"', 'DARK = "dark"', 'normalizeMode', 'useLightTheme']))
 check('Выбор темы доступен в настройках и сохраняется локально', 'Цветовая тема AI Council' in src and 'putString("appTheme", selectedMode)' in src and 'modeIndex(activeTheme)' in src)
