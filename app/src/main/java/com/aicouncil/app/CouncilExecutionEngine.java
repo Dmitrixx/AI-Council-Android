@@ -92,6 +92,11 @@ public final class CouncilExecutionEngine {
             if (!hint.isEmpty()) {
                 taskForModels = taskForModels + "\n\nПОДСКАЗКА ПРИЛОЖЕНИЯ (не источник фактов):\n" + hint;
             }
+            String deterministicCalculation = DeterministicCalculatorPolicy.evaluateExplicitRequest(request.task);
+            if (!deterministicCalculation.isEmpty()) {
+                taskForModels = taskForModels + "\n\n" + deterministicCalculation
+                        + "\nУчитывай этот локальный результат как арифметическую проверку, но не делай выводов о единицах или реальном смысле данных.";
+            }
 
             if (request.mode == 0) {
                 callbacks.onExpertState(0, "◉ Работает", Tone.PRIMARY);
