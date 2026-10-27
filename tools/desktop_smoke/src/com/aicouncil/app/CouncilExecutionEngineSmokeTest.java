@@ -167,13 +167,14 @@ public final class CouncilExecutionEngineSmokeTest {
             calls.add(slot + "|" + prompt);
             lastPrompt = prompt;
             if (slot == 1 && failIndependentSecond && prompt.startsWith("Независимо реши")) return "Ошибка API: simulated failure";
-            if (prompt.startsWith("Проведи независимый аудит")) return "audit result";
+            if (slot == 1 && prompt.startsWith("Проведи независимый аудит ответа")) return "audit result";
             if (emitStructuredClaims && slot == 0 && prompt.startsWith("Реши задачу самостоятельно")) return structuredAnswer("answer A", 10, "positive", "source-a");
             if (emitStructuredClaims && slot == 1 && prompt.startsWith("Независимо реши")) return structuredAnswer("answer B", 8, "negative", "source-b");
+            if (slot == 2 && prompt.startsWith("Проведи независимый аудит доказательств")) return "evidence falsification report";
             if (prompt.startsWith("Реши задачу самостоятельно")) return "answer A";
             if (prompt.startsWith("Независимо реши")) return "answer B";
             if (prompt.contains("ОТВЕТ ДРУГОГО ЭКСПЕРТА ДЛЯ КРИТИКИ")) return "critique result";
-            if (slot == 2) return "coordinator result";
+            if (slot == 3) return "coordinator result";
             return "primary answer";
         }
         private String structuredAnswer(String answer, double value, String polarity, String sourceId) {
