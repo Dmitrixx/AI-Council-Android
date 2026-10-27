@@ -9,7 +9,7 @@ public final class LocalAiPolicySmokeTest {
         check("Malformed base cannot create models endpoint", LocalAiPolicy.modelsEndpoint("http://example.com/v1").isEmpty());
         check("Cloud endpoint denied in local-only mode", !LocalAiPolicy.mayUseEndpoint("https://api.example.com/v1", true));
         check("LAN endpoint accepted in local-only mode", LocalAiPolicy.mayUseEndpoint("http://192.168.1.25:11434/v1", true));
-        check("Local-only mode can keep explicitly enabled web search", LocalAiPolicy.shouldUseWebSearch(true, true));
+        check("Local-only mode blocks web search even if preference requests it", !LocalAiPolicy.shouldUseWebSearch(true, true));
         check("Local-only mode keeps web search off when user leaves it off", !LocalAiPolicy.shouldUseWebSearch(true, false));
         check("Internet search remains opt-in outside local-only", !LocalAiPolicy.shouldUseWebSearch(false, false));
         check("Explicit search can run outside local-only", LocalAiPolicy.shouldUseWebSearch(false, true));
