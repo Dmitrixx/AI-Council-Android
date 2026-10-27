@@ -8,14 +8,14 @@ Modern shell: ink surfaces, mint accent, floating navigation and edge-to-edge co
 
 ## What it does
 
-AI Council turns a single prompt into a multi-stage deliberation using configurable provider slots. In Council mode, two experts answer independently and a third slot acts as coordinator; Deep analysis adds reciprocal critique.
+AI Council turns a single prompt into a multi-stage deliberation using configurable provider slots. Council mode runs three independent experts—including an evidence/falsification reviewer—then a separate coordinator in slot four. Deep analysis adds cyclic critique among the three experts.
 
 | Mode | Behaviour |
 |------|-----------|
 | ⚡ Quick answer | One expert replies |
-| 🤝 Council | Two independent expert answers, then a separate coordinator synthesis |
+| 🤝 Council | Three independent expert answers, then a separate coordinator synthesis |
 | 🛡 Audit | Two experts + critical review of the answer |
-| 🔬 Deep analysis | Full multi-round critique and refinement |
+| 🔬 Deep analysis | Three experts, cyclic peer critique, then coordinator synthesis |
 | 🤖 Auto | Heuristic routing (RU / UK / EN) based on the prompt and free/paid slots |
 
 Additional capabilities:
@@ -56,7 +56,7 @@ CI workflow (`.github/workflows/android-build.yml`) runs static checks, desktop 
 
 Most business logic is deliberately kept **Android-independent** and covered by pure-Java smoke tests:
 
-- `CouncilExecutionEngine` — strategy orchestration
+- `CouncilExecutionEngine` — strategy orchestration (four configured slots: three independent experts + coordinator)
 - `WebSearchService` + `WebSearchPolicy` + clients — research pipeline
 - `ocr/OcrDocumentProcessor` + `OcrInputPolicy` + `OcrModelManager` — hybrid PDF/image OCR
 - `ChatCompletionsClient`, `ProviderModelsClient` — network with cancellation, size limits, secret redaction
