@@ -15,6 +15,8 @@ public final class TaskRoutingPolicy {
         String lower = raw.toLowerCase(Locale.ROOT);
         boolean expert2 = usable(1, configured, freeOnly, markedFree);
         boolean expert3 = usable(2, configured, freeOnly, markedFree);
+        boolean coordinator = usable(3, configured, freeOnly, markedFree);
+        boolean fullTeam = expert2 && expert3 && coordinator;
 
         boolean audit = containsAny(lower,
                 "проверь", "проверить", "проверка", "аудит", "ошибк", "верифиц", "факт-чек", "fact-check",
@@ -47,9 +49,9 @@ public final class TaskRoutingPolicy {
                 "выбрать", "какой вариант", "compare options", "decision", "решение", "trade-off analysis", "анализ компромиссов", "expected utility");
 
         if (audit && expert2) return 2;
-        if ((complex || research || coding || highStakes || planning || decision) && expert2 && expert3) return 3;
-        if ((raw.length() > 60 || complex || research || planning || decision) && expert2 && expert3) return 1;
-        if (raw.length() > 40 && expert2) return 1;
+        if ((complex || research || coding || highStakes || planning || decision) && fullTeam) return 3;
+        if ((raw.length() > 60 || complex || research || planning || decision) && fullTeam) return 1;
+        if (raw.length() > 40 && fullTeam) return 1;
         return 0;
     }
 
