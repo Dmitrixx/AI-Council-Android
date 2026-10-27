@@ -13,8 +13,7 @@ import java.util.regex.Pattern;
 /**
  * Local (no-network) deliberation intelligence for the AI Council.
  * Detects disagreements, arithmetic faults, calibration issues, evidence density,
- * residual risk ranges, polarity, directional conflicts, appeal to authority,
-emotional framing, false dichotomies and more to give the
+ * residual risk ranges, polarity, directional conflicts and more to give the
  * coordinator a precise map.
  */
 public final class DeliberationIntelligence {
@@ -211,17 +210,6 @@ public final class DeliberationIntelligence {
         detectDecisionOwner(a, b, conflicts);
         detectBurden(a, b, conflicts);
         detectCausalDirection(a, b, conflicts);
-        detectAppealToAuthority(a, b, conflicts);
-        detectEmotionalFraming(a, b, conflicts);
-        detectFalseDichotomy(a, b, conflicts);
-        detectStrawman(a, b, conflicts);
-        detectAdHominem(a, b, conflicts);
-        detectCircularReasoning(a, b, conflicts);
-        detectSlipperySlope(a, b, conflicts);
-        detectRedHerring(a, b, conflicts);
-        detectAppealToTradition(a, b, conflicts);
-        detectHastyGeneralization(a, b, conflicts);
-        detectTuQuoque(a, b, conflicts);
 
         int hedge = hedgeScore(a + " " + b);
         int agreement = jaccardAgreement(a, b);
@@ -272,8 +260,6 @@ public final class DeliberationIntelligence {
         sb.append("Условную рекомендацию не превращай в безусловную. Квантор «все» не сужай и не расширяй до «некоторые». Проценты и процентные пункты не считай одной метрикой. ");
         sb.append("Не усредняй срочность, силу доказательств, рамку издержек и выгод и обязательность. ");
         sb.append("Порядок шагов не переставляй. Необходимое условие не называй достаточным. Носителя решения и бремя доказательства сохрани как есть. Причину и следствие не меняй местами. ");
-        sb.append("Апелляцию к авторитету без опоры не принимай как доказательство. Сильную эмоциональную рамку не уравнивай с аналитической. Ложную дихотомию не схлопывай в единственный выбор. ");
-        sb.append("Strawman (искажение позиции оппонента) не принимай. Ad hominem (атака на личность) не считай аргументом. Циркулярное рассуждение не принимай как доказательство. Скользкий склон не принимай за неизбежность. Красную селёдку игнорируй. Апелляцию к традиции или природе не считай доказательством. Поспешное обобщение не расширяй на всю популяцию. Tu quoque не оправдывает ошибку. ");
         sb.append("Предпочитай ответы с более высокой evidence density; при разрыве ≥20 явно укажи предпочтение.\n");
         return sb.toString().trim();
     }
@@ -1006,8 +992,6 @@ public final class DeliberationIntelligence {
 
     private static int cruxRank(String conflict) {
         if (conflict.startsWith("полярность") || conflict.startsWith("исключительность")) return 0;
-        if (conflict.startsWith("ложный выбор") || conflict.startsWith("апелляция")
-                || conflict.startsWith("эмоциональная рамка")) return 0;
         if (conflict.startsWith("выбор") || conflict.startsWith("условие")
                 || conflict.startsWith("срочность") || conflict.startsWith("обязательство")
                 || conflict.startsWith("порядок")) return 1;
@@ -1030,208 +1014,4 @@ public final class DeliberationIntelligence {
         if (conflict.startsWith("доказательства")) return 13;
         return 14;
     }
-
-    /** Appeal to authority without supporting evidence or data. */
-    private static void detectAppealToAuthority(String a, String b, List<String> conflicts) {
-        boolean authA = isAppeal(a) && evidenceDensity(a) < 30;
-        boolean authB = isAppeal(b) && evidenceDensity(b) < 30;
-        boolean solidA = evidenceDensity(a) >= 40 && !isAppeal(a);
-        boolean solidB = evidenceDensity(b) >= 40 && !isAppeal(b);
-        if ((authA && solidB) || (authB && solidA)) {
-            conflicts.add("апелляция: авторитет/эксперт без опоры против анализа с данными");
-        }
-    }
-
-    private static boolean isAppeal(String text) {
-        if (text == null) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        return lower.contains("эксперт") || lower.contains("специалист") || lower.contains("ученый")
-                || lower.contains("учёный") || lower.contains("professor") || lower.contains("доктор")
-                || lower.contains("по мнению") || lower.contains("как сказал") || lower.contains("authority")
-                || lower.contains("according to") || lower.contains("experts say") || lower.contains("експерт");
-    }
-
-    /** Strong emotional framing on one side, analytical on the other. */
-    private static void detectEmotionalFraming(String a, String b, List<String> conflicts) {
-        int emoA = emotionScore(a), emoB = emotionScore(b);
-        if (Math.abs(emoA - emoB) >= 3 && Math.max(emoA, emoB) >= 4) {
-            conflicts.add("эмоциональная рамка: сильные эмоции/риторика против сдержанного анализа");
-        }
-    }
-
-    private static int emotionScore(String text) {
-        if (text == null) return 0;
-        String lower = text.toLowerCase(Locale.ROOT);
-        int score = 0;
-        String[] markers = {"ужас", "катастроф", "шок", "нельзя допустить", "безобразие", "позор",
-                "outrage", "disaster", "must stop", "never again", "жаху", "катастроф",
-                "!!!", "???", "неприемлемо", "unacceptable"};
-        for (String m : markers) if (lower.contains(m)) score++;
-        if (lower.contains("!") && lower.length() - lower.replace("!", "").length() >= 3) score++;
-        return score;
-    }
-
-    /** False dichotomy: only two options presented while the problem allows more. */
-    private static void detectFalseDichotomy(String a, String b, List<String> conflicts) {
-        boolean binA = isBinary(a), binB = isBinary(b);
-        boolean openA = hasMoreOptions(a), openB = hasMoreOptions(b);
-        if ((binA && openB) || (binB && openA)) {
-            conflicts.add("ложный выбор: только два варианта против более широкого набора альтернатив");
-        }
-    }
-
-    private static boolean isBinary(String text) {
-        if (text == null) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        return lower.contains("либо") || lower.contains("или ... или") || lower.contains("только два")
-                || lower.contains("either") || lower.contains("or ... or") || lower.contains("only two")
-                || lower.contains("або ... або") || (lower.contains("да или нет") && !lower.contains("или другие"));
-    }
-
-    private static boolean hasMoreOptions(String text) {
-        if (text == null) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        return lower.contains("альтернатив") || lower.contains("другие варианты") || lower.contains("третий")
-                || lower.contains("other options") || lower.contains("alternatives") || lower.contains("more than")
-                || lower.contains("інші варіанти") || lower.contains("третій");
-    }
-
-
-    /** Strawman: one expert misrepresents the other's position. */
-    private static void detectStrawman(String a, String b, List<String> conflicts) {
-        boolean strawA = hasStrawmanMarkers(a), strawB = hasStrawmanMarkers(b);
-        if (strawA || strawB) {
-            conflicts.add("strawman: искажение позиции другого эксперта вместо ответа по существу");
-        }
-    }
-
-    private static boolean hasStrawmanMarkers(String text) {
-        if (text == null) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        String[] markers = {"на самом деле вы говорите", "вы имеете в виду что", "your real position is",
-                "искажаете", "не то что я сказал", "вы утверждаете будто", "you claim that",
-                "неправильно поняли", "misrepresent", "straw man", "соломенное чучело"};
-        for (String m : markers) if (lower.contains(m)) return true;
-        return false;
-    }
-
-    /** Ad hominem: attack on the person rather than the argument. */
-    private static void detectAdHominem(String a, String b, List<String> conflicts) {
-        boolean adA = hasAdHominem(a), adB = hasAdHominem(b);
-        if (adA || adB) {
-            conflicts.add("ad hominem: атака на личность эксперта или источник вместо разбора аргументов");
-        }
-    }
-
-    private static boolean hasAdHominem(String text) {
-        if (text == null) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        String[] markers = {"некомпетентен", "предвзятый", "идиот", "дурак", "biased person",
-                "you are just", "ты просто", "не профессионал", "unqualified", "personal attack",
-                "оскорбляет", "insult"};
-        for (String m : markers) if (lower.contains(m)) return true;
-        return lower.contains("ты ") && (lower.contains("глуп") || lower.contains("неправ"));
-    }
-
-    /** Circular reasoning: conclusion restates the premise. */
-    private static void detectCircularReasoning(String a, String b, List<String> conflicts) {
-        if (isCircular(a) || isCircular(b)) {
-            conflicts.add("циркулярное рассуждение: вывод повторяет предпосылку без новых оснований");
-        }
-    }
-
-    private static boolean isCircular(String text) {
-        if (text == null || text.length() < 40) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        // Simple heuristic: "because X is true because X" or "очевидно потому что очевидно"
-        return (lower.contains("потому что это правда") || lower.contains("because it is true")
-                || lower.contains("очевидно, что") && lower.contains("потому что очевидно")
-                || lower.contains("circular") || lower.contains("циркулярн")
-                || (lower.contains("это так, потому что") && lower.contains("это так")));
-    }
-
-
-}
-
-    /** Slippery slope: one step inevitably leads to extreme outcome without justification. */
-    private static void detectSlipperySlope(String a, String b, List<String> conflicts) {
-        if (hasSlipperySlope(a) || hasSlipperySlope(b)) {
-            conflicts.add("скользкий склон: один шаг без оснований представлен как неизбежный путь к крайности");
-        }
-    }
-
-    private static boolean hasSlipperySlope(String text) {
-        if (text == null) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        String[] markers = {"скользкая дорожка", "slippery slope", "если разрешить это, то скоро",
-                "это приведёт к", "откроет дверь для", "then next", "will lead to chaos",
-                "неизбежно приведёт", "в конце концов все"};
-        for (String m : markers) if (lower.contains(m)) return true;
-        return false;
-    }
-
-    /** Red herring: diversion to an irrelevant topic. */
-    private static void detectRedHerring(String a, String b, List<String> conflicts) {
-        if (hasRedHerring(a) || hasRedHerring(b)) {
-            conflicts.add("красная селёдка: отвлечение на нерелевантную тему вместо ответа по существу");
-        }
-    }
-
-    private static boolean hasRedHerring(String text) {
-        if (text == null) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        String[] markers = {"а вот у вас", "но что насчёт", "what about", "но давайте лучше",
-                "это отвлечение", "не по теме", "red herring", "отвлекает от"};
-        for (String m : markers) if (lower.contains(m)) return true;
-        return false;
-    }
-
-    /** Appeal to tradition or nature. */
-    private static void detectAppealToTradition(String a, String b, List<String> conflicts) {
-        if (hasAppealToTradition(a) || hasAppealToTradition(b)) {
-            conflicts.add("апелляция к традиции/природе: «так всегда было» или «естественно» вместо аргументов");
-        }
-    }
-
-    private static boolean hasAppealToTradition(String text) {
-        if (text == null) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        String[] markers = {"так всегда делали", "традиционно", "appeal to tradition", "естественно, что",
-                "природа устроила", "всегда было так", "это естественно", "by nature"};
-        for (String m : markers) if (lower.contains(m)) return true;
-        return false;
-    }
-
-    /** Hasty generalization from small sample. */
-    private static void detectHastyGeneralization(String a, String b, List<String> conflicts) {
-        if (hasHastyGeneralization(a) || hasHastyGeneralization(b)) {
-            conflicts.add("поспешное обобщение: вывод на всю группу по единичному или малому примеру");
-        }
-    }
-
-    private static boolean hasHastyGeneralization(String text) {
-        if (text == null) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        String[] markers = {"все такие", "всегда так", "один пример показывает, что все",
-                "hasty generalization", "по одному случаю", "все люди", "никто никогда"};
-        for (String m : markers) if (lower.contains(m)) return true;
-        return false;
-    }
-
-    /** Tu quoque: deflecting criticism by pointing to the critic's similar fault. */
-    private static void detectTuQuoque(String a, String b, List<String> conflicts) {
-        if (hasTuQuoque(a) || hasTuQuoque(b)) {
-            conflicts.add("tu quoque: «а ты сам» вместо ответа на критику");
-        }
-    }
-
-    private static boolean hasTuQuoque(String text) {
-        if (text == null) return false;
-        String lower = text.toLowerCase(Locale.ROOT);
-        String[] markers = {"а ты сам", "а вы сами", "tu quoque", "you too", "и ты так делаешь",
-                "у вас тоже", "сам так поступаешь"};
-        for (String m : markers) if (lower.contains(m)) return true;
-        return false;
-    }
-
 }
