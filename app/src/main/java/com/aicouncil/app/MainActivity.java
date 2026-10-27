@@ -2103,7 +2103,7 @@ public class MainActivity extends Activity {
         if (contextAnswer.isEmpty() || contextAnswer.startsWith("Ваш итоговый ответ появится здесь")) {
             setStatus("Сначала получите или откройте результат, по которому нужен уточняющий вопрос.", RED); return;
         }
-        final int expertIndex = Math.max(0, Math.min(2, followUpExpertSpinner.getSelectedItemPosition()));
+        final int expertIndex = Math.max(0, Math.min(3, followUpExpertSpinner.getSelectedItemPosition()));
         if (localOnlyMode != null && localOnlyMode.isChecked() && !isLocalEndpoint(endpoint[expertIndex].getText().toString())) {
             setStatus("Режим «Только локальные ИИ» блокирует облачный follow-up. Выберите настроенную локальную модель.", RED); return;
         }
@@ -2663,9 +2663,9 @@ public class MainActivity extends Activity {
             resetExpertDurations();
             synchronized (lastStreamUiUpdateMs) { for (int i = 0; i < lastStreamUiUpdateMs.length; i++) lastStreamUiUpdateMs[i] = 0L; }
         }
-        int count = mode == 0 ? 1 : (mode == 2 ? 2 : 3);
-        String[] titles = {"ИИ №1 · основной эксперт", "ИИ №2 · независимый эксперт", "ИИ №3 · координатор"};
-        int[] accents = {TEAL, BLUE, PURPLE};
+        int count = mode == 0 ? 1 : (mode == 2 ? 2 : 4);
+        String[] titles = {"ИИ №1 · основной эксперт", "ИИ №2 · независимый эксперт", "ИИ №3 · аудитор доказательств", "ИИ №4 · координатор"};
+        int[] accents = {TEAL, BLUE, TEAL, PURPLE};
         for (int i = 0; i < count; i++) {
             LinearLayout block = column();
             block.setPadding(dp(14), dp(13), dp(14), dp(14));
