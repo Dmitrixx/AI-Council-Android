@@ -205,6 +205,34 @@ public final class DeliberationIntelligenceSmokeTest {
                 "Рекомендую SQLite. Бюджет 250 руб. Уверенность 40%.");
         check("choice outranks a bare number", ranked.conflicts.get(0).startsWith("выбор"));
 
+        check("russian word arithmetic", DeliberationIntelligence.localCheckFooter("2 плюс 3 равно 6").contains("5"));
+        check("russian word arithmetic accepts a correct sum", DeliberationIntelligence.findArithmetic("2 плюс 3 равно 5, 10 минус 4 = 6, 3 умножить на 4 равно 12, 8 разделить на 2 = 4.").isEmpty());
+        check("flags russian multiply", DeliberationIntelligence.localCheckFooter("3 умножить на 4 равно 11").contains("12"));
+
+        DeliberationIntelligence.Brief forbid = DeliberationIntelligence.analyze(
+                "Можно ли хранить ключ API в репозитории?",
+                "Ключ API в репозитории запрещаю: секрет утечёт при первой публикации.",
+                "Ключ API в репозитории допускаю, если доступ ограничен командой.");
+        check("forbid versus allow is exclusivity", containsPrefix(forbid.conflicts, "исключительность"));
+
+        DeliberationIntelligence.Brief calibrated = DeliberationIntelligence.analyze(
+                "Оцени шанс успеха",
+                "Уверенность 95%. Думаю, что получится само.",
+                "Уверенность 55%. Думаю, что получится после проверки.");
+        check("high confidence on thin evidence is calibration", containsPrefix(calibrated.conflicts, "калибровка"));
+
+        DeliberationIntelligence.Brief alts = DeliberationIntelligence.analyze(
+                "Сравни варианты хранения очереди задач",
+                "Рекомендую одно хранилище и сразу переходить. Уверенность 50%. Следующий шаг: замерить запись.",
+                "Рекомендую одно хранилище и сразу переходить. Уверенность 50%. Следующий шаг: замерить запись.");
+        check("comparison without alternatives is a gap", containsText(alts.missing, "альтернативы"));
+
+        DeliberationIntelligence.Brief supplier = DeliberationIntelligence.analyze(
+                "Как смена тарифа затронет поставщика?",
+                "Маржа команды вырастет на 4 пункта при текущей схеме.",
+                "Маржа команды вырастет на 4 пункта, если объём удержать.");
+        check("names a missing supplier", containsText(supplier.missing, "поставщик"));
+
         System.out.println("DeliberationIntelligenceSmokeTest: " + checks + "/" + checks + " passed");
     }
 

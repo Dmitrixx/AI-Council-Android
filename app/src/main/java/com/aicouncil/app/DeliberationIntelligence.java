@@ -110,7 +110,26 @@ public final class DeliberationIntelligence {
             long a = Long.parseLong(m.group(1)), b = Long.parseLong(m.group(2)), c = Long.parseLong(m.group(3));
             if (a * b != c) faults.add(new ArithmeticFault(m.group(0), String.valueOf(a * b)));
         }
+        scanWord(text, faults, "(\\d+)\\s+плюс\\s+(\\d+)\\s*(?:=|равно)\\s*(\\d+)", 1);
+        scanWord(text, faults, "(\\d+)\\s+минус\\s+(\\d+)\\s*(?:=|равно)\\s*(\\d+)", 2);
+        scanWord(text, faults, "(\\d+)\\s+умножить\\s+на\\s+(\\d+)\\s*(?:=|равно)\\s*(\\d+)", 3);
+        scanWord(text, faults, "(\\d+)\\s+разделить\\s+на\\s+(\\d+)\\s*(?:=|равно)\\s*(\\d+)", 4);
         return faults;
+    }
+
+    /** op: 1 add, 2 sub, 3 mul, 4 div. */
+    private static void scanWord(String text, List<ArithmeticFault> faults, String regex, int op) {
+        Matcher m = Pattern.compile(regex).matcher(text);
+        while (m.find()) {
+            long a = Long.parseLong(m.group(1)), b = Long.parseLong(m.group(2)), c = Long.parseLong(m.group(3));
+            long expected;
+            if (op == 1) expected = a + b;
+            else if (op == 2) expected = a - b;
+            else if (op == 3) expected = a * b;
+            else expected = b == 0 ? c : a / b;
+            if (op == 4 && b == 0) continue;
+            if (expected != c) faults.add(new ArithmeticFault(m.group(0), String.valueOf(expected)));
+        }
     }
 
     public static String localCheckFooter(String text) {
@@ -174,6 +193,9 @@ public final class DeliberationIntelligence {
         detectMissingStakeholders(task, a, b, missing);
         detectUnitClash(a, b, conflicts);
         detectPremiseFork(a, b, conflicts);
+        detectExclusivity(a, b, conflicts);
+        detectCalibration(a, b, evidenceA, evidenceB, conflicts);
+        detectMissingAlternatives(task, a, b, missing);
         rankConflicts(conflicts);
 
         int hedge = hedgeScore(a + " " + b);
@@ -218,7 +240,8 @@ public final class DeliberationIntelligence {
             for (String gap : brief.qualityGaps) sb.append("• ").append(gap).append("\n");
         }
         sb.append(resolutionLine(brief)).append("\n");
-        sb.append("Не усредняй метки residual risk, доказательства, масштаб, выбор, единицы, валюту, предпосылки и направленные конфликты. ");
+        sb.append("Не усредняй метки residual risk, доказательства, масштаб, выбор, единицы, валюту, предпосылки, исключительность и направленные конфликты. ");
+        sb.append("Высокую уверенность при слабой опоре не переноси в итог как факт. ");
         sb.append("Если назван пропущенный стейкхолдер — скажи, как вывод его затрагивает или что данных нет. ");
         sb.append("Предпочитай ответы с более высокой evidence density; при разрыве ≥20 явно укажи предпочтение.\n");
         return sb.toString().trim();
@@ -446,7 +469,11 @@ public final class DeliberationIntelligence {
             {"пациент", "patient", "пацієнт"},
             {"сотрудник", "персонал", "employee", "співробітник"},
             {"регулятор", "regulator", "регулятор"},
-            {"инвестор", "investor", "інвестор"}
+            {"инвестор", "investor", "інвестор"},
+            {"поставщик", "supplier", "постачальник"},
+            {"партнёр", "партнер", "partner"},
+            {"конкурент", "competitor", "конкурент"},
+            {"обществ", "society"}
     };
 
     private static void detectMissingStakeholders(String task, String a, String b, List<String> missing) {
@@ -506,6 +533,8 @@ public final class DeliberationIntelligence {
         if (decision && !premortem) gaps.add(who + ": решение без pre-mortem");
         if (decision && !steel) gaps.add(who + ": решение без steelman");
         if (decision && !residual) gaps.add(who + ": решение без residual risk");
+        int conf = extractConfidence(text);
+        if (conf >= 80 && evidenceDensity(text) < 40) gaps.add(who + ": уверенность не откалибрована по опоре");
     }
 
     private static void detectConfidence(String a, String b, List<String> conflicts) {
@@ -676,6 +705,61 @@ public final class DeliberationIntelligence {
         return 0;
     }
 
+    private static void detectExclusivity(String a, String b, List<String> conflicts) {
+        int left = exclusivityPole(a);
+        int right = exclusivityPole(b);
+        if (left * right >= 0) return;
+        Set<String> shared = significantWords(a);
+        shared.retainAll(significantWords(b));
+        if (shared.isEmpty()) return;
+        conflicts.add("исключительность: запрет против допуска при общем предмете (" + shared.iterator().next() + ")");
+    }
+
+    private static int exclusivityPole(String text) {
+        String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        boolean forbid = lower.contains("запрещ") || lower.contains("недопуст") || lower.contains("нельзя")
+                || lower.contains("must not") || lower.contains("forbid") || lower.contains("не обязатель");
+        boolean allow = lower.contains("допуска") || lower.contains("разреш") || lower.contains("можно")
+                || lower.contains("allow") || lower.contains("permitted")
+                || (lower.contains("обязательно") && !lower.contains("не обязатель"));
+        if (forbid && allow) return 0;
+        if (forbid) return -1;
+        if (allow) return 1;
+        return 0;
+    }
+
+    private static void detectCalibration(String a, String b, int evidenceA, int evidenceB, List<String> conflicts) {
+        int ca = extractConfidence(a);
+        int cb = extractConfidence(b);
+        if (ca >= 80 && evidenceA < 40) {
+            conflicts.add("калибровка: высокая уверенность при слабой опоре у ИИ №1 (" + ca + "% / evidence " + evidenceA + ")");
+        }
+        if (cb >= 80 && evidenceB < 40) {
+            conflicts.add("калибровка: высокая уверенность при слабой опоре у ИИ №2 (" + cb + "% / evidence " + evidenceB + ")");
+        }
+        if (ca > 0 && cb > 0 && Math.abs(ca - cb) >= 30 && Math.abs(evidenceA - evidenceB) <= 15) {
+            conflicts.add("калибровка: разрыв уверенности при сходной опоре (" + ca + "% vs " + cb + "%)");
+        }
+    }
+
+    private static void detectMissingAlternatives(String task, String a, String b, List<String> missing) {
+        if (task == null) return;
+        String lower = task.toLowerCase(Locale.ROOT);
+        boolean asks = lower.contains("сравн") || lower.contains("вариант") || lower.contains("альтернатив")
+                || lower.contains("pros and cons") || lower.contains("плюсы и минусы") || lower.contains("что лучше");
+        if (!asks || a.length() < 40 || b.length() < 40) return;
+        if (!coversAlternatives(a) && !coversAlternatives(b)) {
+            missing.add("альтернативы не развёрнуты, хотя задача просит сравнение");
+        }
+    }
+
+    private static boolean coversAlternatives(String text) {
+        String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        return lower.contains("альтернатив") || lower.contains("вариант") || lower.contains("другой подход")
+                || lower.contains("с одной стороны") || lower.contains("вместо") || lower.contains(" versus ")
+                || lower.contains(" vs ");
+    }
+
     private static void rankConflicts(List<String> conflicts) {
         Collections.sort(conflicts, new java.util.Comparator<String>() {
             public int compare(String left, String right) {
@@ -685,15 +769,16 @@ public final class DeliberationIntelligence {
     }
 
     private static int cruxRank(String conflict) {
-        if (conflict.startsWith("полярность")) return 0;
+        if (conflict.startsWith("полярность") || conflict.startsWith("исключительность")) return 0;
         if (conflict.startsWith("выбор")) return 1;
         if (conflict.startsWith("направление")) return 2;
         if (conflict.startsWith("валюта") || conflict.startsWith("единицы")) return 3;
         if (conflict.startsWith("предпосылки")) return 4;
         if (conflict.startsWith("причина")) return 5;
         if (conflict.startsWith("масштаб выборки")) return 6;
-        if (conflict.startsWith("уверенность")) return 7;
-        if (conflict.startsWith("residual")) return 8;
+        if (conflict.startsWith("калибровка")) return 7;
+        if (conflict.startsWith("уверенность")) return 8;
+        if (conflict.startsWith("residual")) return 9;
         if (conflict.startsWith("даты")) return 9;
         if (conflict.startsWith("горизонт")) return 10;
         if (conflict.startsWith("масштаб")) return 11;

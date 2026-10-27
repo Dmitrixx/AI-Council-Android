@@ -161,14 +161,14 @@ jobs:
               activity.write_text(content, encoding="utf-8")
 
           VERSIONS = [
-              "2.21.0", "2.20.0", "2.19.0", "2.18.0", "2.17.0", "2.16.0", "2.15.0", "2.14.0",
+              "2.23.0", "2.22.0", "2.21.0", "2.20.0", "2.19.0", "2.18.0", "2.17.0", "2.16.0", "2.15.0", "2.14.0",
               "2.13.0", "2.12.0", "2.11.0", "2.9.0", "2.4.1", "2.4.0",
               "2.3.4", "2.3.3", "2.3.2", "2.3.1", "2.3.0",
               "2.2.15", "2.2.14", "2.2.13", "2.2.12", "2.2.11", "2.2.10", "2.2.9", "2.2.8", "2.2.7", "2.2.6", "2.2.5",
               "2.2.4", "2.2.3", "2.2.2", "2.2.1", "2.2.0", "2.1.0",
           ]
-          TARGET = "2.22.0"
-          CODE = 89
+          TARGET = "2.24.0"
+          CODE = 91
 
           content = activity.read_text(encoding="utf-8")
           if ('APP_VERSION = "%s"' % TARGET) not in content:
@@ -304,21 +304,21 @@ jobs:
           set -euo pipefail
           apk_src="${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$apk_src"
-          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.22.0-debug.apk"
-          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.22.0-debug.apk > AI-Council-2.22.0-debug.apk.sha256)
+          cp "$apk_src" "$RUNNER_TEMP/AI-Council-2.24.0-debug.apk"
+          (cd "$RUNNER_TEMP" && sha256sum AI-Council-2.24.0-debug.apk > AI-Council-2.24.0-debug.apk.sha256)
           notes="$RUNNER_TEMP/release-notes.md"
           cat > "$notes" <<'EOF'
-          # AI Council 2.22.0
+          # AI Council 2.24.0
 
-          Local council brain no longer treats "do not recommend" as a yes, flags km-vs-miles and currency clashes, and refuses to average opposite premises. versionCode 89.
+          Local claim graph, exclusivity (forbid vs allow), confidence calibration, and Russian word arithmetic. versionCode 91.
 
-          Установите `AI-Council-2.22.0-debug.apk` только из этого релиза.
+          Установите `AI-Council-2.24.0-debug.apk` только из этого релиза.
           EOF
           sed -i 's/^          //' "$notes"
-          if gh release view v2.22.0 >/dev/null 2>&1; then
-            gh release upload v2.22.0 "$RUNNER_TEMP/AI-Council-2.22.0-debug.apk" "$RUNNER_TEMP/AI-Council-2.22.0-debug.apk.sha256" --clobber
+          if gh release view v2.24.0 >/dev/null 2>&1; then
+            gh release upload v2.24.0 "$RUNNER_TEMP/AI-Council-2.24.0-debug.apk" "$RUNNER_TEMP/AI-Council-2.24.0-debug.apk.sha256" --clobber
           else
-            gh release create v2.22.0 --title "AI Council 2.22.0" --notes-file "$notes" "$RUNNER_TEMP/AI-Council-2.22.0-debug.apk" "$RUNNER_TEMP/AI-Council-2.22.0-debug.apk.sha256"
+            gh release create v2.24.0 --title "AI Council 2.24.0" --notes-file "$notes" "$RUNNER_TEMP/AI-Council-2.24.0-debug.apk" "$RUNNER_TEMP/AI-Council-2.24.0-debug.apk.sha256"
           fi
 
   ui-tests:

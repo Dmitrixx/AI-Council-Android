@@ -197,6 +197,11 @@ public final class CouncilExecutionEngine {
         if (!(aFailed && bFailed)) {
             localMap = DeliberationIntelligence.formatForCoordinator(
                     DeliberationIntelligence.analyze(r.task, aFailed ? "" : a, bFailed ? "" : b));
+            String graphNote = ClaimGraph.noteForCoordinator(
+                    ClaimGraph.fromAnswers(aFailed ? "" : a, bFailed ? "" : b));
+            if (!graphNote.isEmpty()) {
+                localMap = localMap.isEmpty() ? graphNote : localMap + "\n\n" + graphNote;
+            }
         }
         String reviewerPrompt = CouncilAnalysisPolicy.buildCoordinatorOpening() +
                 (localMap.isEmpty() ? "" : "\n\nЛОКАЛЬНАЯ КАРТА РАЗНОГЛАСИЙ (посчитана приложением, не моделью; проверь её и не выдавай за внешний источник):\n" + localMap) +
