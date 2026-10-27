@@ -8,9 +8,9 @@ final class LocalAiPolicy {
         return EndpointPolicy.isAllowedApiBase(baseUrl) && (!localOnly || EndpointPolicy.isLocalEndpoint(baseUrl));
     }
 
-    /** Web search is a separate opt-in; localOnly restricts model endpoints, not search providers. */
+    /** Strict privacy boundary: local-only means the task must not call external search providers. */
     static boolean shouldUseWebSearch(boolean localOnly, boolean webSearchRequested) {
-        return webSearchRequested;
+        return webSearchRequested && !localOnly;
     }
 
     static boolean mayChangePrivacyControls(boolean requestInProgress) {

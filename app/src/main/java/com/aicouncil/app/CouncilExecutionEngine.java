@@ -121,29 +121,37 @@ public final class CouncilExecutionEngine {
     private String executeAudit(Request r, Callbacks cb, String task) throws InterruptedException {
         cb.onExpertState(0, "◉ Решает задачу", Tone.PRIMARY);
         cb.onProgress("Этап 1 из 2 · исходный ответ", Tone.PRIMARY, 15);
-        String draft = cb.callApi(0, r.endpoints[0], r.models[0], r.keys[0],
-                "Реши задачу и явно укажи допущения, расчёты и неопределённости. Не утверждай, что использовал внешние источники, если их не было.\n\nЗАДАЧА:\n" + task
-                        + DeliberationIntelligence.expertAddendum(0, r.task),
+        String rawDraft = cb.callApi(0, r.endpoints[0], r.models[0], r.keys[0],
+                StructuredClaimPolicy.addContract("Реши задачу и явно укажи допущения, расчёты и неопределённости. Не утверждай, что использовал внешние источники, если их не было.\n\nЗАДАЧА:\n" + task
+                        + DeliberationIntelligence.expertAddendum(0, r.task)),
                 r.roles[0]);
         if (cb.isCancelled()) throw new InterruptedException("Выполнение остановлено пользователем");
-        if (cb.isApiFailure(draft)) {
+        if (cb.isApiFailure(rawDraft)) {
             cb.onExpertState(0, "! Ответ не получен", Tone.ERROR);
             cb.onExpertState(1, "— Не запускался", Tone.MUTED);
             cb.onProgress(null, Tone.ERROR, 100);
-            return "📝 ИСХОДНЫЙ ОТВЕТ НЕ ПОЛУЧЕН\nМодель: " + r.models[0] + "\n\n" + draft + "\n\nПроверка не запускалась, поскольку нет исходного ответа.";
+            return "📝 ИСХОДНЫЙ ОТВЕТ НЕ ПОЛУЧЕН\nМодель: " + r.models[0] + "\n\n" + rawDraft + "\n\nПроверка не запускалась, поскольку нет исходного ответа.";
         }
+        StructuredClaimPolicy.ParsedResponse parsedDraft = StructuredClaimPolicy.parseResponse(rawDraft);
+        String draft = parsedDraft.answer;
         cb.onExpertState(0, "✓ Ответ готов", Tone.PRIMARY);
         cb.onExpertState(1, "◉ Проверяет", Tone.COORDINATOR);
         cb.onProgress("Этап 2 из 2 · независимый аудит", Tone.COORDINATOR, 55);
         String auditNotes = DeliberationIntelligence.localCheckFooter(draft);
-        String review = cb.callApi(1, r.endpoints[1], r.models[1], r.keys[1],
-                "Проведи независимый аудит ответа. Не соглашайся автоматически. Раздели вывод на: 1) подтверждённые ошибки; 2) спорные утверждения; 3) арифметику и допущения; 4) исправленный вариант. Если не можешь проверить факт без источника, прямо так и напиши.\n\nИСХОДНАЯ ЗАДАЧА:\n" + task + "\n\nОТВЕТ ДЛЯ АУДИТА:\n" + draft
-                        + (auditNotes.isEmpty() ? "" : "\n\n" + auditNotes + "\nУчти локальный пересчёт: он сделан приложением, а не экспертом."),
-                r.roles[1]);
-        boolean failed = cb.isApiFailure(review);
+        String auditPrompt = "Проведи независимый аудит ответа. Не соглашайся автоматически. Раздели вывод на: 1) подтверждённые ошибки; 2) спорные утверждения; 3) арифметику и допущения; 4) исправленный вариант. Если не можешь проверить факт без источника, прямо так и напиши.\n\nИСХОДНАЯ ЗАДАЧА:\n" + task + "\n\nОТВЕТ ДЛЯ АУДИТА:\n" + draft
+                + (auditNotes.isEmpty() ? "" : "\n\n" + auditNotes + "\nУчти локальный пересчёт: он сделан приложением, а не экспертом.");
+        String rawReview = cb.callApi(1, r.endpoints[1], r.models[1], r.keys[1],
+                StructuredClaimPolicy.addContract(auditPrompt), r.roles[1]);
+        boolean failed = cb.isApiFailure(rawReview);
+        StructuredClaimPolicy.ParsedResponse parsedReview = failed ? null : StructuredClaimPolicy.parseResponse(rawReview);
+        String review = parsedReview == null ? rawReview : parsedReview.answer;
         cb.onExpertState(1, failed ? "! Ошибка" : "✓ Проверено", failed ? Tone.ERROR : Tone.PRIMARY);
         cb.onProgress(null, Tone.PRIMARY, 100);
+        String typedConflicts = StructuredClaimPolicy.formatConflictsForCoordinator(
+                parsedDraft.claims, parsedReview == null
+                        ? java.util.Collections.<ExpertClaim>emptyList() : parsedReview.claims);
         return "📝 ИСХОДНЫЙ ОТВЕТ\nМодель: " + r.models[0] + "\n\n" + draft + "\n\n🛡 НЕЗАВИСИМЫЙ АУДИТ · " + r.models[1] + "\n\n" + review
+                + (typedConflicts.isEmpty() ? "" : "\n\n🧭 СТРУКТУРИРОВАННЫЕ РАЗНОГЛАСИЯ (проверьте перед выводом)\n" + typedConflicts)
                 + (failed ? "\n\n⚠️ Независимый аудит не завершился успешно." : "");
     }
 
@@ -152,13 +160,19 @@ public final class CouncilExecutionEngine {
         cb.onExpertState(1, "◉ Работает", Tone.SECONDARY);
         cb.onProgress("Этап 1 из 3 · независимые ответы", Tone.PRIMARY, 15);
         Future<String> first = workers.submit(() -> cb.callApi(0, r.endpoints[0], r.models[0], r.keys[0],
-                "Реши задачу самостоятельно. Покажи ключевые шаги, допущения и неопределённости.\n\nЗАДАЧА:\n" + task
-                        + DeliberationIntelligence.expertAddendum(0, r.task), r.roles[0]));
+                StructuredClaimPolicy.addContract("Реши задачу самостоятельно. Покажи ключевые шаги, допущения и неопределённости.\n\nЗАДАЧА:\n" + task
+                        + DeliberationIntelligence.expertAddendum(0, r.task)), r.roles[0]));
         Future<String> second = workers.submit(() -> cb.callApi(1, r.endpoints[1], r.models[1], r.keys[1],
-                "Независимо реши задачу другим способом, проверь факты и расчёты. Укажи неопределённости.\n\nЗАДАЧА:\n" + task
-                        + DeliberationIntelligence.expertAddendum(1, r.task), r.roles[1]));
-        String a = getFuture(first, cb), b = getFuture(second, cb);
-        boolean aFailed = cb.isApiFailure(a), bFailed = cb.isApiFailure(b);
+                StructuredClaimPolicy.addContract("Независимо реши задачу другим способом, проверь факты и расчёты. Укажи неопределённости.\n\nЗАДАЧА:\n" + task
+                        + DeliberationIntelligence.expertAddendum(1, r.task)), r.roles[1]));
+        String rawA = getFuture(first, cb), rawB = getFuture(second, cb);
+        boolean aFailed = cb.isApiFailure(rawA), bFailed = cb.isApiFailure(rawB);
+        StructuredClaimPolicy.ParsedResponse parsedA = aFailed ? null : StructuredClaimPolicy.parseResponse(rawA);
+        StructuredClaimPolicy.ParsedResponse parsedB = bFailed ? null : StructuredClaimPolicy.parseResponse(rawB);
+        String a = parsedA == null ? rawA : parsedA.answer;
+        String b = parsedB == null ? rawB : parsedB.answer;
+        java.util.List<ExpertClaim> claimsA = parsedA == null ? java.util.Collections.<ExpertClaim>emptyList() : parsedA.claims;
+        java.util.List<ExpertClaim> claimsB = parsedB == null ? java.util.Collections.<ExpertClaim>emptyList() : parsedB.claims;
         cb.onExpertState(0, aFailed ? "! Ошибка" : "✓ Ответ готов", aFailed ? Tone.ERROR : Tone.PRIMARY);
         cb.onExpertState(1, bFailed ? "! Ошибка" : "✓ Ответ готов", bFailed ? Tone.ERROR : Tone.SECONDARY);
         cb.onProgress(null, Tone.PRIMARY, 55);
@@ -198,8 +212,21 @@ public final class CouncilExecutionEngine {
             localMap = DeliberationIntelligence.formatForCoordinator(
                     DeliberationIntelligence.analyze(r.task, aFailed ? "" : a, bFailed ? "" : b));
         }
+        String typedConflicts = StructuredClaimPolicy.formatConflictsForCoordinator(claimsA, claimsB);
+        if (!typedConflicts.isEmpty()) {
+            localMap = localMap.isEmpty() ? typedConflicts : localMap + "\n\n" + typedConflicts;
+        }
+        String structuredStatus = "";
+        if (parsedA != null || parsedB != null) {
+            structuredStatus = "\n\nСТАТУС СТРУКТУРИРОВАНИЯ: эксперт A="
+                    + (parsedA != null && parsedA.structured ? claimsA.size() + " утверждений JSON" : "проза / JSON недоступен")
+                    + "; эксперт B="
+                    + (parsedB != null && parsedB.structured ? claimsB.size() + " утверждений JSON" : "проза / JSON недоступен")
+                    + ". Отсутствие JSON не означает, что содержательный ответ неверен.";
+        }
         String reviewerPrompt = CouncilAnalysisPolicy.buildCoordinatorOpening() +
                 (localMap.isEmpty() ? "" : "\n\nЛОКАЛЬНАЯ КАРТА РАЗНОГЛАСИЙ (посчитана приложением, не моделью; проверь её и не выдавай за внешний источник):\n" + localMap) +
+                structuredStatus +
                 "\n\nЗАДАЧА ПОЛЬЗОВАТЕЛЯ:\n" + task + "\n\nОТВЕТ ИИ №1 (" + r.models[0] + "):\n" + a + "\n\nОТВЕТ ИИ №2 (" + r.models[1] + "):\n" + b +
                 (r.mode == 3 ? "\n\nВЗАИМНАЯ КРИТИКА ИИ №1:\n" + critiqueA + "\n\nВЗАИМНАЯ КРИТИКА ИИ №2:\n" + critiqueB +
                         "\n\nОцени критику так же критически: не принимай замечание только потому, что оно высказано. Отдели найденную ошибку от гипотезы, а неразрешённое разногласие оставь явно открытым. Учитывай base rates и то, что изменило бы позицию." : "") +
