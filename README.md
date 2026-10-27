@@ -1,4 +1,4 @@
-# AI Council 2.21.0
+# AI Council 2.22.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
@@ -26,6 +26,7 @@ Additional capabilities:
 - **Configurable PDF page limit** (5 by default, up to 20) — persisted setting in the import UI
 - **Local AI** — Ollama / LM Studio over Wi-Fi (loopback and private LAN policies)
 - **Privacy** — encrypted API keys, secret redaction in errors and before send, optional “local only” mode
+- **Deterministic calculator** — explicit arithmetic requests in Russian, Ukrainian or English are evaluated locally before the council runs. Unsupported syntax, division by zero and out-of-range results are rejected; units and domain meaning are not inferred.
 - **History & projects** in local SQLite, voice draft, themes (system / light / dark), accessibility live regions
 - **Local deliberation intelligence** — full local (no-network) disagreement map: arithmetic verification (addition, subtraction, multiplication, division, Russian and English percents), numeric/relative/scale conflicts, polarity (RU+EN), directional antonyms, confidence only when the answer actually states it, residual-risk range mismatches, causation vs correlation, time horizon, year clashes, reversibility gaps, case vs base rate, recommendation-target clashes, missing stakeholders, uncovered sub-questions, Jaccard agreement, hedge/absolute calibration, substance and evidence density (0–100). The coordinator receives a resolution line and is instructed not to average critical signals.
 
