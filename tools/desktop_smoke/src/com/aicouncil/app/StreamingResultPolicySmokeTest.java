@@ -17,9 +17,9 @@ public final class StreamingResultPolicySmokeTest {
     public static void main(String[] args) {
         check("card count fast", StreamingResultPolicy.streamingCardCount(0) == 1);
         check("card count audit", StreamingResultPolicy.streamingCardCount(2) == 2);
-        check("card count council", StreamingResultPolicy.streamingCardCount(1) == 3);
+        check("card count council", StreamingResultPolicy.streamingCardCount(1) == 4);
         check("titles", StreamingResultPolicy.streamTitle(0).contains("основной")
-                && StreamingResultPolicy.streamTitle(2).contains("координатор"));
+                && StreamingResultPolicy.streamTitle(2).contains("доказательств") && StreamingResultPolicy.streamTitle(3).contains("координатор"));
         check("title OOB", StreamingResultPolicy.DEFAULT_HEADING.equals(StreamingResultPolicy.streamTitle(9)));
 
         StringBuilder buf = new StringBuilder();
