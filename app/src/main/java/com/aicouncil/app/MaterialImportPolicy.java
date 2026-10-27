@@ -6,6 +6,7 @@ import java.util.Locale;
 public final class MaterialImportPolicy {
     public static final int MAX_SELECTED_FILES = 8;
     public static final int MAX_BATCH_TEXT_CHARS = 70_000;
+    public static final int MAX_BATCH_WARNING_CHARS = 5_000;
     public static final int MAX_FILE_NAME_CHARS = 120;
 
     private MaterialImportPolicy() {}
