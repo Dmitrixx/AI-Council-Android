@@ -274,7 +274,7 @@ check('README предупреждает о HTTP в LAN и внешнем web se
 
 check('Список моделей отображается для каждого слота ИИ', 'Получить список моделей' in src and 'fetchProviderModels(ix)' in src)
 check('Каталог моделей поддерживает OpenAI data[] и Ollama models[]', 'json.optJSONArray("data")' in src and 'json.optJSONArray("models")' in src and 'optString("name"' in src)
-check('Локальный режим не переопределяет выбор веб-поиска', 'LocalAiPolicy.shouldUseWebSearch(localOnlyRequested, webSearchEnabled.isChecked())' in src and 'final boolean doWebSearch = LocalAiPolicy.shouldUseWebSearch(localOnlyRequested, webSearchEnabled.isChecked())' in src and 'локальный режим имеет приоритет' not in readme.lower())
+check('Строгий локальный режим отключает внешний веб-поиск на уровне политики и запуска', 'return webSearchRequested && !localOnly;' in local_ai_policy and 'final boolean doWebSearch = LocalAiPolicy.shouldUseWebSearch(localOnlyRequested, webSearchEnabled.isChecked())' in src and 'blocks web search even if preference requests it' in (ROOT/'tools/desktop_smoke/src/com/aicouncil/app/LocalAiPolicySmokeTest.java').read_text(encoding='utf-8'))
 check('LocalAiPolicy изолирована и протестирована desktop runner', 'LocalAiPolicySmokeTest' in runner and 'LocalAiPolicy.java' in runner and 'static boolean shouldUseWebSearch(boolean localOnly, boolean webSearchRequested)' in local_ai_policy)
 check('Поиск свежести поддерживает сутки/неделю/месяц/год', all(x in web_policy for x in ['return "pd"', 'return "pw"', 'return "pm"', 'return "py"']))
 check('Извлечение страницы блокирует непубличные DNS-ответы непосредственно в OkHttp resolver', 'areResolvedAddressesPublic(resolved)' in (ROOT/'app/src/main/java/com/aicouncil/app/WebPageFetchClient.java').read_text(encoding='utf-8') and 'Dns.SYSTEM.lookup(hostname)' in (ROOT/'app/src/main/java/com/aicouncil/app/WebPageFetchClient.java').read_text(encoding='utf-8') and 'isPublicAddress' in (ROOT/'app/src/main/java/com/aicouncil/app/WebPageFetchPolicy.java').read_text(encoding='utf-8'))
@@ -288,7 +288,7 @@ check('Извлечение первоисточников старается в
 check('Локальный HTTPS endpoint может работать без ключа при выборе моделей', 'if (!isLocalEndpoint(base) && configuredKeyForModels.isEmpty())' in src and 'LocalAiPolicy.shouldSendAuthorization(baseUrl, apiKey)' in PROVIDER_MODELS_CLIENT.read_text(encoding='utf-8'))
 
 check('Переключатель веб-поиска явно независим от режима ИИ', 'Искать в Интернете · независимо от режима ИИ' in src)
-check('Локальный режим не сбрасывает сохранённую галочку веб-поиска', 'prefs.edit().putBoolean("localOnlyMode", isChecked).apply();' in src and 'webSearchEnabled.setChecked(false)' not in src and 'prefs.edit().putBoolean("webSearchEnabled", false)' not in src)
+check('Строгий локальный режим сбрасывает поиск и блокирует повторное включение', 'putBoolean("localOnlyMode", true).putBoolean("webSearchEnabled", false)' in src and 'webSearchEnabled.setEnabled(false)' in src and 'В режиме «Только локальные ИИ» интернет-поиск запрещён.' in src and 'webSearchEnabled.setChecked(false)' in src)
 check('В UI объясняется, что поиск отправляет запрос внешним службам', 'поисковые запросы будут отправляться внешним поисковым сервисам' in src and 'результаты можно передать локальным моделям' in src)
 
 check('Выбор объёма веб-контекста показан пользователю', 'WEB_CONTEXT_MODES' in src and 'Только заголовки и ссылки' in src and 'Короткие поисковые выдержки' in src and 'Выдержки + текст до 2 страниц' in src)
