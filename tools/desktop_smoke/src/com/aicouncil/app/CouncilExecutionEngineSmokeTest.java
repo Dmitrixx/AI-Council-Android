@@ -30,7 +30,7 @@ public final class CouncilExecutionEngineSmokeTest {
         try {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(0, false), f);
             check(o.text.startsWith("⚡ БЫСТРЫЙ ОТВЕТ"), "quick mode formats its own title");
-            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 0 && f.slotCalls(2) == 0, "quick mode calls only primary expert");
+            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 0 && f.slotCalls(2) == 0 && f.slotCalls(3) == 0, "quick mode calls only primary expert");
             check(o.usedSources.isEmpty(), "quick mode leaves sources empty when search is disabled");
         } finally { f.close(); }
     }
@@ -41,7 +41,7 @@ public final class CouncilExecutionEngineSmokeTest {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(2, false), f);
             check(o.text.contains("ИСХОДНЫЙ ОТВЕТ"), "audit report includes the draft answer");
             check(o.text.contains("НЕЗАВИСИМЫЙ АУДИТ"), "audit report includes independent audit");
-            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 1 && f.slotCalls(2) == 0, "audit uses slots 1 and 2 only");
+            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 1 && f.slotCalls(2) == 0 && f.slotCalls(3) == 0, "audit uses slots 1 and 2 only");
         } finally { f.close(); }
     }
 
@@ -49,9 +49,9 @@ public final class CouncilExecutionEngineSmokeTest {
         Fake f = new Fake();
         try {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(1, false), f);
-            check(o.text.contains("ИИ №1") && o.text.contains("ИИ №2"), "council output keeps both independent answers");
+            check(o.text.contains("ИИ №1") && o.text.contains("ИИ №2") && o.text.contains("АУДИТ ДОКАЗАТЕЛЬСТВ · ИИ №3"), "council output keeps three independent expert answers");
             check(o.text.contains("ИТОГ КООРДИНАТОРА"), "council output has a separate coordinator section");
-            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 1 && f.slotCalls(2) == 1, "council uses all three slots");
+            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 1 && f.slotCalls(2) == 1 && f.slotCalls(3) == 1, "council uses three experts and the fourth-slot coordinator");
         } finally { f.close(); }
     }
 
@@ -76,7 +76,7 @@ public final class CouncilExecutionEngineSmokeTest {
             check(o.text.contains("ВЗАИМНАЯ КРИТИКА · ИИ №1 проверяет ИИ №2"), "deep analysis has first critique section");
             check(o.text.contains("ВЗАИМНАЯ КРИТИКА · ИИ №2 проверяет ИИ №1"), "deep analysis has second critique section");
             check(f.promptsContaining("взаимная критика").size() >= 1, "coordinator receives critique context");
-            check(f.slotCalls(2) == 1, "deep analysis runs coordinator after critique stage");
+            check(f.slotCalls(2) >= 2 && f.slotCalls(3) == 1, "deep analysis runs third reviewer and fourth-slot coordinator after critique stage");
         } finally { f.close(); }
     }
 
@@ -87,7 +87,7 @@ public final class CouncilExecutionEngineSmokeTest {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(1, false), f);
             check(o.text.contains("ИИ №2 · model-b · ОШИБКА"), "failed expert is explicitly marked");
             check(o.text.contains("ВНИМАНИЕ"), "partial council report warns about the failure");
-            check(f.slotCalls(2) == 1, "coordinator still runs when one expert fails");
+            check(f.slotCalls(3) == 1, "coordinator still runs when one expert fails");
         } finally { f.close(); }
     }
 
