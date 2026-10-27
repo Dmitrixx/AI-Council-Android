@@ -115,15 +115,16 @@ public final class CouncilExecutionEngineSmokeTest {
     }
 
     private static void testRequestArraysAreDefensivelyCopied() {
-        String[] urls = {"u1", "u2", "u3"};
-        String[] models = {"m1", "m2", "m3"};
-        String[] keys = {"k1", "k2", "k3"};
-        String[] roles = {"r1", "r2", "r3"};
+        String[] urls = {"u1", "u2", "u3", "u4"};
+        String[] models = {"m1", "m2", "m3", "m4"};
+        String[] keys = {"k1", "k2", "k3", "k4"};
+        String[] roles = {"r1", "r2", "r3", "r4"};
         CouncilExecutionEngine.Request request = new CouncilExecutionEngine.Request("task", 0, urls, models, keys, roles, false, 1);
         urls[0] = "changed"; models[0] = "changed"; keys[0] = "changed"; roles[0] = "changed";
         check("u1".equals(request.endpoints[0]) && "m1".equals(request.models[0]), "endpoint/model snapshots are copied");
         check("k1".equals(request.keys[0]) && "r1".equals(request.roles[0]), "key/role snapshots are copied");
-        passed += 2;
+        check("u4".equals(request.endpoints[3]) && "m4".equals(request.models[3]) && "k4".equals(request.keys[3]) && "r4".equals(request.roles[3]), "fourth coordinator slot is copied");
+        passed += 3;
     }
 
     private static void testCallbackToneAndProgressAreReported() {
@@ -157,9 +158,9 @@ public final class CouncilExecutionEngineSmokeTest {
         CouncilExecutionEngine engine() { return new CouncilExecutionEngine(pool); }
         CouncilExecutionEngine.Request request(int mode, boolean search) {
             return new CouncilExecutionEngine.Request("Test task", mode,
-                    new String[]{"https://a.example/v1", "https://b.example/v1", "https://c.example/v1"},
-                    new String[]{"model-a", "model-b", "model-c"},
-                    new String[]{"key-a", "key-b", "key-c"}, new String[]{"role-a", "role-b", "role-c"}, search, 2);
+                    new String[]{"https://a.example/v1", "https://b.example/v1", "https://c.example/v1", "https://d.example/v1"},
+                    new String[]{"model-a", "model-b", "model-c", "model-d"},
+                    new String[]{"key-a", "key-b", "key-c", "key-d"}, new String[]{"role-a", "role-b", "role-c", "role-d"}, search, 2);
         }
         @Override public boolean isCancelled() { return cancelled.get(); }
         @Override public String callApi(int slot, String endpoint, String model, String key, String prompt, String role) {
