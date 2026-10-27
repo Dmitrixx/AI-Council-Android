@@ -151,7 +151,7 @@ jobs:
                   '        TextView modeDescription=text("Два независимых ответа и вывод координатора.",13,MUTED,false);',
                   '        for(int mi=0;mi<compactModes.length;mi++){'
               ]),
-              'TextView modeDescription=text("Два независимых ответа и вывод координатора.",13,MUTED,false);'
+              'TextView modeDescription=text("Три независимых эксперта (включая аудит доказательств), затем отдельный координатор.",13,MUTED,false);'
           )
           activity = Path("app/src/main/java/com/aicouncil/app/MainActivity.java")
           content = activity.read_text(encoding="utf-8")
