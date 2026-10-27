@@ -1,8 +1,8 @@
-# AI Council 2.35.0
+# AI Council 2.36.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
-Modern shell: ink surfaces, mint accent, floating navigation and edge-to-edge content on Android 11+. Version 2.35.0 brings the four-slot council and bounded local tool checks; the integrated branch must pass CI before it is treated as a release.
+Modern shell: ink surfaces, mint accent, floating navigation and edge-to-edge content on Android 11+. Version 2.36.0 adds conservative local reasoning-risk signals on top of the four-slot council, bounded material import and deterministic calculator. The signals are hypotheses requiring context, not automatic fallacy verdicts.
 
 > Primary documentation is in Russian: [README_RU.md](README_RU.md). This English file is a high-level overview for international users.
 
@@ -28,6 +28,7 @@ Additional capabilities:
 - **Privacy** — encrypted API keys, secret redaction in errors and before send. “Local-only AI” forcibly disables external web search; ordinary web research sends the search query to the selected external search provider.
 - **Local deliberation intelligence** — deterministic arithmetic checks, numeric/unit and currency conflicts, negation/polarity, evidence quality, base-rate/reference-class gaps, uncertainty, causal direction, reversibility, conditions, quantifiers and logical premise clashes. These checks run locally and do not themselves browse the network.
 - **Deterministic calculator** — explicit arithmetic requests in Russian, Ukrainian or English are evaluated locally before the council runs. Unsupported syntax, division by zero and out-of-range results are rejected; units and domain meaning are not inferred.
+- **Reasoning-risk signals** — conservative offline checks flag narrow patterns resembling appeal to ignorance, bandwagon, post hoc, special pleading, slippery slope, hasty generalization, strawman, ad hominem and circular reasoning. Each is labelled as a possible signal and the coordinator is told to inspect context rather than assume it proves an error.
 - **History & projects** in local SQLite, voice draft, themes (system / light / dark), accessibility live regions
 - **Local deliberation intelligence** — full local (no-network) disagreement map: arithmetic verification (addition, subtraction, multiplication, division, Russian and English percents), numeric/relative/scale conflicts, polarity (RU+EN), directional antonyms, confidence only when the answer actually states it, residual-risk range mismatches, causation vs correlation, time horizon, year clashes, reversibility gaps, case vs base rate, recommendation-target clashes, missing stakeholders, uncovered sub-questions, Jaccard agreement, hedge/absolute calibration, substance and evidence density (0–100). The coordinator receives a resolution line and is instructed not to average critical signals.
 
