@@ -21,19 +21,20 @@ public final class StreamingResultPolicy {
     private static final String[] STREAM_TITLES = {
             "ИИ №1 · основной эксперт",
             "ИИ №2 · независимый эксперт",
-            "ИИ №3 · координатор"
+            "ИИ №3 · аудитор доказательств",
+            "ИИ №4 · координатор"
     };
 
     private StreamingResultPolicy() {}
 
     /**
      * How many streaming expert cards to show for analysis mode.
-     * 0 = fast (1), 2 = audit (2), else council/deep/auto (3).
+     * 0 = fast (1), 2 = audit (2), else council/deep/auto (4: three experts + coordinator).
      */
     public static int streamingCardCount(int mode) {
         if (mode == 0) return 1;
         if (mode == 2) return 2;
-        return 3;
+        return 4;
     }
 
     public static String streamTitle(int index) {
