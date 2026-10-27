@@ -14,7 +14,8 @@ public final class CouncilExecutionEngineSmokeTest {
     public static void main(String[] args) {
         testQuickModeUsesOnlyPrimaryExpert();
         testAuditModeUsesTwoSlotsWithoutCoordinator();
-        testCouncilRunsTwoExpertsAndCoordinator();
+        testCouncilRunsThreeExpertsAndCoordinator();
+        testStructuredClaimsReachCoordinator();
         testDeepAnalysisAddsMutualCritique();
         testSingleExpertFailureDoesNotSuppressCoordinator();
         testSearchContextIsPassedAndCitedInOutput();
@@ -29,7 +30,7 @@ public final class CouncilExecutionEngineSmokeTest {
         try {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(0, false), f);
             check(o.text.startsWith("⚡ БЫСТРЫЙ ОТВЕТ"), "quick mode formats its own title");
-            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 0 && f.slotCalls(2) == 0, "quick mode calls only primary expert");
+            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 0 && f.slotCalls(2) == 0 && f.slotCalls(3) == 0, "quick mode calls only primary expert");
             check(o.usedSources.isEmpty(), "quick mode leaves sources empty when search is disabled");
         } finally { f.close(); }
     }
@@ -40,17 +41,31 @@ public final class CouncilExecutionEngineSmokeTest {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(2, false), f);
             check(o.text.contains("ИСХОДНЫЙ ОТВЕТ"), "audit report includes the draft answer");
             check(o.text.contains("НЕЗАВИСИМЫЙ АУДИТ"), "audit report includes independent audit");
-            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 1 && f.slotCalls(2) == 0, "audit uses slots 1 and 2 only");
+            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 1 && f.slotCalls(2) == 0 && f.slotCalls(3) == 0, "audit uses slots 1 and 2 only");
         } finally { f.close(); }
     }
 
-    private static void testCouncilRunsTwoExpertsAndCoordinator() {
+    private static void testCouncilRunsThreeExpertsAndCoordinator() {
         Fake f = new Fake();
         try {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(1, false), f);
-            check(o.text.contains("ИИ №1") && o.text.contains("ИИ №2"), "council output keeps both independent answers");
+            check(o.text.contains("ИИ №1") && o.text.contains("ИИ №2") && o.text.contains("АУДИТ ДОКАЗАТЕЛЬСТВ · ИИ №3"), "council output keeps three independent expert answers");
             check(o.text.contains("ИТОГ КООРДИНАТОРА"), "council output has a separate coordinator section");
-            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 1 && f.slotCalls(2) == 1, "council uses all three slots");
+            check(f.slotCalls(0) == 1 && f.slotCalls(1) == 1 && f.slotCalls(2) == 1 && f.slotCalls(3) == 1, "council uses three experts and the fourth-slot coordinator");
+        } finally { f.close(); }
+    }
+
+    private static void testStructuredClaimsReachCoordinator() {
+        Fake f = new Fake();
+        f.emitStructuredClaims = true;
+        try {
+            CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(1, false), f);
+            check(!f.promptsContaining("СТРУКТУРИРОВАННЫЕ КОНФЛИКТЫ").isEmpty(),
+                    "structured conflict map reaches coordinator");
+            check(!f.promptsContaining("NUMERIC_VALUE").isEmpty(), "numeric disagreement is typed");
+            check(!f.promptsContaining("POLARITY").isEmpty(), "polarity disagreement is typed");
+            check(o.text.contains("answer A") && !o.text.contains(StructuredClaimPolicy.START_MARKER),
+                    "claim payload is hidden from rendered expert answer");
         } finally { f.close(); }
     }
 
@@ -59,9 +74,10 @@ public final class CouncilExecutionEngineSmokeTest {
         try {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(3, false), f);
             check(o.text.contains("ВЗАИМНАЯ КРИТИКА · ИИ №1 проверяет ИИ №2"), "deep analysis has first critique section");
-            check(o.text.contains("ВЗАИМНАЯ КРИТИКА · ИИ №2 проверяет ИИ №1"), "deep analysis has second critique section");
+            check(o.text.contains("ВЗАИМНАЯ КРИТИКА · ИИ №2 проверяет ИИ №3"), "deep analysis has second critique section");
+            check(o.text.contains("ВЗАИМНАЯ КРИТИКА · ИИ №3 проверяет ИИ №1"), "deep analysis has third critique section");
             check(f.promptsContaining("взаимная критика").size() >= 1, "coordinator receives critique context");
-            check(f.slotCalls(2) == 1, "deep analysis runs coordinator after critique stage");
+            check(f.slotCalls(2) >= 2 && f.slotCalls(3) == 1, "deep analysis runs third reviewer and fourth-slot coordinator after critique stage");
         } finally { f.close(); }
     }
 
@@ -72,7 +88,7 @@ public final class CouncilExecutionEngineSmokeTest {
             CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(1, false), f);
             check(o.text.contains("ИИ №2 · model-b · ОШИБКА"), "failed expert is explicitly marked");
             check(o.text.contains("ВНИМАНИЕ"), "partial council report warns about the failure");
-            check(f.slotCalls(2) == 1, "coordinator still runs when one expert fails");
+            check(f.slotCalls(3) == 1, "coordinator still runs when one expert fails");
         } finally { f.close(); }
     }
 
@@ -100,15 +116,16 @@ public final class CouncilExecutionEngineSmokeTest {
     }
 
     private static void testRequestArraysAreDefensivelyCopied() {
-        String[] urls = {"u1", "u2", "u3"};
-        String[] models = {"m1", "m2", "m3"};
-        String[] keys = {"k1", "k2", "k3"};
-        String[] roles = {"r1", "r2", "r3"};
+        String[] urls = {"u1", "u2", "u3", "u4"};
+        String[] models = {"m1", "m2", "m3", "m4"};
+        String[] keys = {"k1", "k2", "k3", "k4"};
+        String[] roles = {"r1", "r2", "r3", "r4"};
         CouncilExecutionEngine.Request request = new CouncilExecutionEngine.Request("task", 0, urls, models, keys, roles, false, 1);
         urls[0] = "changed"; models[0] = "changed"; keys[0] = "changed"; roles[0] = "changed";
         check("u1".equals(request.endpoints[0]) && "m1".equals(request.models[0]), "endpoint/model snapshots are copied");
         check("k1".equals(request.keys[0]) && "r1".equals(request.roles[0]), "key/role snapshots are copied");
-        passed += 2;
+        check("u4".equals(request.endpoints[3]) && "m4".equals(request.models[3]) && "k4".equals(request.keys[3]) && "r4".equals(request.roles[3]), "fourth coordinator slot is copied");
+        passed += 3;
     }
 
     private static void testCallbackToneAndProgressAreReported() {
@@ -136,27 +153,42 @@ public final class CouncilExecutionEngineSmokeTest {
         volatile String lastPrompt = "";
         volatile String searchResults = "";
         volatile boolean failIndependentSecond;
+        volatile boolean emitStructuredClaims;
         volatile int searchCalls;
 
         CouncilExecutionEngine engine() { return new CouncilExecutionEngine(pool); }
         CouncilExecutionEngine.Request request(int mode, boolean search) {
             return new CouncilExecutionEngine.Request("Test task", mode,
-                    new String[]{"https://a.example/v1", "https://b.example/v1", "https://c.example/v1"},
-                    new String[]{"model-a", "model-b", "model-c"},
-                    new String[]{"key-a", "key-b", "key-c"}, new String[]{"role-a", "role-b", "role-c"}, search, 2);
+                    new String[]{"https://a.example/v1", "https://b.example/v1", "https://c.example/v1", "https://d.example/v1"},
+                    new String[]{"model-a", "model-b", "model-c", "model-d"},
+                    new String[]{"key-a", "key-b", "key-c", "key-d"}, new String[]{"role-a", "role-b", "role-c", "role-d"}, search, 2);
         }
         @Override public boolean isCancelled() { return cancelled.get(); }
         @Override public String callApi(int slot, String endpoint, String model, String key, String prompt, String role) {
             calls.add(slot + "|" + prompt);
             lastPrompt = prompt;
             if (slot == 1 && failIndependentSecond && prompt.startsWith("Независимо реши")) return "Ошибка API: simulated failure";
-            if (prompt.startsWith("Проведи независимый аудит")) return "audit result";
+            if (slot == 1 && prompt.startsWith("Проведи независимый аудит ответа")) return "audit result";
+            if (emitStructuredClaims && slot == 0 && prompt.startsWith("Реши задачу самостоятельно")) return structuredAnswer("answer A", 10, "positive", "source-a");
+            if (emitStructuredClaims && slot == 1 && prompt.startsWith("Независимо реши")) return structuredAnswer("answer B", 8, "negative", "source-b");
+            if (slot == 2 && prompt.startsWith("Проведи независимый аудит доказательств")) return "evidence falsification report";
             if (prompt.startsWith("Реши задачу самостоятельно")) return "answer A";
             if (prompt.startsWith("Независимо реши")) return "answer B";
             if (prompt.contains("ОТВЕТ ДРУГОГО ЭКСПЕРТА ДЛЯ КРИТИКИ")) return "critique result";
-            if (slot == 2) return "coordinator result";
+            if (slot == 3) return "coordinator result";
             return "primary answer";
         }
+        private String structuredAnswer(String answer, double value, String polarity, String sourceId) {
+            String json = "{\"schema_version\":1,\"claims\":[{"
+                    + "\"id\":\"revenue\",\"statement\":\"Revenue rises\","
+                    + "\"numeric_value\":" + value + ",\"unit\":\"%\","
+                    + "\"polarity\":\"" + polarity + "\",\"time_horizon\":\"12 months\","
+                    + "\"confidence\":0.8,\"evidence_class\":\"measured_data\","
+                    + "\"stakeholders\":[\"investor\"],\"reversible\":true,"
+                    + "\"source_quote\":\"Revenue estimate\",\"source_id\":\"" + sourceId + "\"}]}";
+            return answer + "\n\n" + StructuredClaimPolicy.START_MARKER + json + StructuredClaimPolicy.END_MARKER;
+        }
+
         @Override public String searchWeb(String task, int contextMode) { searchCalls++; return searchResults; }
         @Override public String partialReport() { return "PARTIAL_REPORT"; }
         @Override public boolean isApiFailure(String value) {
