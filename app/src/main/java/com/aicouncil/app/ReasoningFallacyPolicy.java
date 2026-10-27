@@ -42,8 +42,9 @@ public final class ReasoningFallacyPolicy {
     }
 
     private static void addIf(List<String> out, int initialSize, boolean condition, String message) {
-        if (!condition || out.size() - initialSize >= MAX_SIGNALS || out.contains(message)) return;
-        out.add("логический риск — возможный сигнал, требуется проверка контекста: " + message);
+        String formatted = "логический риск — возможный сигнал, требуется проверка контекста: " + message;
+        if (!condition || out.size() - initialSize >= MAX_SIGNALS || out.contains(formatted)) return;
+        out.add(formatted);
     }
 
     private static boolean appealToIgnorance(String text) {
@@ -63,7 +64,7 @@ public final class ReasoningFallacyPolicy {
                 "everyone does it", "everyone believes it", "everybody uses it", "everyone uses it",
                 "most people do it", "усі так роблять", "усі так вважають", "всі використовують");
         boolean validation = hasAny(text, "значит правильно", "поэтому правильно", "значит это верно",
-                "so it is right", "therefore it is correct", "so it must be true", "отже це правильно", "тому це вірно");
+                "so it is right", "therefore it is correct", "so it must be true", "so it must be correct", "therefore it must be correct", "отже це правильно", "тому це вірно");
         return crowd && validation;
     }
 
