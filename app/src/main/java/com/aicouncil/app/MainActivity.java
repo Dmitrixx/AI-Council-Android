@@ -1528,11 +1528,15 @@ public class MainActivity extends Activity {
                             throw new java.io.IOException("Не удалось извлечь текст.");
                         }
                         String block = MaterialImportPolicy.formatMaterialBlock(i + 1, uris.size(), safeName, image, extracted);
-                        if (!MaterialImportPolicy.canAppend(combined.length(), block.length())) {
-                            throw new java.io.IOException("Превышен общий лимит текста пакетного импорта ("
-                                    + MaterialImportPolicy.MAX_BATCH_TEXT_CHARS + " символов).");
+                        int separatorChars = combined.length() > 0 ? 1 : 0;
+                        int contentWithSeparator = combined.length() + separatorChars;
+                        int contentLimit = MaterialImportPolicy.MAX_BATCH_TEXT_CHARS - MaterialImportPolicy.MAX_BATCH_WARNING_CHARS;
+                        if (!MaterialImportPolicy.canAppend(contentWithSeparator, block.length())
+                                || contentWithSeparator + block.length() > contentLimit) {
+                            throw new java.io.IOException("Превышен лимит текста материалов с резервом под предупреждения ("
+                                    + contentLimit + " символов содержимого).");
                         }
-                        if (combined.length() > 0) combined.append("\n");
+                        if (separatorChars > 0) combined.append("\n");
                         combined.append(block);
                         successCount++;
                     } catch (Exception itemError) {
