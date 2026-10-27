@@ -54,7 +54,8 @@ public final class CouncilLaunchPolicy {
     public static int[] requiredProviderIndices(int mode) {
         if (mode == 0) return new int[]{0};
         if (mode == 2) return new int[]{0, 1};
-        return new int[]{0, 1, 2};
+        if (mode == 1 || mode == 3) return new int[]{0, 1, 2, 3};
+        return new int[]{0};
     }
 
     public static int clampWebContextMode(int selected, int modeCount) {
