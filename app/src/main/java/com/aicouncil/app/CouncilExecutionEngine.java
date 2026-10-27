@@ -38,16 +38,16 @@ public final class CouncilExecutionEngine {
                        String[] roles, boolean webSearchEnabled, int webContextMode) {
             this.task = task == null ? "" : task;
             this.mode = Math.max(0, Math.min(3, mode));
-            this.endpoints = copy3(endpoints);
-            this.models = copy3(models);
-            this.keys = copy3(keys);
-            this.roles = copy3(roles);
+            this.endpoints = copy4(endpoints);
+            this.models = copy4(models);
+            this.keys = copy4(keys);
+            this.roles = copy4(roles);
             this.webSearchEnabled = webSearchEnabled;
             this.webContextMode = Math.max(0, Math.min(2, webContextMode));
         }
 
-        private static String[] copy3(String[] values) {
-            String[] copy = new String[3];
+        private static String[] copy4(String[] values) {
+            String[] copy = new String[4];
             for (int i = 0; i < copy.length; i++) copy[i] = values != null && i < values.length && values[i] != null ? values[i] : "";
             return copy;
         }
@@ -158,90 +158,137 @@ public final class CouncilExecutionEngine {
     private String executeCouncil(Request r, Callbacks cb, String task) throws InterruptedException {
         cb.onExpertState(0, "◉ Работает", Tone.PRIMARY);
         cb.onExpertState(1, "◉ Работает", Tone.SECONDARY);
-        cb.onProgress("Этап 1 из 3 · независимые ответы", Tone.PRIMARY, 15);
+        cb.onExpertState(2, "◉ Проверяет доказательства", Tone.SECONDARY);
+        cb.onExpertState(3, "— Ожидает синтеза", Tone.MUTED);
+        cb.onProgress("Этап 1 из 2 · три независимых эксперта", Tone.PRIMARY, 12);
+
         Future<String> first = workers.submit(() -> cb.callApi(0, r.endpoints[0], r.models[0], r.keys[0],
                 StructuredClaimPolicy.addContract("Реши задачу самостоятельно. Покажи ключевые шаги, допущения и неопределённости.\n\nЗАДАЧА:\n" + task
                         + DeliberationIntelligence.expertAddendum(0, r.task)), r.roles[0]));
         Future<String> second = workers.submit(() -> cb.callApi(1, r.endpoints[1], r.models[1], r.keys[1],
                 StructuredClaimPolicy.addContract("Независимо реши задачу другим способом, проверь факты и расчёты. Укажи неопределённости.\n\nЗАДАЧА:\n" + task
                         + DeliberationIntelligence.expertAddendum(1, r.task)), r.roles[1]));
-        String rawA = getFuture(first, cb), rawB = getFuture(second, cb);
-        boolean aFailed = cb.isApiFailure(rawA), bFailed = cb.isApiFailure(rawB);
+        Future<String> third = workers.submit(() -> cb.callApi(2, r.endpoints[2], r.models[2], r.keys[2],
+                StructuredClaimPolicy.addContract("Проведи независимый аудит доказательств и попробуй опровергнуть сильнейшие гипотезы. "
+                        + "Не повторяй первые ответы: укажи альтернативные объяснения, критические недостающие данные, источник/измерение, "
+                        + "которое изменило бы вывод, и самый дешёвый следующий тест.\n\nЗАДАЧА:\n" + task
+                        + DeliberationIntelligence.expertAddendum(2, r.task)), r.roles[2]));
+
+        String rawA = getFuture(first, cb), rawB = getFuture(second, cb), rawC = getFuture(third, cb);
+        boolean aFailed = cb.isApiFailure(rawA), bFailed = cb.isApiFailure(rawB), cFailed = cb.isApiFailure(rawC);
         StructuredClaimPolicy.ParsedResponse parsedA = aFailed ? null : StructuredClaimPolicy.parseResponse(rawA);
         StructuredClaimPolicy.ParsedResponse parsedB = bFailed ? null : StructuredClaimPolicy.parseResponse(rawB);
+        StructuredClaimPolicy.ParsedResponse parsedC = cFailed ? null : StructuredClaimPolicy.parseResponse(rawC);
         String a = parsedA == null ? rawA : parsedA.answer;
         String b = parsedB == null ? rawB : parsedB.answer;
+        String c = parsedC == null ? rawC : parsedC.answer;
         java.util.List<ExpertClaim> claimsA = parsedA == null ? java.util.Collections.<ExpertClaim>emptyList() : parsedA.claims;
         java.util.List<ExpertClaim> claimsB = parsedB == null ? java.util.Collections.<ExpertClaim>emptyList() : parsedB.claims;
+        java.util.List<ExpertClaim> claimsC = parsedC == null ? java.util.Collections.<ExpertClaim>emptyList() : parsedC.claims;
         cb.onExpertState(0, aFailed ? "! Ошибка" : "✓ Ответ готов", aFailed ? Tone.ERROR : Tone.PRIMARY);
         cb.onExpertState(1, bFailed ? "! Ошибка" : "✓ Ответ готов", bFailed ? Tone.ERROR : Tone.SECONDARY);
-        cb.onProgress(null, Tone.PRIMARY, 55);
+        cb.onExpertState(2, cFailed ? "! Ответ неполный" : "✓ Доказательства проверены", cFailed ? Tone.ERROR : Tone.SECONDARY);
+        cb.onProgress(null, Tone.PRIMARY, 48);
         if (cb.isCancelled()) throw new InterruptedException("Выполнение остановлено пользователем");
-
-        String critiqueA = "", critiqueB = "";
-        boolean critiqueAFailed = false, critiqueBFailed = false;
-        if (aFailed && bFailed) {
-            return "Оба независимых эксперта не смогли завершить запрос.\n\nИИ №1 · " + r.models[0] + ":\n" + a
+        if (aFailed && bFailed && cFailed) {
+            cb.onExpertState(3, "— Не запускался", Tone.MUTED);
+            return "Три независимых эксперта не смогли завершить запрос.\n\nИИ №1 · " + r.models[0] + ":\n" + a
                     + "\n\nИИ №2 · " + r.models[1] + ":\n" + b
+                    + "\n\nИИ №3 · аудитор доказательств · " + r.models[2] + ":\n" + c
                     + "\n\nКоординатор не запускался, чтобы не выдавать ошибки API за содержательные ответы.";
         }
+
+        String critiqueA = "", critiqueB = "", critiqueC = "";
+        boolean critiqueAFailed = false, critiqueBFailed = false, critiqueCFailed = false;
         if (r.mode == 3) {
-            cb.onExpertState(0, aFailed ? "! Ответ неполный" : "◉ Критикует ответ №2", aFailed ? Tone.ERROR : Tone.PRIMARY);
-            cb.onExpertState(1, bFailed ? "! Ответ неполный" : "◉ Критикует ответ №1", bFailed ? Tone.ERROR : Tone.SECONDARY);
-            cb.onProgress("Этап 2 из 3 · взаимная критика независимых ответов", Tone.COORDINATOR, 55);
-            final String answerA = a, answerB = b;
-            Future<String> critiqueAFuture = workers.submit(() -> aFailed
-                    ? "Критика ИИ №2 не выполнена: исходный ответ ИИ №1 недоступен."
-                    : cb.callApi(0, r.endpoints[0], r.models[0], r.keys[0], CouncilAnalysisPolicy.buildCritiquePrompt(task, answerA, answerB, 1), r.roles[0]));
-            Future<String> critiqueBFuture = workers.submit(() -> bFailed
-                    ? "Критика ИИ №1 не выполнена: исходный ответ ИИ №2 недоступен."
-                    : cb.callApi(1, r.endpoints[1], r.models[1], r.keys[1], CouncilAnalysisPolicy.buildCritiquePrompt(task, answerB, answerA, 2), r.roles[1]));
+            cb.onExpertState(0, aFailed ? "! Критика пропущена" : "◉ Критикует ИИ №2", aFailed ? Tone.ERROR : Tone.PRIMARY);
+            cb.onExpertState(1, bFailed ? "! Критика пропущена" : "◉ Критикует ИИ №3", bFailed ? Tone.ERROR : Tone.SECONDARY);
+            cb.onExpertState(2, cFailed ? "! Критика пропущена" : "◉ Критикует ИИ №1", cFailed ? Tone.ERROR : Tone.SECONDARY);
+            cb.onProgress("Этап 2 из 3 · циклическая критика трёх экспертов", Tone.COORDINATOR, 53);
+            final String answerA = a, answerB = b, answerC = c;
+            final boolean failedA = aFailed, failedB = bFailed, failedC = cFailed;
+            Future<String> critiqueAFuture = workers.submit(() -> (failedA || failedB)
+                    ? "Критика пропущена: ответ проверяемого эксперта недоступен."
+                    : cb.callApi(0, r.endpoints[0], r.models[0], r.keys[0],
+                        CouncilAnalysisPolicy.buildCritiquePrompt(task, answerA, answerB, 1), r.roles[0]));
+            Future<String> critiqueBFuture = workers.submit(() -> (failedB || failedC)
+                    ? "Критика пропущена: ответ проверяемого эксперта недоступен."
+                    : cb.callApi(1, r.endpoints[1], r.models[1], r.keys[1],
+                        CouncilAnalysisPolicy.buildCritiquePrompt(task, answerB, answerC, 2), r.roles[1]));
+            Future<String> critiqueCFuture = workers.submit(() -> (failedC || failedA)
+                    ? "Критика пропущена: ответ проверяемого эксперта недоступен."
+                    : cb.callApi(2, r.endpoints[2], r.models[2], r.keys[2],
+                        CouncilAnalysisPolicy.buildCritiquePrompt(task, answerC, answerA, 3), r.roles[2]));
             critiqueA = getFuture(critiqueAFuture, cb);
             critiqueB = getFuture(critiqueBFuture, cb);
-            critiqueAFailed = cb.isApiFailure(critiqueA) || critiqueA.startsWith("Критика ИИ №2 не выполнена");
-            critiqueBFailed = cb.isApiFailure(critiqueB) || critiqueB.startsWith("Критика ИИ №1 не выполнена");
+            critiqueC = getFuture(critiqueCFuture, cb);
+            critiqueAFailed = cb.isApiFailure(critiqueA) || critiqueA.startsWith("Критика пропущена");
+            critiqueBFailed = cb.isApiFailure(critiqueB) || critiqueB.startsWith("Критика пропущена");
+            critiqueCFailed = cb.isApiFailure(critiqueC) || critiqueC.startsWith("Критика пропущена");
             cb.onExpertState(0, critiqueAFailed ? "! Критика неполная" : "✓ Критика готова", critiqueAFailed ? Tone.ERROR : Tone.PRIMARY);
             cb.onExpertState(1, critiqueBFailed ? "! Критика неполная" : "✓ Критика готова", critiqueBFailed ? Tone.ERROR : Tone.SECONDARY);
+            cb.onExpertState(2, critiqueCFailed ? "! Критика неполная" : "✓ Критика готова", critiqueCFailed ? Tone.ERROR : Tone.SECONDARY);
             cb.onProgress(null, Tone.PRIMARY, 68);
             if (cb.isCancelled()) throw new InterruptedException("Выполнение остановлено пользователем");
         }
-        cb.onExpertState(2, "◉ Сравнивает", Tone.COORDINATOR);
-        cb.onProgress(r.mode == 3 ? "Этап 3 из 3 · координатор проверяет ответы и критику" : "Этап 2 из 2 · координатор сравнивает ответы", Tone.COORDINATOR, r.mode == 3 ? 78 : 70);
+
+        cb.onExpertState(3, "◉ Сравнивает", Tone.COORDINATOR);
+        cb.onProgress(r.mode == 3 ? "Этап 3 из 3 · координатор синтезирует три позиции" : "Этап 2 из 2 · координатор синтезирует три позиции", Tone.COORDINATOR, r.mode == 3 ? 78 : 66);
         String localMap = "";
-        if (!(aFailed && bFailed)) {
+        if (!aFailed && !bFailed) {
             localMap = DeliberationIntelligence.formatForCoordinator(
-                    DeliberationIntelligence.analyze(r.task, aFailed ? "" : a, bFailed ? "" : b));
+                    DeliberationIntelligence.analyze(r.task, a, b));
         }
-        String typedConflicts = StructuredClaimPolicy.formatConflictsForCoordinator(claimsA, claimsB);
-        if (!typedConflicts.isEmpty()) {
-            localMap = localMap.isEmpty() ? typedConflicts : localMap + "\n\n" + typedConflicts;
+        if (!bFailed && !cFailed) {
+            String mapBC = DeliberationIntelligence.formatForCoordinator(
+                    DeliberationIntelligence.analyze(r.task, b, c));
+            if (!mapBC.isEmpty()) localMap = localMap.isEmpty() ? "КАРТА ИИ №2 ↔ ИИ №3:\n" + mapBC
+                    : localMap + "\n\nКАРТА ИИ №2 ↔ ИИ №3:\n" + mapBC;
         }
-        String structuredStatus = "";
-        if (parsedA != null || parsedB != null) {
-            structuredStatus = "\n\nСТАТУС СТРУКТУРИРОВАНИЯ: эксперт A="
-                    + (parsedA != null && parsedA.structured ? claimsA.size() + " утверждений JSON" : "проза / JSON недоступен")
-                    + "; эксперт B="
-                    + (parsedB != null && parsedB.structured ? claimsB.size() + " утверждений JSON" : "проза / JSON недоступен")
-                    + ". Отсутствие JSON не означает, что содержательный ответ неверен.";
+        if (!aFailed && !cFailed) {
+            String mapAC = StructuredClaimPolicy.formatConflictsForCoordinator(claimsA, claimsC);
+            if (!mapAC.isEmpty()) localMap = localMap.isEmpty() ? "КАРТА ИИ №1 ↔ ИИ №3:\n" + mapAC
+                    : localMap + "\n\nКАРТА ИИ №1 ↔ ИИ №3:\n" + mapAC;
         }
-        String reviewerPrompt = CouncilAnalysisPolicy.buildCoordinatorOpening() +
-                (localMap.isEmpty() ? "" : "\n\nЛОКАЛЬНАЯ КАРТА РАЗНОГЛАСИЙ (посчитана приложением, не моделью; проверь её и не выдавай за внешний источник):\n" + localMap) +
-                structuredStatus +
-                "\n\nЗАДАЧА ПОЛЬЗОВАТЕЛЯ:\n" + task + "\n\nОТВЕТ ИИ №1 (" + r.models[0] + "):\n" + a + "\n\nОТВЕТ ИИ №2 (" + r.models[1] + "):\n" + b +
-                (r.mode == 3 ? "\n\nВЗАИМНАЯ КРИТИКА ИИ №1:\n" + critiqueA + "\n\nВЗАИМНАЯ КРИТИКА ИИ №2:\n" + critiqueB +
-                        "\n\nОцени критику так же критически: не принимай замечание только потому, что оно высказано. Отдели найденную ошибку от гипотезы, а неразрешённое разногласие оставь явно открытым. Учитывай base rates и то, что изменило бы позицию." : "") +
-                "\n\nЕсли веб-поиск не дал источников, не заявляй, что факты подтверждены интернетом. Явно укажи остаточный риск и что изменило бы итоговый вывод.";
-        String review = cb.callApi(2, r.endpoints[2], r.models[2], r.keys[2], reviewerPrompt, r.roles[2]);
+        String typedAB = StructuredClaimPolicy.formatConflictsForCoordinator(claimsA, claimsB);
+        String typedBC = StructuredClaimPolicy.formatConflictsForCoordinator(claimsB, claimsC);
+        String typedAC = StructuredClaimPolicy.formatConflictsForCoordinator(claimsA, claimsC);
+        if (!typedAB.isEmpty()) localMap = localMap.isEmpty() ? "КАРТА ИИ №1 ↔ ИИ №2:\n" + typedAB
+                : localMap + "\n\nКАРТА ИИ №1 ↔ ИИ №2:\n" + typedAB;
+        if (!typedBC.isEmpty()) localMap = localMap.isEmpty() ? "КАРТА ИИ №2 ↔ ИИ №3:\n" + typedBC
+                : localMap + "\n\nКАРТА ИИ №2 ↔ ИИ №3:\n" + typedBC;
+        if (!typedAC.isEmpty()) localMap = localMap.isEmpty() ? "КАРТА ИИ №1 ↔ ИИ №3:\n" + typedAC
+                : localMap + "\n\nКАРТА ИИ №1 ↔ ИИ №3:\n" + typedAC;
+        String structuredStatus = "СТАТУС СТРУКТУРИРОВАНИЯ: эксперт A="
+                + (parsedA != null && parsedA.structured ? claimsA.size() + " утверждений JSON" : "проза / JSON недоступен")
+                + "; эксперт B=" + (parsedB != null && parsedB.structured ? claimsB.size() + " утверждений JSON" : "проза / JSON недоступен")
+                + "; эксперт C=" + (parsedC != null && parsedC.structured ? claimsC.size() + " утверждений JSON" : "проза / JSON недоступен")
+                + ". Отсутствие JSON не означает, что содержательный ответ неверен.";
+        String reviewerPrompt = CouncilAnalysisPolicy.buildCoordinatorOpening()
+                + (localMap.isEmpty() ? "" : "\n\nЛОКАЛЬНАЯ КАРТА РАЗНОГЛАСИЙ (посчитана приложением, не моделью; проверь её и не выдавай за внешний источник):\n" + localMap)
+                + "\n\n" + structuredStatus
+                + "\n\nЗАДАЧА ПОЛЬЗОВАТЕЛЯ:\n" + task
+                + "\n\nОТВЕТ ИИ №1 (" + r.models[0] + "):\n" + a
+                + "\n\nОТВЕТ ИИ №2 (" + r.models[1] + "):\n" + b
+                + "\n\nАУДИТОР ДОКАЗАТЕЛЬСТВ · ИИ №3 (" + r.models[2] + "):\n" + c
+                + (r.mode == 3 ? "\n\nВЗАИМНАЯ КРИТИКА ИИ №1 → ИИ №2:\n" + critiqueA
+                    + "\n\nВЗАИМНАЯ КРИТИКА ИИ №2 → ИИ №3:\n" + critiqueB
+                    + "\n\nВЗАИМНАЯ КРИТИКА ИИ №3 → ИИ №1:\n" + critiqueC
+                    + "\n\nПроверь критику так же критически: не принимай замечание только потому, что оно высказано. Отдели ошибку от гипотезы и оставь неразрешённое разногласие открытым." : "")
+                + "\n\nСохрани критические риски и остаточную неопределённость; не усредняй несовместимые оценки. Если веб-поиск не дал источников, не утверждай, что факты подтверждены интернетом.";
+        String review = cb.callApi(3, r.endpoints[3], r.models[3], r.keys[3], reviewerPrompt, r.roles[3]);
         boolean reviewFailed = cb.isApiFailure(review);
-        cb.onExpertState(2, reviewFailed ? "! Ошибка" : "✓ Итог готов", reviewFailed ? Tone.ERROR : Tone.COORDINATOR);
+        cb.onExpertState(3, reviewFailed ? "! Ошибка" : "✓ Итог готов", reviewFailed ? Tone.ERROR : Tone.COORDINATOR);
         cb.onProgress(null, Tone.COORDINATOR, 100);
         String result = "✦ ИИ №1 · " + r.models[0] + (aFailed ? " · ОШИБКА" : "") + "\n\n" + a
-                + "\n\n────────────────────\n\n✦ ИИ №2 · " + r.models[1] + (bFailed ? " · ОШИБКА" : "") + "\n\n" + b;
+                + "\n\n────────────────────\n\n✦ ИИ №2 · " + r.models[1] + (bFailed ? " · ОШИБКА" : "") + "\n\n" + b
+                + "\n\n────────────────────\n\n🔬 АУДИТ ДОКАЗАТЕЛЬСТВ · ИИ №3 · " + r.models[2] + (cFailed ? " · ОШИБКА" : "") + "\n\n" + c;
         if (r.mode == 3) result += "\n\n────────────────────\n\n🔎 ВЗАИМНАЯ КРИТИКА · ИИ №1 проверяет ИИ №2\n\n" + critiqueA
-                + "\n\n────────────────────\n\n🔎 ВЗАИМНАЯ КРИТИКА · ИИ №2 проверяет ИИ №1\n\n" + critiqueB;
-        result += "\n\n────────────────────\n\n🏁 ИТОГ КООРДИНАТОРА · " + r.models[2] + "\n\n" + review
-                + ((aFailed || bFailed || reviewFailed || critiqueAFailed || critiqueBFailed)
-                ? "\n\n⚠️ ВНИМАНИЕ: один или несколько этапов завершились ошибкой либо пропущены. Результат неполный и требует дополнительной проверки." : "");
+                + "\n\n────────────────────\n\n🔎 ВЗАИМНАЯ КРИТИКА · ИИ №2 проверяет ИИ №3\n\n" + critiqueB
+                + "\n\n────────────────────\n\n🔎 ВЗАИМНАЯ КРИТИКА · ИИ №3 проверяет ИИ №1\n\n" + critiqueC;
+        result += "\n\n────────────────────\n\n🏁 ИТОГ КООРДИНАТОРА · " + r.models[3] + "\n\n" + review
+                + ((aFailed || bFailed || cFailed || reviewFailed || critiqueAFailed || critiqueBFailed || critiqueCFailed)
+                ? "\n\n⚠️ ВНИМАНИЕ: один или несколько этапов завершились ошибкой либо были пропущены. Результат неполный и требует дополнительной проверки." : "");
         return result;
     }
 
