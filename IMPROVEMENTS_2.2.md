@@ -1,7 +1,8 @@
-# Improvements applied in 2.2.x / 2.20.x
+# Improvements applied in 2.2.x / 2.22.x
 
 ## Shipped (recent autonomous)
 
+- **2.22.0** Negation-aware polarity (RU+UK), km/miles and currency clashes, premise forks, crux ranking, steelman and residual-risk quality gaps, Ukrainian `від` arithmetic.
 - **2.20.0** Deliberation map: recommendation-target clash, missing stakeholders, case vs base rate, confidence only next to an explicit uncertainty word, resolution line for the coordinator, English `% of` and `×` arithmetic. CI no longer downgrades versionName to 2.14.0. UI version constant matches Gradle.
 - **2.14.0** DeliberationIntelligence: causation vs correlation, time-horizon split, scope (case vs base rate), year clashes, premise fork, reversibility gap. Directional antonyms and confidence mismatch are now in source. Irreversible tasks route to deep analysis. Smoke role-length cap aligned to 3600 so CI can pass.
 - **2.13.0** ExpertRolePolicy: explicit guards against base-rate neglect, planning fallacy, and overconfidence on rare events; confidence anchored to reference class.

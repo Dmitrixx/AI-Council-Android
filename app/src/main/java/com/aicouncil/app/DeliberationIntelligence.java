@@ -97,6 +97,13 @@ public final class DeliberationIntelligence {
             long expected = base * p / 100;
             if (expected != claimed) faults.add(new ArithmeticFault(m.group(0), String.valueOf(expected)));
         }
+        Pattern pctUk = Pattern.compile("(\\d+)\\s*%\\s*від\\s*(\\d+)\\s*=\\s*(\\d+)");
+        m = pctUk.matcher(text);
+        while (m.find()) {
+            long p = Long.parseLong(m.group(1)), base = Long.parseLong(m.group(2)), claimed = Long.parseLong(m.group(3));
+            long expected = base * p / 100;
+            if (expected != claimed) faults.add(new ArithmeticFault(m.group(0), String.valueOf(expected)));
+        }
         Pattern times = Pattern.compile("(\\d+)\\s*[×xX]\\s*(\\d+)\\s*=\\s*(\\d+)");
         m = times.matcher(text);
         while (m.find()) {
@@ -165,6 +172,9 @@ public final class DeliberationIntelligence {
         detectScope(a, b, conflicts);
         detectOptionChoice(a, b, conflicts);
         detectMissingStakeholders(task, a, b, missing);
+        detectUnitClash(a, b, conflicts);
+        detectPremiseFork(a, b, conflicts);
+        rankConflicts(conflicts);
 
         int hedge = hedgeScore(a + " " + b);
         int agreement = jaccardAgreement(a, b);
@@ -188,7 +198,8 @@ public final class DeliberationIntelligence {
     }
 
     public static String formatForCoordinator(Brief brief) {
-        if (brief == null || (brief.conflicts.isEmpty() && brief.missing.isEmpty() && brief.agreement > 70)) return "";
+        if (brief == null) return "";
+        if (brief.conflicts.isEmpty() && brief.missing.isEmpty() && brief.qualityGaps.isEmpty() && brief.agreement > 70) return "";
         StringBuilder sb = new StringBuilder("ЛОКАЛЬНАЯ КАРТА РАЗНОГЛАСИЙ:\n");
         if (!brief.conflicts.isEmpty()) {
             sb.append("РАСХОЖДЕНИЯ:\n");
@@ -207,7 +218,7 @@ public final class DeliberationIntelligence {
             for (String gap : brief.qualityGaps) sb.append("• ").append(gap).append("\n");
         }
         sb.append(resolutionLine(brief)).append("\n");
-        sb.append("Не усредняй метки residual risk, доказательства, масштаб, выбор и направленные конфликты. ");
+        sb.append("Не усредняй метки residual risk, доказательства, масштаб, выбор, единицы, валюту, предпосылки и направленные конфликты. ");
         sb.append("Если назван пропущенный стейкхолдер — скажи, как вывод его затрагивает или что данных нет. ");
         sb.append("Предпочитай ответы с более высокой evidence density; при разрыве ≥20 явно укажи предпочтение.\n");
         return sb.toString().trim();
@@ -341,21 +352,55 @@ public final class DeliberationIntelligence {
     }
 
     private static void detectPolarity(String a, String b, List<String> conflicts) {
-        int affA = count(a.toLowerCase(Locale.ROOT), "да", "рекомендую", "стоит", "нужно", "лучше", "согласен", "yes", "recommend", "should", "better");
-        int negA = count(a.toLowerCase(Locale.ROOT), "нет", "не рекомендую", "не стоит", "нельзя", "не согласен", "no", "do not recommend", "should not", "avoid");
-        int affB = count(b.toLowerCase(Locale.ROOT), "да", "рекомендую", "стоит", "нужно", "лучше", "согласен", "yes", "recommend", "should", "better");
-        int negB = count(b.toLowerCase(Locale.ROOT), "нет", "не рекомендую", "не стоит", "нельзя", "не согласен", "no", "do not recommend", "should not", "avoid");
+        int affA = polarityAffirm(a), negA = polarityNegate(a);
+        int affB = polarityAffirm(b), negB = polarityNegate(b);
         if ((affA > negA && negB > affB) || (negA > affA && affB > negB)) {
             conflicts.add("полярность: противоположные рекомендации (да/нет, рекомендовать/не рекомендовать)");
         }
     }
 
+    /** Affirmative markers after negated phrases are removed, so «не рекомендую» is not a yes. */
+    private static int polarityAffirm(String text) {
+        String stripped = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        String[] negated = {
+                "do not recommend", "don't recommend", "should not", "do not",
+                "не рекомендую", "не стоит", "не варто", "не согласен", "не згоден",
+                "не можна", "нельзя", "не раджу"
+        };
+        for (String phrase : negated) stripped = stripped.replace(phrase, " ");
+        return countTokens(stripped,
+                "да", "так", "рекомендую", "стоит", "варто", "нужно", "потрібно",
+                "лучше", "краще", "согласен", "згоден", "раджу",
+                "yes", "recommend", "should", "better");
+    }
+
+    private static int polarityNegate(String text) {
+        String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        int n = countTokens(lower, "нет", "ні", "нельзя", "no", "avoid", "уникай", "уникати");
+        String[] phrases = {
+                "не рекомендую", "не стоит", "не варто", "не согласен", "не згоден",
+                "не можна", "не раджу", "do not recommend", "should not"
+        };
+        for (String phrase : phrases) if (lower.contains(phrase)) n++;
+        return n;
+    }
+
+    private static int countTokens(String text, String... words) {
+        if (text == null || text.isEmpty()) return 0;
+        String[] parts = text.toLowerCase(Locale.ROOT).split("[^\\p{L}\\p{N}]+");
+        Set<String> have = new HashSet<String>();
+        for (String part : parts) if (!part.isEmpty()) have.add(part);
+        int found = 0;
+        for (String word : words) if (have.contains(word)) found++;
+        return found;
+    }
+
     /** Marker kept so older CI patches treat this file as already upgraded. */
     private static void directionalConflicts(String la, String lb, List<String> conflicts) {
-        boolean growA = la.contains("рост") || la.contains("увеличить") || la.contains("рекомендую запуск") || la.contains("growth") || la.contains("increase");
-        boolean fallA = la.contains("падение") || la.contains("уменьшить") || la.contains("избеж") || la.contains("decline") || la.contains("decrease") || la.contains("avoid");
-        boolean growB = lb.contains("рост") || lb.contains("увеличить") || lb.contains("рекомендую запуск") || lb.contains("growth") || lb.contains("increase");
-        boolean fallB = lb.contains("падение") || lb.contains("уменьшить") || lb.contains("избеж") || lb.contains("decline") || lb.contains("decrease") || lb.contains("avoid");
+        boolean growA = la.contains("рост") || la.contains("увеличить") || la.contains("рекомендую запуск") || la.contains("growth") || la.contains("increase") || la.contains("зростан") || la.contains("збільш");
+        boolean fallA = la.contains("падение") || la.contains("уменьшить") || la.contains("избеж") || la.contains("decline") || la.contains("decrease") || la.contains("avoid") || la.contains("падін") || la.contains("зменш") || la.contains("уник");
+        boolean growB = lb.contains("рост") || lb.contains("увеличить") || lb.contains("рекомендую запуск") || lb.contains("growth") || lb.contains("increase") || lb.contains("зростан") || lb.contains("збільш");
+        boolean fallB = lb.contains("падение") || lb.contains("уменьшить") || lb.contains("избеж") || lb.contains("decline") || lb.contains("decrease") || lb.contains("avoid") || lb.contains("падін") || lb.contains("зменш") || lb.contains("уник");
         if ((growA && fallB) || (fallA && growB)) {
             conflicts.add("направление: противоположные векторы (рост/падение, рекомендовать/избегать)");
         }
@@ -396,12 +441,12 @@ public final class DeliberationIntelligence {
     }
 
     private static final String[][] STAKEHOLDERS = {
-            {"пользовател", "user"},
-            {"клиент", "заказчик", "customer"},
-            {"пациент", "patient"},
-            {"сотрудник", "персонал", "employee"},
-            {"регулятор", "regulator"},
-            {"инвестор", "investor"}
+            {"пользовател", "user", "користувач"},
+            {"клиент", "заказчик", "customer", "клієнт"},
+            {"пациент", "patient", "пацієнт"},
+            {"сотрудник", "персонал", "employee", "співробітник"},
+            {"регулятор", "regulator", "регулятор"},
+            {"инвестор", "investor", "інвестор"}
     };
 
     private static void detectMissingStakeholders(String task, String a, String b, List<String> missing) {
@@ -454,9 +499,13 @@ public final class DeliberationIntelligence {
         boolean next = lower.contains("следующ") || lower.contains("проверить") || lower.contains("next step");
         boolean decision = lower.contains("рекоменд") || lower.contains("стоит ") || lower.contains("выбира");
         boolean premortem = lower.contains("pre-mortem") || lower.contains("премортем") || lower.contains("если провал");
+        boolean steel = lower.contains("steelman") || lower.contains("оппонент") || lower.contains("контраргумент") || lower.contains("сильный против");
+        boolean residual = lower.contains("residual") || lower.contains("остаточн");
         if (!range) gaps.add(who + ": нет диапазона уверенности");
         if (!next) gaps.add(who + ": нет следующего проверяемого шага");
         if (decision && !premortem) gaps.add(who + ": решение без pre-mortem");
+        if (decision && !steel) gaps.add(who + ": решение без steelman");
+        if (decision && !residual) gaps.add(who + ": решение без residual risk");
     }
 
     private static void detectConfidence(String a, String b, List<String> conflicts) {
@@ -539,5 +588,117 @@ public final class DeliberationIntelligence {
         if (decision && !mentionsRollback) {
             conflicts.add("обратимость: решение без оценки отката (one-way / two-way)");
         }
+    }
+
+    private static final class Measure {
+        final double raw;
+        final String label;
+        final String family;
+        final double canonical;
+        Measure(double raw, String label, String family, double canonical) {
+            this.raw = raw;
+            this.label = label;
+            this.family = family;
+            this.canonical = canonical;
+        }
+    }
+
+    private static void detectUnitClash(String a, String b, List<String> conflicts) {
+        Measure left = firstMeasure(a), right = firstMeasure(b);
+        if (left == null || right == null || !left.family.equals(right.family) || left.label.equals(right.label)) return;
+        if ("money".equals(left.family)) {
+            conflicts.add("валюта: одно сравнение в разной валюте (" + trimNum(left.raw) + " " + left.label
+                    + " vs " + trimNum(right.raw) + " " + right.label + ")");
+            return;
+        }
+        double denom = Math.max(Math.abs(left.canonical), Math.abs(right.canonical));
+        double rel = denom == 0 ? 0 : Math.abs(left.canonical - right.canonical) / denom;
+        double rawDenom = Math.max(Math.abs(left.raw), Math.abs(right.raw));
+        double rawRel = rawDenom == 0 ? 0 : Math.abs(left.raw - right.raw) / rawDenom;
+        if (rel <= 0.12 && rawRel > 0.05) return;
+        conflicts.add("единицы: одинаковое число в разных единицах (" + trimNum(left.raw) + " " + left.label
+                + " vs " + trimNum(right.raw) + " " + right.label + ")");
+    }
+
+    private static String trimNum(double value) {
+        if (Math.abs(value - Math.rint(value)) < 0.001) return String.valueOf((long) Math.rint(value));
+        return String.valueOf(Math.round(value * 100.0) / 100.0);
+    }
+
+    private static Measure firstMeasure(String text) {
+        if (text == null || text.isEmpty()) return null;
+        Matcher matcher = Pattern.compile(
+                "(\\d+(?:[\\.,]\\d+)?)\\s*(километр\\p{L}*|км|km|miles?|миль|мили|мил[яи]\\p{L}*|кг|kg|фунт\\p{L}*|lbs?|°\\s*[cf]|celsius|fahrenheit|usd|долл\\p{L}*|руб\\p{L}*|грн|uah|евро|eur|\\$|€|часов|часа|час|hours?|дней|дня|день|days?|минут\\p{L}*|mins?)")
+                .matcher(text.toLowerCase(Locale.ROOT));
+        if (!matcher.find()) return null;
+        double raw = Double.parseDouble(matcher.group(1).replace(',', '.'));
+        String unit = matcher.group(2).replace(" ", "");
+        if (unit.startsWith("км") || unit.startsWith("km") || unit.startsWith("километр")) return new Measure(raw, "км", "length", raw);
+        if (unit.startsWith("мил") || unit.startsWith("mile")) return new Measure(raw, "миль", "length", raw * 1.60934);
+        if (unit.equals("кг") || unit.equals("kg")) return new Measure(raw, "кг", "mass", raw);
+        if (unit.startsWith("фунт") || unit.equals("lb") || unit.equals("lbs")) return new Measure(raw, "фунт", "mass", raw * 0.453592);
+        if (unit.startsWith("°c") || unit.equals("celsius")) return new Measure(raw, "°C", "temp", raw);
+        if (unit.startsWith("°f") || unit.equals("fahrenheit")) return new Measure(raw, "°F", "temp", (raw - 32.0) * 5.0 / 9.0);
+        if (unit.startsWith("руб")) return new Measure(raw, "руб", "money", raw);
+        if (unit.equals("usd") || unit.startsWith("долл") || unit.equals("$")) return new Measure(raw, "usd", "money", raw);
+        if (unit.equals("грн") || unit.equals("uah")) return new Measure(raw, "грн", "money", raw);
+        if (unit.equals("евро") || unit.equals("eur") || unit.equals("€")) return new Measure(raw, "eur", "money", raw);
+        if (unit.startsWith("час") || unit.startsWith("hour")) return new Measure(raw, "ч", "time", raw);
+        if (unit.startsWith("д") || unit.startsWith("day")) return new Measure(raw, "дн", "time", raw * 24.0);
+        if (unit.startsWith("минут") || unit.startsWith("min")) return new Measure(raw, "мин", "time", raw / 60.0);
+        return null;
+    }
+
+    private static final String[][] PREMISE_PAIRS = {
+            {"неэластич", "эластич"},
+            {"нееластич", "еластич"},
+            {"inelastic", "elastic"},
+            {"необратим", "обратим"},
+            {"дефицит", "профицит"},
+            {"монопол", "конкурен"}
+    };
+
+    private static void detectPremiseFork(String a, String b, List<String> conflicts) {
+        for (String[] pair : PREMISE_PAIRS) {
+            int left = premisePole(a, pair[0], pair[1]);
+            int right = premisePole(b, pair[0], pair[1]);
+            if (left * right < 0) {
+                conflicts.add("предпосылки: противоположные допущения (" + pair[1] + " / " + pair[0] + ")");
+                return;
+            }
+        }
+    }
+
+    private static int premisePole(String text, String negative, String positive) {
+        String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        if (lower.contains(negative)) return -1;
+        if (lower.contains(positive)) return 1;
+        return 0;
+    }
+
+    private static void rankConflicts(List<String> conflicts) {
+        Collections.sort(conflicts, new java.util.Comparator<String>() {
+            public int compare(String left, String right) {
+                return cruxRank(left) - cruxRank(right);
+            }
+        });
+    }
+
+    private static int cruxRank(String conflict) {
+        if (conflict.startsWith("полярность")) return 0;
+        if (conflict.startsWith("выбор")) return 1;
+        if (conflict.startsWith("направление")) return 2;
+        if (conflict.startsWith("валюта") || conflict.startsWith("единицы")) return 3;
+        if (conflict.startsWith("предпосылки")) return 4;
+        if (conflict.startsWith("причина")) return 5;
+        if (conflict.startsWith("масштаб выборки")) return 6;
+        if (conflict.startsWith("уверенность")) return 7;
+        if (conflict.startsWith("residual")) return 8;
+        if (conflict.startsWith("даты")) return 9;
+        if (conflict.startsWith("горизонт")) return 10;
+        if (conflict.startsWith("масштаб")) return 11;
+        if (conflict.startsWith("число")) return 12;
+        if (conflict.startsWith("доказательства")) return 13;
+        return 14;
     }
 }

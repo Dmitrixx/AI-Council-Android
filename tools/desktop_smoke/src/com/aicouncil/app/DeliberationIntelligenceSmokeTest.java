@@ -146,6 +146,65 @@ public final class DeliberationIntelligenceSmokeTest {
                 "Скидка 70% разрушит маржу, и это тоже не калибровка уверенности.");
         check("bare percents are not a confidence clash", !containsPrefix(strayPercent.conflicts, "уверенность"));
 
+        DeliberationIntelligence.Brief negated = DeliberationIntelligence.analyze(
+                "Чи варто запускати?",
+                "Так, варто і потрібно запускати. Раджу почати зараз.",
+                "Ні, не рекомендую і не варто. Не згоден із запуском.");
+        check("ukrainian polarity is a real clash", containsPrefix(negated.conflicts, "полярность"));
+        DeliberationIntelligence.Brief cabinet = DeliberationIntelligence.analyze(
+                "Стоит ли?",
+                "Кабинет уже готов, интернет стабилен, ответ будет позже сегодня.",
+                "Кабинет уже готов, интернет стабилен, ответ будет позже сегодня.");
+        check("word кабинет is not a no", !containsPrefix(cabinet.conflicts, "полярность"));
+        DeliberationIntelligence.Brief realNo = DeliberationIntelligence.analyze(
+                "Стоит ли запускать?",
+                "Да, рекомендую запуск и лучше начать сейчас.",
+                "Не рекомендую запуск: нельзя и не стоит.");
+        check("negated recommend clashes with a yes", containsPrefix(realNo.conflicts, "полярность"));
+
+        DeliberationIntelligence.Brief falseYes = DeliberationIntelligence.analyze(
+                "Что делать с запуском?",
+                "Не рекомендую запуск в этом квартале, нельзя спешить.",
+                "Не рекомендую запуск в этом квартале, нельзя спешить.");
+        check("negation is not read as agreement to launch", !containsPrefix(falseYes.conflicts, "полярность"));
+
+        DeliberationIntelligence.Brief units = DeliberationIntelligence.analyze(
+                "Какая дистанция до склада?",
+                "Дистанция около 10 км при текущем маршруте.",
+                "Дистанция около 10 миль при текущем маршруте.");
+        check("same number in km and miles is a unit clash", containsPrefix(units.conflicts, "единицы"));
+        DeliberationIntelligence.Brief converted = DeliberationIntelligence.analyze(
+                "Какая дистанция до склада?",
+                "Дистанция около 10 км при текущем маршруте.",
+                "Дистанция около 6.2 миль при текущем маршруте.");
+        check("converted miles are not a fake unit clash", !containsPrefix(converted.conflicts, "единицы"));
+
+        DeliberationIntelligence.Brief money = DeliberationIntelligence.analyze(
+                "Сколько стоит лицензия?",
+                "Лицензия стоит 100 руб в год при базовом тарифе.",
+                "Лицензия стоит 100 usd в год при базовом тарифе.");
+        check("same number in different currencies is flagged", containsPrefix(money.conflicts, "валюта"));
+
+        DeliberationIntelligence.Brief premise = DeliberationIntelligence.analyze(
+                "Как цена влияет на выручку?",
+                "Допущение: спрос неэластичен, поэтому цену можно поднять.",
+                "Допущение: спрос эластичен, поэтому цену поднимать нельзя.");
+        check("opposite premises are a crux", containsPrefix(premise.conflicts, "предпосылки"));
+
+        DeliberationIntelligence.Brief ukDirection = DeliberationIntelligence.analyze(
+                "Що буде з виручкою?",
+                "Очікую зростання виручки і раджу запуск.",
+                "Очікую падіння виручки і краще уникнути запуску.");
+        check("ukrainian direction markers clash", containsPrefix(ukDirection.conflicts, "направление"));
+
+        check("ukrainian percent-of is checked", DeliberationIntelligence.localCheckFooter("20% від 200 = 50").contains("40"));
+
+        DeliberationIntelligence.Brief ranked = DeliberationIntelligence.analyze(
+                "Чем хранить данные и какой бюджет?",
+                "Рекомендую PostgreSQL. Бюджет 100 руб. Уверенность 80%.",
+                "Рекомендую SQLite. Бюджет 250 руб. Уверенность 40%.");
+        check("choice outranks a bare number", ranked.conflicts.get(0).startsWith("выбор"));
+
         System.out.println("DeliberationIntelligenceSmokeTest: " + checks + "/" + checks + " passed");
     }
 
