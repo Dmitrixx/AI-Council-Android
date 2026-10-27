@@ -83,6 +83,7 @@ public class MainActivity extends Activity {
     private volatile boolean ocrCancelRequested = false;
     private android.app.AlertDialog ocrDownloadDialog;
     private String pendingCyrillicLanguage = "rus";
+    private String pendingBatchPhotoOcrLanguage = "eng";
     private volatile boolean documentImportInProgress = false;
     private Spinner followUpExpertSpinner;
     private String pendingExportText = "";
@@ -1043,8 +1044,21 @@ public class MainActivity extends Activity {
         catch (Exception e) { setStatus("Не удалось открыть выбор файла: " + e.getMessage(), RED); }
     }
 
-    /** Select up to eight supported documents, source files and photos for one combined preview. */
+    /** Select OCR language before the shared multi-select documents/photos picker. */
     private void importMultipleMaterials() {
+        final String[] choices = {"English / Latin", "Русский", "Українська"};
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Язык распознавания текста на фото")
+            .setMessage("Документы обрабатываются по своему формату; выбранный язык применяется только к фотографиям.")
+            .setItems(choices, (dialog, which) -> launchMultipleMaterialsPicker(
+                    which == 1 ? "rus" : (which == 2 ? "ukr" : "eng")))
+            .setNegativeButton("Отмена", null)
+            .show();
+    }
+
+    private void launchMultipleMaterialsPicker(String photoOcrLanguage) {
+        pendingBatchPhotoOcrLanguage = "rus".equals(photoOcrLanguage) || "ukr".equals(photoOcrLanguage)
+                ? photoOcrLanguage : "eng";
         android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
@@ -1496,14 +1510,47 @@ public class MainActivity extends Activity {
      * Processes selected files sequentially on the I/O worker. Image bytes stay on-device:
      * photos are converted to editable OCR text before the user can insert them into a task.
      */
-    private void handleTaskMaterialsImport(java.util.List<android.net.Uri> uris) {
+    private void handleTaskMaterialsImport(java.util.List<android.net.Uri> uris, String photoOcrLanguage) {
         if (uris == null || uris.isEmpty()) { setStatus("Не выбраны материалы.", MUTED); return; }
+        if (documentImportInProgress || imageOcrInProgress) {
+            setStatus("Другая операция импорта или OCR уже выполняется.", MUTED); return;
+        }
+        final String language = "rus".equals(photoOcrLanguage) || "ukr".equals(photoOcrLanguage)
+                ? photoOcrLanguage : "eng";
+        final boolean hasPhotos = containsPhotoMaterial(uris);
+        if (hasPhotos && !"eng".equals(language) && !hasUsableCyrillicModel(language)) {
+            String languageLabel = "ukr".equals(language) ? "украинской" : "русской";
+            new android.app.AlertDialog.Builder(this)
+                .setTitle("Загрузка модели OCR")
+                .setMessage("Для распознавания " + languageLabel + " текста на выбранных фото нужно один раз скачать и проверить языковую модель примерно 3,7 МБ. Она сохранится в закрытой папке приложения. Сами фото останутся на устройстве и не будут отправлены на сервер для распознавания. Продолжить?")
+                .setNegativeButton("Отмена", null)
+                .setPositiveButton("Продолжить", (dialog, which) -> startTaskMaterialsImport(uris, language, true))
+                .show();
+            return;
+        }
+        startTaskMaterialsImport(uris, language, hasPhotos);
+    }
+
+    private boolean containsPhotoMaterial(java.util.List<android.net.Uri> uris) {
+        if (uris == null) return false;
+        for (android.net.Uri uri : uris) {
+            if (uri == null) continue;
+            String name = displayNameForUri(uri);
+            if (MaterialImportPolicy.isImageFile(name, getContentResolver().getType(uri))) return true;
+        }
+        return false;
+    }
+
+    private void startTaskMaterialsImport(java.util.List<android.net.Uri> uris, String photoOcrLanguage, boolean hasPhotos) {
         if (documentImportInProgress || imageOcrInProgress) {
             setStatus("Другая операция импорта или OCR уже выполняется.", MUTED); return;
         }
         documentImportInProgress = true;
         imageOcrInProgress = true;
         ocrCancelRequested = false;
+        if (hasPhotos && ("rus".equals(photoOcrLanguage) || "ukr".equals(photoOcrLanguage))) {
+            showOcrDownloadDialogIfNeeded(photoOcrLanguage);
+        }
         setStatus("Обрабатываем выбранные файлы и фото локально…", BLUE);
         ioPool.submit(() -> {
             StringBuilder combined = new StringBuilder();
@@ -1523,7 +1570,7 @@ public class MainActivity extends Activity {
                         if (!MaterialImportPolicy.isSupportedMaterial(safeName, mimeType)) {
                             throw new java.io.IOException("Тип файла не поддерживается.");
                         }
-                        String extracted = extractMaterialText(uri, safeName, mimeType, image);
+                        String extracted = extractMaterialText(uri, safeName, mimeType, image, photoOcrLanguage);
                         if (extracted == null || extracted.trim().isEmpty()) {
                             throw new java.io.IOException("Не удалось извлечь текст.");
                         }
@@ -1581,13 +1628,15 @@ public class MainActivity extends Activity {
                 documentImportInProgress = false;
                 imageOcrInProgress = false;
                 ocrCancelRequested = false;
+                runOnUiThread(this::dismissOcrDownloadDialog);
             }
         });
     }
 
-    private String extractMaterialText(android.net.Uri uri, String displayName, String mimeType, boolean image) throws Exception {
+    private String extractMaterialText(android.net.Uri uri, String displayName, String mimeType, boolean image,
+                                       String photoOcrLanguage) throws Exception {
         if (image) {
-            return ocrDocumentProcessor.process(OcrDocumentProcessor.Input.image(uri, "eng"),
+            return ocrDocumentProcessor.process(OcrDocumentProcessor.Input.image(uri, photoOcrLanguage),
                     () -> ocrCancelRequested || Thread.currentThread().isInterrupted(),
                     message -> runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) setStatus(message, BLUE); }))
                     .previewText();
@@ -2443,7 +2492,7 @@ public class MainActivity extends Activity {
                 setStatus("Выбор файлов и фото отменён.", MUTED); return;
             }
             try {
-                handleTaskMaterialsImport(selectedMaterialUris(data));
+                handleTaskMaterialsImport(selectedMaterialUris(data), pendingBatchPhotoOcrLanguage);
             } catch (Exception e) {
                 setStatus(e.getMessage() == null ? "Не удалось прочитать выбор файлов." : e.getMessage(), RED);
             }
