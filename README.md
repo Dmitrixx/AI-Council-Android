@@ -1,4 +1,4 @@
-# AI Council 2.27.0
+# AI Council 2.30.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
@@ -28,6 +28,7 @@ Additional capabilities:
 - **Privacy** — encrypted API keys, secret redaction in errors and before send, optional “local only” mode
 - **History & projects** in local SQLite, voice draft, themes (system / light / dark), accessibility live regions
 - **Local deliberation intelligence** — disagreement map with negation-aware polarity (Russian and Ukrainian), unit and currency clashes, premise forks, ranked cruxes, arithmetic checks (RU/UK/EN, including word arithmetic), and coordinator instructions not to average cruxes: urgency, evidence grade, obligation, step order, necessary vs sufficient, who decides, burden of proof, and swapped cause and effect.
+- **v2.30.0** — appeal to authority without evidence, emotional framing vs analysis, and false dichotomies are now ranked cruxes that must not be averaged.
 
 ## Supported providers (OpenAI-compatible)
 
