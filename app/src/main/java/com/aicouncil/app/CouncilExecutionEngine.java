@@ -204,8 +204,21 @@ public final class CouncilExecutionEngine {
             localMap = DeliberationIntelligence.formatForCoordinator(
                     DeliberationIntelligence.analyze(r.task, aFailed ? "" : a, bFailed ? "" : b));
         }
+        String typedConflicts = StructuredClaimPolicy.formatConflictsForCoordinator(claimsA, claimsB);
+        if (!typedConflicts.isEmpty()) {
+            localMap = localMap.isEmpty() ? typedConflicts : localMap + "\n\n" + typedConflicts;
+        }
+        String structuredStatus = "";
+        if (parsedA != null || parsedB != null) {
+            structuredStatus = "\n\nСТАТУС СТРУКТУРИРОВАНИЯ: эксперт A="
+                    + (parsedA != null && parsedA.structured ? claimsA.size() + " утверждений JSON" : "проза / JSON недоступен")
+                    + "; эксперт B="
+                    + (parsedB != null && parsedB.structured ? claimsB.size() + " утверждений JSON" : "проза / JSON недоступен")
+                    + ". Отсутствие JSON не означает, что содержательный ответ неверен.";
+        }
         String reviewerPrompt = CouncilAnalysisPolicy.buildCoordinatorOpening() +
                 (localMap.isEmpty() ? "" : "\n\nЛОКАЛЬНАЯ КАРТА РАЗНОГЛАСИЙ (посчитана приложением, не моделью; проверь её и не выдавай за внешний источник):\n" + localMap) +
+                structuredStatus +
                 "\n\nЗАДАЧА ПОЛЬЗОВАТЕЛЯ:\n" + task + "\n\nОТВЕТ ИИ №1 (" + r.models[0] + "):\n" + a + "\n\nОТВЕТ ИИ №2 (" + r.models[1] + "):\n" + b +
                 (r.mode == 3 ? "\n\nВЗАИМНАЯ КРИТИКА ИИ №1:\n" + critiqueA + "\n\nВЗАИМНАЯ КРИТИКА ИИ №2:\n" + critiqueB +
                         "\n\nОцени критику так же критически: не принимай замечание только потому, что оно высказано. Отдели найденную ошибку от гипотезы, а неразрешённое разногласие оставь явно открытым. Учитывай base rates и то, что изменило бы позицию." : "") +
