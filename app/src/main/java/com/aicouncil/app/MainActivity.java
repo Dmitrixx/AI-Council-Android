@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
     private static final int REQUEST_SAVE_MARKDOWN = 1408;
     private static final int REQUEST_OPEN_BACKUP = 1403;
     private static final int REQUEST_OPEN_TEXT = 1404;
+    private static final int REQUEST_OPEN_MATERIALS = 1410;
     private static final int REQUEST_OPEN_IMAGE = 1405;
     private static final int REQUEST_OPEN_IMAGE_CYRILLIC = 1406;
     private static final int REQUEST_OPEN_PDF_CYRILLIC = 1407;
@@ -299,12 +300,13 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams p = lp(-1, -2); p.topMargin = dp(top); parent.addView(c, p); return c;
     }
     private void showImportSheet() {
-        final String[] actions = {"Добавить документ · TXT / PDF / DOCX / XLSX", "Извлечь текст с изображения · OCR", "OCR кириллицы · русский / українська", "OCR кириллицы в сканированном PDF"};
+        final String[] actions = {"Выбрать несколько документов, файлов и фото", "Добавить один документ · TXT / PDF / DOCX / XLSX", "Извлечь текст с одного изображения · OCR", "OCR кириллицы · русский / українська", "OCR кириллицы в сканированном PDF"};
         new android.app.AlertDialog.Builder(this).setTitle("Добавить материалы")
             .setItems(actions, (dialog, which) -> {
-                if (which == 0) importTaskTextFile();
-                else if (which == 1) importTaskImage();
-                else if (which == 2) chooseCyrillicOcrLanguage();
+                if (which == 0) importMultipleMaterials();
+                else if (which == 1) importTaskTextFile();
+                else if (which == 2) importTaskImage();
+                else if (which == 3) chooseCyrillicOcrLanguage();
                 else chooseCyrillicPdfLanguage();
             }).setNegativeButton("Закрыть", null).show();
     }
@@ -395,14 +397,17 @@ public class MainActivity extends Activity {
         addQuickPromptActions(taskCard);
         // Progressive disclosure keeps the task composer focused on the actual question.
         boolean attachmentsExpanded = prefs.getBoolean("ui_attachments_expanded", false);
-        Button attachmentsToggle = button((attachmentsExpanded ? "⌃  Скрыть инструменты импорта" : "＋  Документы и изображения · PDF, DOCX, XLSX, OCR"), false);
-        taskCard.addView(attachmentsToggle, withTop(lp(-1, 46), 9)); attachmentsToggle.setVisibility(View.GONE);
+        Button attachmentsToggle = button((attachmentsExpanded ? "⌃  Скрыть инструменты импорта" : "＋  Документы, файлы и фото · выбрать несколько"), false);
+        taskCard.addView(attachmentsToggle, withTop(lp(-1, 46), 9));
         LinearLayout attachmentOptions = column();
         attachmentOptions.setPadding(dp(10), dp(8), dp(10), dp(10));
         attachmentOptions.setBackground(shape(Color.rgb(12, 18, 33), 18, Color.rgb(42, 55, 80)));
         attachmentOptions.setVisibility(attachmentsExpanded ? View.VISIBLE : View.GONE);
-        taskCard.addView(attachmentOptions, withTop(lp(-1, -2), 5)); attachmentOptions.setVisibility(View.GONE);
-        Button importTextButton = button("📎  Добавить файл · TXT / PDF / DOCX / XLSX", false);
+        taskCard.addView(attachmentOptions, withTop(lp(-1, -2), 5));
+        Button importMultipleButton = button("＋  Выбрать несколько файлов и фото", false);
+        attachmentOptions.addView(importMultipleButton, lp(-1, 46));
+        importMultipleButton.setOnClickListener(v -> importMultipleMaterials());
+        Button importTextButton = button("📎  Добавить один файл · TXT / PDF / DOCX / XLSX", false);
         attachmentOptions.addView(importTextButton, lp(-1, 44));
         importTextButton.setOnClickListener(v -> importTaskTextFile());
         Button importImageButton = button("🖼  Извлечь текст с изображения · OCR", false);
@@ -422,8 +427,8 @@ public class MainActivity extends Activity {
         attachmentsToggle.setOnClickListener(v -> {
             boolean expand = attachmentOptions.getVisibility() != View.VISIBLE;
             attachmentOptions.setVisibility(expand ? View.VISIBLE : View.GONE);
-            attachmentsToggle.setText(expand ? "⌃  Скрыть инструменты импорта" : "＋  Документы и изображения · PDF, DOCX, XLSX, OCR");
-            attachmentsToggle.setContentDescription(expand ? "Скрыть инструменты импорта" : "Показать инструменты импорта документов и изображений");
+            attachmentsToggle.setText(expand ? "⌃  Скрыть инструменты импорта" : "＋  Документы, файлы и фото · выбрать несколько");
+            attachmentsToggle.setContentDescription(expand ? "Скрыть инструменты импорта" : "Показать инструменты импорта документов, файлов и фото");
             prefs.edit().putBoolean("ui_attachments_expanded", expand).apply();
         });
         attachmentsToggle.setContentDescription(attachmentsExpanded ? "Скрыть инструменты импорта" : "Показать инструменты импорта документов и изображений");
@@ -1038,6 +1043,42 @@ public class MainActivity extends Activity {
         catch (Exception e) { setStatus("Не удалось открыть выбор файла: " + e.getMessage(), RED); }
     }
 
+    /** Select up to eight supported documents, source files and photos for one combined preview. */
+    private void importMultipleMaterials() {
+        android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(android.content.Intent.EXTRA_ALLOW_MULTIPLE, true);
+        intent.putExtra(android.content.Intent.EXTRA_MIME_TYPES, new String[]{
+            "text/*", "application/json", "application/xml", "application/javascript",
+            "application/x-yaml", "application/yaml", "application/toml", "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "image/jpeg", "image/png", "image/webp", "image/bmp", "image/gif"
+        });
+        try { startActivityForResult(intent, REQUEST_OPEN_MATERIALS); }
+        catch (Exception e) { setStatus("Не удалось открыть выбор файлов и фото: " + e.getMessage(), RED); }
+    }
+
+    private java.util.List<android.net.Uri> selectedMaterialUris(android.content.Intent data) throws java.io.IOException {
+        java.util.LinkedHashMap<String, android.net.Uri> unique = new java.util.LinkedHashMap<>();
+        android.content.ClipData clip = data == null ? null : data.getClipData();
+        if (clip != null) {
+            for (int i = 0; i < clip.getItemCount(); i++) {
+                android.net.Uri uri = clip.getItemAt(i) == null ? null : clip.getItemAt(i).getUri();
+                if (uri != null) unique.put(uri.toString(), uri);
+            }
+        } else if (data != null && data.getData() != null) {
+            unique.put(data.getData().toString(), data.getData());
+        }
+        if (unique.isEmpty()) throw new java.io.IOException("Не выбраны файлы.");
+        if (unique.size() > MaterialImportPolicy.MAX_SELECTED_FILES) {
+            throw new java.io.IOException("За один раз можно выбрать не более "
+                    + MaterialImportPolicy.MAX_SELECTED_FILES + " файлов или фото.");
+        }
+        return new java.util.ArrayList<>(unique.values());
+    }
+
     private void importTaskImage() {
         android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
@@ -1234,6 +1275,7 @@ public class MainActivity extends Activity {
     private void showExtractedTextPreview(String sourceType, String sourceName, String extractedText) {
         if (isFinishing() || isDestroyed() || prompt == null) return;
         final boolean isOcr = sourceType != null && sourceType.startsWith("OCR");
+        final boolean isBatch = "BATCH".equals(sourceType);
         final boolean isCyrillicOcr = sourceType != null && sourceType.contains("кириллица");
         final boolean isCyrillicPdfOcr = isCyrillicOcr && sourceType.contains("PDF");
         final EditText preview = edit("Проверьте и при необходимости исправьте извлечённый текст…", true);
@@ -1248,7 +1290,9 @@ public class MainActivity extends Activity {
 
         LinearLayout contentLayout = column();
         contentLayout.setPadding(dp(20), dp(4), dp(20), dp(4));
-        TextView details = text(isCyrillicPdfOcr
+        TextView details = text(isBatch
+            ? "Выбранные документы и файлы извлечены локально; для фото выполняется локальное OCR. Ничего не отправляется ИИ до нажатия «Добавить в задачу» и последующего запуска. Проверьте содержимое и предупреждения по пропущенным файлам."
+            : isCyrillicPdfOcr
             ? "Страницы PDF распознаны локально с помощью Tesseract. Модель языка хранится в закрытой папке приложения; сам PDF не отправлялся на сервер. Текущий лимит — " + ocrPdfPageLimit() + " страниц. OCR может ошибаться, поэтому проверьте результат. Ничего не добавится, пока вы не нажмёте «Добавить в задачу»."
             : isCyrillicOcr
                 ? "Кириллица распознана локально с помощью Tesseract. Модель языка хранится в закрытой папке приложения; изображение не загружалось на сервер. OCR может ошибаться, поэтому проверьте результат. Ничего не добавится, пока вы не нажмёте «Добавить в задачу»."
@@ -1448,6 +1492,131 @@ public class MainActivity extends Activity {
             }
         });
     }
+    /**
+     * Processes selected files sequentially on the I/O worker. Image bytes stay on-device:
+     * photos are converted to editable OCR text before the user can insert them into a task.
+     */
+    private void handleTaskMaterialsImport(java.util.List<android.net.Uri> uris) {
+        if (uris == null || uris.isEmpty()) { setStatus("Не выбраны материалы.", MUTED); return; }
+        if (documentImportInProgress || imageOcrInProgress) {
+            setStatus("Другая операция импорта или OCR уже выполняется.", MUTED); return;
+        }
+        documentImportInProgress = true;
+        imageOcrInProgress = true;
+        ocrCancelRequested = false;
+        setStatus("Обрабатываем выбранные файлы и фото локально…", BLUE);
+        ioPool.submit(() -> {
+            StringBuilder combined = new StringBuilder();
+            java.util.ArrayList<String> warnings = new java.util.ArrayList<>();
+            int successCount = 0;
+            try {
+                for (int i = 0; i < uris.size(); i++) {
+                    if (ocrCancelRequested || Thread.currentThread().isInterrupted()) {
+                        throw new java.io.IOException("Пакетный импорт отменён.");
+                    }
+                    android.net.Uri uri = uris.get(i);
+                    String rawName = displayNameForUri(uri);
+                    String safeName = MaterialImportPolicy.safeDisplayName(rawName);
+                    String mimeType = getContentResolver().getType(uri);
+                    boolean image = MaterialImportPolicy.isImageFile(safeName, mimeType);
+                    try {
+                        if (!MaterialImportPolicy.isSupportedMaterial(safeName, mimeType)) {
+                            throw new java.io.IOException("Тип файла не поддерживается.");
+                        }
+                        String extracted = extractMaterialText(uri, safeName, mimeType, image);
+                        if (extracted == null || extracted.trim().isEmpty()) {
+                            throw new java.io.IOException("Не удалось извлечь текст.");
+                        }
+                        String block = MaterialImportPolicy.formatMaterialBlock(i + 1, uris.size(), safeName, image, extracted);
+                        if (!MaterialImportPolicy.canAppend(combined.length(), block.length())) {
+                            throw new java.io.IOException("Превышен общий лимит текста пакетного импорта ("
+                                    + MaterialImportPolicy.MAX_BATCH_TEXT_CHARS + " символов).");
+                        }
+                        if (combined.length() > 0) combined.append("\n");
+                        combined.append(block);
+                        successCount++;
+                    } catch (Exception itemError) {
+                        String why = itemError.getMessage();
+                        if (why == null || why.trim().isEmpty()) why = itemError.getClass().getSimpleName();
+                        if (why.length() > 180) why = why.substring(0, 179) + "…";
+                        warnings.add(safeName + ": " + why.replace("\n", " ").replace("\r", " "));
+                    }
+                }
+                if (successCount == 0) {
+                    throw new java.io.IOException(warnings.isEmpty()
+                            ? "Не удалось извлечь содержимое выбранных материалов."
+                            : "Ни один файл не обработан: " + warnings.get(0));
+                }
+                if (!warnings.isEmpty()) {
+                    StringBuilder note = new StringBuilder("\n\n--- ПРЕДУПРЕЖДЕНИЯ ИМПОРТА ---\n");
+                    for (String warning : warnings) note.append("• ").append(warning).append("\n");
+                    if (MaterialImportPolicy.canAppend(combined.length(), note.length())) combined.append(note);
+                }
+                final String previewText = combined.toString();
+                final int imported = successCount;
+                final int failed = warnings.size();
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    showExtractedTextPreview("BATCH", "Материалы " + imported + "/" + uris.size(), previewText);
+                    setStatus(failed == 0
+                            ? "Извлечено материалов: " + imported + ". Проверьте общий предпросмотр перед вставкой."
+                            : "Извлечено материалов: " + imported + "; пропущено: " + failed + ". Подробности включены в предпросмотр.",
+                            failed == 0 ? TEAL : BLUE);
+                });
+            } catch (Exception e) {
+                String message = e.getMessage() == null || e.getMessage().trim().isEmpty()
+                        ? "Не удалось обработать выбранные материалы." : e.getMessage();
+                runOnUiThread(() -> {
+                    if (!isFinishing() && !isDestroyed()) new android.app.AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Пакетный импорт")
+                            .setMessage(message)
+                            .setPositiveButton("ОК", null).show();
+                });
+                runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) setStatus("Импорт не выполнен: " + message, RED); });
+            } finally {
+                documentImportInProgress = false;
+                imageOcrInProgress = false;
+                ocrCancelRequested = false;
+            }
+        });
+    }
+
+    private String extractMaterialText(android.net.Uri uri, String displayName, String mimeType, boolean image) throws Exception {
+        if (image) {
+            return ocrDocumentProcessor.process(OcrDocumentProcessor.Input.image(uri, "eng"),
+                    () -> ocrCancelRequested || Thread.currentThread().isInterrupted(),
+                    message -> runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) setStatus(message, BLUE); }))
+                    .previewText();
+        }
+        byte[] fileBytes;
+        try (InputStream stream = getContentResolver().openInputStream(uri)) {
+            if (stream == null) throw new java.io.IOException("Не удалось открыть файл.");
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192]; int n;
+            while ((n = stream.read(buffer)) != -1) {
+                if (bytes.size() + n > MAX_DOCUMENT_IMPORT_BYTES) {
+                    throw new java.io.IOException("Файл превышает 10 МБ.");
+                }
+                bytes.write(buffer, 0, n);
+            }
+            fileBytes = bytes.toByteArray();
+        }
+        String ext = extensionOf(displayName);
+        if (MaterialImportPolicy.isTextMaterial(displayName, mimeType)) {
+            if (fileBytes.length > MAX_TEXT_IMPORT_BYTES) {
+                throw new java.io.IOException("Текстовый файл превышает 256 КБ.");
+            }
+            return decodeImportedText(fileBytes, ext);
+        }
+        if ("pdf".equals(ext) || "application/pdf".equals(mimeType)) {
+            return ocrDocumentProcessor.process(OcrDocumentProcessor.Input.pdf(fileBytes, displayName, "eng", ocrPdfPageLimit()),
+                    () -> ocrCancelRequested || Thread.currentThread().isInterrupted(),
+                    message -> runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) setStatus(message, BLUE); }))
+                    .previewText();
+        }
+        return DocumentTextExtractor.extract(getApplicationContext(), fileBytes, displayName);
+    }
+
     private void handleCyrillicPdfImport(android.net.Uri uri, String language) {
         if (documentImportInProgress || imageOcrInProgress) {
             setStatus("Другая операция импорта или OCR уже выполняется.", MUTED);
@@ -2262,6 +2431,17 @@ public class MainActivity extends Activity {
                     .show();
             } else {
                 applyVoiceCandidate(candidates.get(0));
+            }
+            return;
+        }
+        if (requestCode == REQUEST_OPEN_MATERIALS) {
+            if (resultCode != RESULT_OK || data == null) {
+                setStatus("Выбор файлов и фото отменён.", MUTED); return;
+            }
+            try {
+                handleTaskMaterialsImport(selectedMaterialUris(data));
+            } catch (Exception e) {
+                setStatus(e.getMessage() == null ? "Не удалось прочитать выбор файлов." : e.getMessage(), RED);
             }
             return;
         }
