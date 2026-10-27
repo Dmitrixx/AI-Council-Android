@@ -196,6 +196,9 @@ public final class DeliberationIntelligence {
         detectExclusivity(a, b, conflicts);
         detectCalibration(a, b, evidenceA, evidenceB, conflicts);
         detectMissingAlternatives(task, a, b, missing);
+        detectConditionalFork(a, b, conflicts);
+        detectQuantifierClash(a, b, conflicts);
+        detectMetricKind(a, b, conflicts);
         rankConflicts(conflicts);
 
         int hedge = hedgeScore(a + " " + b);
@@ -243,6 +246,7 @@ public final class DeliberationIntelligence {
         sb.append("Не усредняй метки residual risk, доказательства, масштаб, выбор, единицы, валюту, предпосылки, исключительность и направленные конфликты. ");
         sb.append("Высокую уверенность при слабой опоре не переноси в итог как факт. ");
         sb.append("Если назван пропущенный стейкхолдер — скажи, как вывод его затрагивает или что данных нет. ");
+        sb.append("Условную рекомендацию не превращай в безусловную. Квантор «все» не сужай и не расширяй до «некоторые». Проценты и процентные пункты не считай одной метрикой. ");
         sb.append("Предпочитай ответы с более высокой evidence density; при разрыве ≥20 явно укажи предпочтение.\n");
         return sb.toString().trim();
     }
@@ -760,6 +764,77 @@ public final class DeliberationIntelligence {
                 || lower.contains(" vs ");
     }
 
+    /** One expert gates the action ("only if"); the other states it as categorical. */
+    private static void detectConditionalFork(String a, String b, List<String> conflicts) {
+        if (!isRecommendation(a) || !isRecommendation(b)) return;
+        if (isGated(a) == isGated(b)) return;
+        conflicts.add("условие: категоричная рекомендация против условной (только если / при условии)");
+    }
+
+    private static boolean isRecommendation(String text) {
+        String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        return lower.contains("рекоменд") || lower.contains("стоит выбрать") || lower.contains("i recommend")
+                || lower.contains("варто") || lower.contains("раджу");
+    }
+
+    private static boolean isGated(String text) {
+        String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        return lower.contains("только если") || lower.contains("лишь если") || lower.contains("only if")
+                || lower.contains("при условии") || lower.contains("за умови")
+                || lower.contains("если и только если") || lower.contains("не раньше чем")
+                || lower.contains("пока не ") || lower.contains("until ");
+    }
+
+    /** Universal claim versus a partial claim about a shared subject. */
+    private static void detectQuantifierClash(String a, String b, List<String> conflicts) {
+        int left = quantifierPole(a);
+        int right = quantifierPole(b);
+        if (left * right >= 0) return;
+        Set<String> shared = significantWords(a);
+        shared.retainAll(significantWords(b));
+        if (shared.isEmpty()) return;
+        conflicts.add("квантор: все против части («" + shared.iterator().next() + "»)");
+    }
+
+    private static int quantifierPole(String text) {
+        String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        String stripped = lower.replace("не всем", " ").replace("не всех", " ").replace("не все", " ")
+                .replace("не каждый", " ").replace("not all", " ").replace("не усі", " ");
+        boolean universal = stripped.contains("все клиент") || stripped.contains("всех клиент")
+                || stripped.contains("всем клиент") || stripped.contains("каждый клиент")
+                || stripped.contains("все пользовател") || stripped.contains("каждый пользовател")
+                || stripped.contains("во всех случаях") || stripped.contains("all users")
+                || stripped.contains("every user") || stripped.contains("all customers")
+                || stripped.contains("усі клієнт") || stripped.contains("кожен клієнт");
+        boolean partial = lower.contains("некотор") || lower.contains("не все") || lower.contains("не всех")
+                || lower.contains("не всем") || lower.contains("часть клиент") || lower.contains("часть пользовател")
+                || lower.contains("some users") || lower.contains("some customers")
+                || lower.contains("a subset") || lower.contains("не каждый") || lower.contains("деякі");
+        if (universal && partial) return 0;
+        if (universal) return 1;
+        if (partial) return -1;
+        return 0;
+    }
+
+    /** A percent change is not a percentage-point change. */
+    private static void detectMetricKind(String a, String b, List<String> conflicts) {
+        boolean pointsA = percentagePoints(a), pointsB = percentagePoints(b);
+        boolean percentA = plainPercent(a), percentB = plainPercent(b);
+        if ((pointsA && percentB) || (percentA && pointsB)) {
+            conflicts.add("метрика: проценты против процентных пунктов");
+        }
+    }
+
+    private static boolean percentagePoints(String text) {
+        String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        return lower.contains("п.п") || lower.contains("п. п") || lower.contains("процентных пункт")
+                || lower.contains("процентних пункт") || lower.contains("percentage point");
+    }
+
+    private static boolean plainPercent(String text) {
+        return text != null && text.contains("%") && !percentagePoints(text);
+    }
+
     private static void rankConflicts(List<String> conflicts) {
         Collections.sort(conflicts, new java.util.Comparator<String>() {
             public int compare(String left, String right) {
@@ -770,10 +845,10 @@ public final class DeliberationIntelligence {
 
     private static int cruxRank(String conflict) {
         if (conflict.startsWith("полярность") || conflict.startsWith("исключительность")) return 0;
-        if (conflict.startsWith("выбор")) return 1;
-        if (conflict.startsWith("направление")) return 2;
+        if (conflict.startsWith("выбор") || conflict.startsWith("условие")) return 1;
+        if (conflict.startsWith("направление") || conflict.startsWith("квантор")) return 2;
         if (conflict.startsWith("валюта") || conflict.startsWith("единицы")) return 3;
-        if (conflict.startsWith("предпосылки")) return 4;
+        if (conflict.startsWith("предпосылки") || conflict.startsWith("метрика")) return 4;
         if (conflict.startsWith("причина")) return 5;
         if (conflict.startsWith("масштаб выборки")) return 6;
         if (conflict.startsWith("калибровка")) return 7;

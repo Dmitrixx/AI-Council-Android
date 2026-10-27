@@ -233,6 +233,31 @@ public final class DeliberationIntelligenceSmokeTest {
                 "Маржа команды вырастет на 4 пункта, если объём удержать.");
         check("names a missing supplier", containsText(supplier.missing, "поставщик"));
 
+        DeliberationIntelligence.Brief gated = DeliberationIntelligence.analyze(
+                "Запускать новый тариф?",
+                "Рекомендую запуск тарифа сейчас, без дополнительных условий.",
+                "Рекомендую запуск тарифа только если отток удержится ниже плана.");
+        check("categorical versus only-if is a condition crux", containsPrefix(gated.conflicts, "условие"));
+        DeliberationIntelligence.Brief bothGated = DeliberationIntelligence.analyze(
+                "Запускать новый тариф?",
+                "Рекомендую запуск тарифа только если отток удержится.",
+                "Рекомендую запуск тарифа только если маржа не упадёт.");
+        check("two gated recommendations are not a condition crux", !containsPrefix(bothGated.conflicts, "условие"));
+
+        DeliberationIntelligence.Brief quant = DeliberationIntelligence.analyze(
+                "Кого затронет новый тариф?",
+                "Новый тариф нужен всем клиентам команды и каждому клиенту сегмента.",
+                "Новый тариф нужен некоторым клиентам команды, не всем.");
+        check("all versus some is a quantifier crux", containsPrefix(quant.conflicts, "квантор"));
+
+        DeliberationIntelligence.Brief metric = DeliberationIntelligence.analyze(
+                "Как изменилась маржа?",
+                "Маржа выросла на 10% за квартал.",
+                "Маржа выросла на 10 процентных пунктов за квартал.");
+        check("percent versus percentage points", containsPrefix(metric.conflicts, "метрика"));
+        check("condition outranks a bare metric", gated.conflicts.get(0).startsWith("условие")
+                || DeliberationIntelligence.resolutionLine(gated).contains("условие"));
+
         System.out.println("DeliberationIntelligenceSmokeTest: " + checks + "/" + checks + " passed");
     }
 
