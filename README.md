@@ -1,4 +1,4 @@
-# AI Council 2.20.0
+# AI Council 2.21.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
@@ -8,12 +8,12 @@ Modern shell: ink surfaces, mint accent, floating navigation and edge-to-edge co
 
 ## What it does
 
-AI Council turns a single prompt into a structured deliberation among up to three AI experts (you choose the providers and roles):
+AI Council turns a single prompt into a multi-stage deliberation using configurable provider slots. In Council mode, two experts answer independently and a third slot acts as coordinator; Deep analysis adds reciprocal critique.
 
 | Mode | Behaviour |
 |------|-----------|
 | ⚡ Quick answer | One expert replies |
-| 🤝 Council | Three experts answer independently, then a coordinator synthesises |
+| 🤝 Council | Two independent expert answers, then a separate coordinator synthesis |
 | 🛡 Audit | Two experts + critical review of the answer |
 | 🔬 Deep analysis | Full multi-round critique and refinement |
 | 🤖 Auto | Heuristic routing (RU / UK / EN) based on the prompt and free/paid slots |
@@ -61,7 +61,8 @@ Most business logic is deliberately kept **Android-independent** and covered by 
 - `ocr/OcrDocumentProcessor` + `OcrInputPolicy` + `OcrModelManager` — hybrid PDF/image OCR
 - `ChatCompletionsClient`, `ProviderModelsClient` — network with cancellation, size limits, secret redaction
 - `LocalDataStore` — SQLite history/projects/drafts
-- `DeliberationIntelligence` — full local disagreement map, arithmetic checks, residual risk detection, evidence density scoring and calibration signals
+- `DeliberationIntelligence` — local disagreement map, arithmetic checks, residual-risk detection, evidence-density scoring and calibration signals
+- `ExpertClaim` — new Android-independent typed claim contract (numeric value + unit, polarity, horizon, confidence, evidence class, stakeholders, reversibility and source quote/id). The contract and JVM smoke tests are in place; provider JSON extraction, graph persistence/UI and conflict migration remain follow-up work.
 - `SecretRedactor`, `ProviderErrorFormatter`, `PromptPrivacyPolicy`, `TaskRoutingPolicy`, …
 
 `MainActivity` still owns UI construction and some coordination (this is the largest remaining technical debt).
