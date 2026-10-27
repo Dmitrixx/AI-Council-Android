@@ -110,6 +110,7 @@ public final class StructuredClaimAnalyzer {
     }
 
     private static String unit(String value) {
+        if (value != null && "%".equals(value.trim())) return "%";
         String s = normalize(value).replace(" ", "");
         if (s.equals("kilometer") || s.equals("kilometers") || s.equals("kilometre") || s.equals("kilometres")) return "km";
         if (s.equals("mile") || s.equals("miles")) return "mi";
@@ -119,6 +120,7 @@ public final class StructuredClaimAnalyzer {
         if (s.equals("percent") || s.equals("percentage")) return "%";
         return s;
     }
+
     private static boolean isKm(String s) { return s.equals("km"); }
     private static boolean isMi(String s) { return s.equals("mi"); }
     private static boolean isM(String s) { return s.equals("m"); }
@@ -130,14 +132,22 @@ public final class StructuredClaimAnalyzer {
     }
     private static String normalize(String value) {
         if (value == null) return "";
+        String normalized = value.toLowerCase(Locale.ROOT).trim();
         StringBuilder b = new StringBuilder();
-        for (int i = 0; i < value.toLowerCase(Locale.ROOT).trim().length(); i++) {
-            char c = value.toLowerCase(Locale.ROOT).trim().charAt(i);
-            if (Character.isLetterOrDigit(c)) b.append(c);
-            else if (Character.isWhitespace(c)) b.append(' ');
+        boolean previousSpace = true;
+        for (int i = 0; i < normalized.length(); i++) {
+            char ch = normalized.charAt(i);
+            if (Character.isLetterOrDigit(ch)) {
+                b.append(ch);
+                previousSpace = false;
+            } else if (!previousSpace) {
+                b.append(' ');
+                previousSpace = true;
+            }
         }
-        return b.toString().trim().replaceAll("\\s+", " ");
+        return b.toString().trim();
     }
+
     private static String format(double value) {
         if (value == Math.rint(value)) return Long.toString((long) value);
         return Double.toString(value);
