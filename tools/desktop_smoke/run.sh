@@ -22,6 +22,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilLaunchPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FollowUpDialoguePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/InputImportPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/MaterialImportPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/BackupExportPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilAnalysisPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilExecutionEngine.java" \
@@ -69,6 +70,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.SettingsPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilLaunchPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.FollowUpDialoguePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.InputImportPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.MaterialImportPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.BackupExportPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilAnalysisPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilExecutionEngineSmokeTest
