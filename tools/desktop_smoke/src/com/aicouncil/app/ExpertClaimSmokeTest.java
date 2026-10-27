@@ -33,7 +33,7 @@ public final class ExpertClaimSmokeTest {
                 null, null, null, null, "", ""), "numeric unit required");
         expectInvalid(() -> new ExpertClaim("", "orphan quote", null, "", null, "",
                 null, null, null, null, "quoted text", ""), "source quote requires source id");
-        expectInvalid(() -> new ExpertClaim("", "empty statement", null, "", null, "",
+        expectInvalid(() -> new ExpertClaim("", "", null, "", null, "",
                 null, null, null, null, "", ""), "empty claim rejected");
         System.out.println("ExpertClaimSmokeTest: " + passed + "/" + passed + " passed");
     }
