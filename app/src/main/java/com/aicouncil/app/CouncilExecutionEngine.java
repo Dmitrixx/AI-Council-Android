@@ -152,13 +152,19 @@ public final class CouncilExecutionEngine {
         cb.onExpertState(1, "◉ Работает", Tone.SECONDARY);
         cb.onProgress("Этап 1 из 3 · независимые ответы", Tone.PRIMARY, 15);
         Future<String> first = workers.submit(() -> cb.callApi(0, r.endpoints[0], r.models[0], r.keys[0],
-                "Реши задачу самостоятельно. Покажи ключевые шаги, допущения и неопределённости.\n\nЗАДАЧА:\n" + task
-                        + DeliberationIntelligence.expertAddendum(0, r.task), r.roles[0]));
+                StructuredClaimPolicy.addContract("Реши задачу самостоятельно. Покажи ключевые шаги, допущения и неопределённости.\n\nЗАДАЧА:\n" + task
+                        + DeliberationIntelligence.expertAddendum(0, r.task)), r.roles[0]));
         Future<String> second = workers.submit(() -> cb.callApi(1, r.endpoints[1], r.models[1], r.keys[1],
-                "Независимо реши задачу другим способом, проверь факты и расчёты. Укажи неопределённости.\n\nЗАДАЧА:\n" + task
-                        + DeliberationIntelligence.expertAddendum(1, r.task), r.roles[1]));
-        String a = getFuture(first, cb), b = getFuture(second, cb);
-        boolean aFailed = cb.isApiFailure(a), bFailed = cb.isApiFailure(b);
+                StructuredClaimPolicy.addContract("Независимо реши задачу другим способом, проверь факты и расчёты. Укажи неопределённости.\n\nЗАДАЧА:\n" + task
+                        + DeliberationIntelligence.expertAddendum(1, r.task)), r.roles[1]));
+        String rawA = getFuture(first, cb), rawB = getFuture(second, cb);
+        boolean aFailed = cb.isApiFailure(rawA), bFailed = cb.isApiFailure(rawB);
+        StructuredClaimPolicy.ParsedResponse parsedA = aFailed ? null : StructuredClaimPolicy.parseResponse(rawA);
+        StructuredClaimPolicy.ParsedResponse parsedB = bFailed ? null : StructuredClaimPolicy.parseResponse(rawB);
+        String a = parsedA == null ? rawA : parsedA.answer;
+        String b = parsedB == null ? rawB : parsedB.answer;
+        java.util.List<ExpertClaim> claimsA = parsedA == null ? java.util.Collections.<ExpertClaim>emptyList() : parsedA.claims;
+        java.util.List<ExpertClaim> claimsB = parsedB == null ? java.util.Collections.<ExpertClaim>emptyList() : parsedB.claims;
         cb.onExpertState(0, aFailed ? "! Ошибка" : "✓ Ответ готов", aFailed ? Tone.ERROR : Tone.PRIMARY);
         cb.onExpertState(1, bFailed ? "! Ошибка" : "✓ Ответ готов", bFailed ? Tone.ERROR : Tone.SECONDARY);
         cb.onProgress(null, Tone.PRIMARY, 55);
