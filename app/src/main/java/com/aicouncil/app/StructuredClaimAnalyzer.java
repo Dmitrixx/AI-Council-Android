@@ -23,14 +23,22 @@ public final class StructuredClaimAnalyzer {
         public final String expertAValue;
         public final String expertBValue;
         public final String note;
+        public final String sourceA;
+        public final String sourceB;
+        public final String quoteA;
+        public final String quoteB;
 
         private Conflict(Type type, String statement, String expertAValue,
-                         String expertBValue, String note) {
+                         String expertBValue, String note, ExpertClaim left, ExpertClaim right) {
             this.type = type;
             this.statement = statement;
             this.expertAValue = expertAValue;
             this.expertBValue = expertBValue;
             this.note = note;
+            this.sourceA = left == null ? "" : left.sourceId;
+            this.sourceB = right == null ? "" : right.sourceId;
+            this.quoteA = left == null ? "" : left.sourceQuote;
+            this.quoteB = right == null ? "" : right.sourceQuote;
         }
     }
 
