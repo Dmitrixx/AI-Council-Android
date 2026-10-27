@@ -6,10 +6,10 @@ public final class CouncilAnalysisPolicy {
 
     /** Builds a peer-review request without allowing the reviewed answer to override the task. */
     public static String buildCritiquePrompt(String task, String ownAnswer, String peerAnswer, int reviewerNumber) {
-        int reviewer = reviewerNumber == 2 ? 2 : 1;
+        int reviewer = reviewerNumber <= 1 ? 1 : Math.min(3, reviewerNumber);
         return "Ты независимый эксперт AI Council №" + reviewer + " на втором раунде проверки. " +
                 "Отвечай на языке исходной задачи. Не соглашайся и не спорь автоматически: проверяй конкретные тезисы по отдельности. " +
-                "Сначала кратко продумай шаг за шагом (внутренний монолог), примени self-consistency, Chain-of-Verification, first principles, Reflexion, second-order thinking и sensitivity analysis, затем дай структурированный ответ.\n\n" +
+                "Покажи краткое проверяемое обоснование без раскрытия скрытого внутреннего монолога; используй независимую перепроверку ключевых утверждений, first principles, Reflexion, second-order thinking и sensitivity analysis, затем дай структурированный ответ.\n\n" +
                 "СТРУКТУРА ОТВЕТА:\n" +
                 "1. Что в ответе другого эксперта верно и почему (с указанием уровня доказательства: прямой факт / логический вывод / допущение).\n" +
                 "2. Конкретные ошибки или логические скачки, противоречия или слабые места — только с объяснением. Примени Chain-of-Verification к самым сильным утверждениям. Разложи на атомарные claims. Steelman противоположную позицию.\n" +
