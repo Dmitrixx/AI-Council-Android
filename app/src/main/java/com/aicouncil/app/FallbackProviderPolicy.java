@@ -16,7 +16,7 @@ public final class FallbackProviderPolicy {
     public static int chooseFallbackSlot(int failedSlot, boolean[] configured, boolean freeOnly, boolean[] markedFree) {
         if (configured == null) return -1;
         int failed = clampSlot(failedSlot);
-        int[] order = new int[]{2, 1, 0};
+        int[] order = new int[]{2, 1, 0, 3};
         for (int slot : order) {
             if (slot == failed) continue;
             if (!usable(slot, configured, freeOnly, markedFree)) continue;
@@ -40,7 +40,7 @@ public final class FallbackProviderPolicy {
 
     private static int clampSlot(int slot) {
         if (slot < 0) return 0;
-        if (slot > 2) return 2;
+        if (slot > 3) return 3;
         return slot;
     }
 
