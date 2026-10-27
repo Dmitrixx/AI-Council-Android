@@ -35,6 +35,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/PromptMetricsPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/TaskRoutingPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DeliberationIntelligence.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/DeliberationSignals.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ClaimGraph.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FallbackProviderPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertStatusPolicy.java" \

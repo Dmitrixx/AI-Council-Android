@@ -258,6 +258,58 @@ public final class DeliberationIntelligenceSmokeTest {
         check("condition outranks a bare metric", gated.conflicts.get(0).startsWith("условие")
                 || DeliberationIntelligence.resolutionLine(gated).contains("условие"));
 
+        check("english word arithmetic", DeliberationIntelligence.localCheckFooter("2 plus 3 equals 6").contains("5"));
+        check("english word arithmetic accepts a correct product", DeliberationIntelligence.findArithmetic("3 times 4 = 12 and 8 divided by 2 equals 4.").isEmpty());
+
+        DeliberationIntelligence.Brief urgent = DeliberationIntelligence.analyze(
+                "Когда запускать тариф?",
+                "Рекомендую запуск немедленно: действовать сейчас, без паузы.",
+                "Рекомендую запуск позже: лучше подождать и отложить старт.");
+        check("now versus wait is an urgency crux", containsPrefix(urgent.conflicts, "срочность"));
+
+        DeliberationIntelligence.Brief grade = DeliberationIntelligence.analyze(
+                "Работает ли добавка?",
+                "Систематический обзор и мета-анализ показывают умеренный эффект.",
+                "В моей практике один случай выглядел убедительно, это анекдот.");
+        check("meta-analysis versus anecdote is an evidence-grade crux", containsPrefix(grade.conflicts, "сила доказательств"));
+
+        DeliberationIntelligence.Brief order = DeliberationIntelligence.analyze(
+                "В каком порядке запускать?",
+                "Сначала миграция, затем запуск для пользователей.",
+                "Сначала запуск, затем миграция для пользователей.");
+        check("reversed steps are an order crux", containsPrefix(order.conflicts, "порядок"));
+        DeliberationIntelligence.Brief sameOrder = DeliberationIntelligence.analyze(
+                "В каком порядке запускать?",
+                "Сначала миграция, затем запуск.",
+                "Сначала миграция, затем запуск на проде.");
+        check("the same step order is not a clash", !containsPrefix(sameOrder.conflicts, "порядок"));
+
+        DeliberationIntelligence.Brief logic = DeliberationIntelligence.analyze(
+                "Что нужно для запуска?",
+                "Запас по марже — необходимое условие запуска, без него нельзя.",
+                "Запас по марже — достаточное условие запуска, его хватает.");
+        check("necessary versus sufficient is a logic crux", containsPrefix(logic.conflicts, "логическая сила"));
+
+        DeliberationIntelligence.Brief owner = DeliberationIntelligence.analyze(
+                "Кто утверждает тариф?",
+                "Тариф можно обсуждать, но решает регулятор.",
+                "Тариф можно обсуждать, но решает клиент.");
+        check("different decision owners are a crux", containsPrefix(owner.conflicts, "носитель"));
+
+        DeliberationIntelligence.Brief burden = DeliberationIntelligence.analyze(
+                "Пускать ли новую добавку?",
+                "Держимся принципа предосторожности: пока не доказана безопасность, не пускаем.",
+                "Добавка разрешена, пока не доказан вред.");
+        check("precaution versus permission is a burden crux", containsPrefix(burden.conflicts, "бремя"));
+
+        DeliberationIntelligence.Brief arrow = DeliberationIntelligence.analyze(
+                "Что движет спросом?",
+                "Цена вызывает рост спроса в этом сегменте.",
+                "Рост вызывает цена: продавцы поднимают её после всплеска.");
+        check("swapped cause and effect is a crux", containsPrefix(arrow.conflicts, "направление причины"));
+        check("coordinator names the order crux", DeliberationIntelligence.formatForCoordinator(order).contains("порядок")
+                && DeliberationIntelligence.formatForCoordinator(order).contains("Не усредняй срочность"));
+
         System.out.println("DeliberationIntelligenceSmokeTest: " + checks + "/" + checks + " passed");
     }
 
