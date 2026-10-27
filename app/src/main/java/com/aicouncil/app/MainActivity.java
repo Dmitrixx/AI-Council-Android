@@ -1695,7 +1695,54 @@ public class MainActivity extends Activity {
         Cipher c = Cipher.getInstance("AES/GCM/NoPadding"); c.init(Cipher.DECRYPT_MODE, getSecretKey(), new GCMParameterSpec(128, Base64.decode(parts[1], Base64.NO_WRAP)));
         return new String(c.doFinal(Base64.decode(parts[2], Base64.NO_WRAP)), StandardCharsets.UTF_8);
     }
+    /**
+     * One-time migration from the old three-slot topology (two experts + coordinator)
+     * to three experts + a dedicated fourth-slot coordinator. The saved API key is
+     * copied as ciphertext; it is decrypted only by the normal settings loader.
+     */
+    private void migrateLegacyCoordinatorSlot() {
+        if (prefs == null || prefs.getBoolean("fourSlotTeamMigration", false)) return;
+        String oldUrl = prefs.getString("url2", "");
+        String oldModel = prefs.getString("model2", "");
+        String oldKey = prefs.getString("key2", "");
+        String oldRole = prefs.getString("expertRole2", "");
+        boolean oldFree = prefs.getBoolean("freeProvider2", false);
+        boolean legacyHasData = !oldUrl.trim().isEmpty() || !oldModel.trim().isEmpty()
+                || !oldKey.trim().isEmpty() || !oldRole.trim().isEmpty() || oldFree;
+        boolean slotFourHasData = !prefs.getString("url3", "").trim().isEmpty()
+                || !prefs.getString("model3", "").trim().isEmpty()
+                || !prefs.getString("key3", "").trim().isEmpty();
+        SharedPreferences.Editor edit = prefs.edit();
+        if (legacyHasData && !slotFourHasData) {
+            edit.putString("url3", oldUrl)
+                    .putString("model3", oldModel)
+                    .putString("key3", oldKey)
+                    .putString("expertRole3", oldRole.trim().isEmpty()
+                            ? ExpertRolePolicy.defaultRole(3) : oldRole)
+                    .putBoolean("freeProvider3", oldFree)
+                    .putString("providerStatusMessage3", prefs.getString("providerStatusMessage2", "Не проверено"))
+                    .putInt("providerStatusColor3", prefs.getInt("providerStatusColor2", MUTED))
+                    .putString("providerTestFingerprint3", prefs.getString("providerTestFingerprint2", ""))
+                    .putString("providerModelsStatusMessage3", prefs.getString("providerModelsStatusMessage2", "Список моделей не проверен"))
+                    .putInt("providerModelsStatusColor3", prefs.getInt("providerModelsStatusColor2", MUTED))
+                    .putString("providerModelsConfigFingerprint3", prefs.getString("providerModelsConfigFingerprint2", ""));
+            edit.putString("url2", "")
+                    .putString("model2", "")
+                    .putString("key2", "")
+                    .putString("expertRole2", ExpertRolePolicy.defaultRole(2))
+                    .putBoolean("freeProvider2", false)
+                    .putString("providerStatusMessage2", "Не проверено")
+                    .putInt("providerStatusColor2", MUTED)
+                    .putString("providerTestFingerprint2", "")
+                    .putString("providerModelsStatusMessage2", "Список моделей не проверен")
+                    .putInt("providerModelsStatusColor2", MUTED)
+                    .putString("providerModelsConfigFingerprint2", "");
+        }
+        edit.putBoolean("fourSlotTeamMigration", true).apply();
+    }
+
     private void loadSettings() {
+        migrateLegacyCoordinatorSlot();
         boolean legacy = false;
         for (int i = 0; i < 4; i++) {
             endpoint[i].setText(prefs.getString("url" + i, "")); model[i].setText(prefs.getString("model" + i, ""));
