@@ -243,17 +243,23 @@ public final class CouncilExecutionEngine {
         if (!aFailed && !bFailed) {
             localMap = DeliberationIntelligence.formatForCoordinator(
                     DeliberationIntelligence.analyze(r.task, a, b));
+            String graphNote = ClaimGraph.noteForCoordinator(ClaimGraph.fromAnswers(a, b));
+            if (!graphNote.isEmpty()) localMap = localMap.isEmpty() ? graphNote : localMap + "\n\n" + graphNote;
         }
         if (!bFailed && !cFailed) {
             String mapBC = DeliberationIntelligence.formatForCoordinator(
                     DeliberationIntelligence.analyze(r.task, b, c));
             if (!mapBC.isEmpty()) localMap = localMap.isEmpty() ? "КАРТА ИИ №2 ↔ ИИ №3:\n" + mapBC
                     : localMap + "\n\nКАРТА ИИ №2 ↔ ИИ №3:\n" + mapBC;
+            String graphBC = ClaimGraph.noteForCoordinator(ClaimGraph.fromAnswers(b, c));
+            if (!graphBC.isEmpty()) localMap = localMap.isEmpty() ? graphBC : localMap + "\n\n" + graphBC;
         }
         if (!aFailed && !cFailed) {
             String mapAC = StructuredClaimPolicy.formatConflictsForCoordinator(claimsA, claimsC);
             if (!mapAC.isEmpty()) localMap = localMap.isEmpty() ? "КАРТА ИИ №1 ↔ ИИ №3:\n" + mapAC
                     : localMap + "\n\nКАРТА ИИ №1 ↔ ИИ №3:\n" + mapAC;
+            String graphAC = ClaimGraph.noteForCoordinator(ClaimGraph.fromAnswers(a, c));
+            if (!graphAC.isEmpty()) localMap = localMap.isEmpty() ? graphAC : localMap + "\n\n" + graphAC;
         }
         String typedAB = StructuredClaimPolicy.formatConflictsForCoordinator(claimsA, claimsB);
         String typedBC = StructuredClaimPolicy.formatConflictsForCoordinator(claimsB, claimsC);
