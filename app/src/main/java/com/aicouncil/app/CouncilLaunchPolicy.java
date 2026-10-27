@@ -46,7 +46,8 @@ public final class CouncilLaunchPolicy {
         boolean a = configured != null && configured.length > 0 && configured[0];
         boolean b = configured != null && configured.length > 1 && configured[1];
         boolean c = configured != null && configured.length > 2 && configured[2];
-        if (a && b && c) return 1;
+        boolean coordinator = configured != null && configured.length > 3 && configured[3];
+        if (a && b && c && coordinator) return 1;
         if (a && b) return 2;
         return 0;
     }
