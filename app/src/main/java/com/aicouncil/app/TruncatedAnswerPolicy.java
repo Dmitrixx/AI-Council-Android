@@ -10,7 +10,7 @@ public final class TruncatedAnswerPolicy {
         "🔎 ВЗАИМНАЯ КРИТИКА · ИИ №2", "🔎 ВЗАИМНАЯ КРИТИКА · ИИ №3", "🏁 ИТОГ КООРДИНАТОРА",
         "🧠 ДОПОЛНЕНИЕ ИИ №1", "🧠 ДОПОЛНЕНИЕ ИИ №2", "🧠 ДОПОЛНЕНИЕ ИИ №3"
     };
-    private static final int[] SLOTS = {0, 0, 1, 2, 0, 1, 2, 3, 0, 1, 2};
+    private static final int[] SLOTS = {0, 0, 1, 0, 1, 2, 0, 1, 2, 3, 0, 1, 2};
 
     private TruncatedAnswerPolicy() {}
 
