@@ -22,7 +22,7 @@ Additional capabilities:
 
 - **Streaming** OpenAI-compatible chat completions (OkHttp SSE)
 - **Web research** — Brave, Tavily (user keys), Wikipedia, DuckDuckGo Instant Answer with ranked, deduplicated results and optional page extraction
-- **Local document import** — TXT / PDF / DOCX / XLSX + hybrid OCR (PDFBox text layer first, then Android `PdfRenderer` + Tesseract/ML Kit only on image pages)
+- **Local material import** — select up to 8 TXT / CSV / source files / PDF / DOCX / XLSX documents or photos in one picker; extracted text and locally OCR-recognized photo text appear in one editable preview before being added to the task. Files are bounded by size/count/text limits and are not sent for extraction.
 - **Configurable PDF page limit** (5 by default, up to 20) — persisted setting in the import UI
 - **Local AI** — Ollama / LM Studio over Wi-Fi (loopback and private LAN policies)
 - **Privacy** — encrypted API keys, secret redaction in errors and before send, optional “local only” mode
@@ -62,7 +62,7 @@ Most business logic is deliberately kept **Android-independent** and covered by 
 - `ChatCompletionsClient`, `ProviderModelsClient` — network with cancellation, size limits, secret redaction
 - `LocalDataStore` — SQLite history/projects/drafts
 - `DeliberationIntelligence` — local disagreement map, arithmetic checks, residual-risk detection, evidence-density scoring and calibration signals
-- `ExpertClaim` + `ExpertClaimJsonParser` — Android-independent typed claim contract with strict, versioned JSON parsing; `StructuredClaimAnalyzer` conservatively compares like-for-like statements and normalizes supported units. The council requests marked JSON from the two independent experts, strips valid metadata from the visible answer and passes typed conflicts to the coordinator; malformed/missing JSON falls back to prose. Persistent claim graphs, expandable conflict UI and the additional expert slot remain follow-up work.
+- `ExpertClaim` + `ExpertClaimJsonParser` — Android-independent typed claim contract with strict, versioned JSON parsing; `StructuredClaimAnalyzer` conservatively compares like-for-like statements and normalizes supported units. The three independent experts request marked JSON, valid metadata is stripped from visible prose, and typed conflicts reach the coordinator; malformed/missing JSON falls back to prose. Persistent claim graphs and expandable conflict UI remain follow-up work.
 - `SecretRedactor`, `ProviderErrorFormatter`, `PromptPrivacyPolicy`, `TaskRoutingPolicy`, …
 
 `MainActivity` still owns UI construction and some coordination (this is the largest remaining technical debt).
