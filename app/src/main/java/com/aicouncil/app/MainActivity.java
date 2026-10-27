@@ -311,9 +311,15 @@ public class MainActivity extends Activity {
 
     private void showSearchSheet() {
         LinearLayout content = column(); content.setPadding(dp(20), dp(8), dp(20), dp(4));
+        boolean searchBlockedByLocalOnly = localOnlyMode != null && localOnlyMode.isChecked();
         CheckBox enabled = new CheckBox(this); enabled.setText("Использовать интернет-поиск"); enabled.setTextSize(16); enabled.setTextColor(TEXT);
-        enabled.setButtonTintList(android.content.res.ColorStateList.valueOf(TEAL)); enabled.setChecked(prefs.getBoolean("webSearchEnabled", false)); content.addView(enabled, lp(-1, 48));
-        content.addView(text("Поиск работает независимо от локальных ИИ. Поисковая фраза отправляется поисковым сервисам, а выбранные материалы могут передаваться моделям.", 13, MUTED, false), withTop(lp(-1,-2), 4));
+        enabled.setButtonTintList(android.content.res.ColorStateList.valueOf(TEAL));
+        enabled.setChecked(!searchBlockedByLocalOnly && prefs.getBoolean("webSearchEnabled", false));
+        enabled.setEnabled(!searchBlockedByLocalOnly);
+        content.addView(enabled, lp(-1, 48));
+        content.addView(text(searchBlockedByLocalOnly
+                ? "В режиме «Только локальные ИИ» интернет-поиск полностью отключён. Чтобы отправлять запросы внешним сервисам, сначала выключите локальный режим."
+                : "Интернет-поиск отправляет поисковую фразу внешним сервисам, а найденные материалы могут передаваться моделям.", 13, MUTED, false), withTop(lp(-1,-2), 4));
         content.addView(text("Объём контекста для ИИ", 14, TEXT, true), withTop(lp(-1,-2), 16));
         Spinner context = new Spinner(this); context.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, WEB_CONTEXT_MODES));
         context.setSelection(Math.max(0, Math.min(WEB_CONTEXT_MODES.length-1, prefs.getInt("webContextMode", 1)))); content.addView(context, withTop(lp(-1,48),6));
@@ -321,10 +327,11 @@ public class MainActivity extends Activity {
         keyButton.setOnClickListener(v -> showWebSearchSettings());
         new android.app.AlertDialog.Builder(this).setTitle("Поиск в сети").setView(content)
             .setNegativeButton("Отмена", null).setPositiveButton("Применить", (d,w) -> {
-                if (webSearchEnabled != null) webSearchEnabled.setChecked(enabled.isChecked());
+                boolean searchEnabled = !(localOnlyMode != null && localOnlyMode.isChecked()) && enabled.isChecked();
+                if (webSearchEnabled != null) webSearchEnabled.setChecked(searchEnabled);
                 if (webContextModeSpinner != null) webContextModeSpinner.setSelection(context.getSelectedItemPosition());
-                prefs.edit().putBoolean("webSearchEnabled", enabled.isChecked()).putInt("webContextMode", context.getSelectedItemPosition()).apply();
-                setStatus(enabled.isChecked() ? "Интернет-поиск включён." : "Интернет-поиск выключен.", TEAL);
+                prefs.edit().putBoolean("webSearchEnabled", searchEnabled).putInt("webContextMode", context.getSelectedItemPosition()).apply();
+                setStatus(searchEnabled ? "Интернет-поиск включён." : "Интернет-поиск выключен или заблокирован локальным режимом.", TEAL);
             }).show();
     }
 
@@ -422,7 +429,7 @@ public class MainActivity extends Activity {
         attachmentsToggle.setContentDescription(attachmentsExpanded ? "Скрыть инструменты импорта" : "Показать инструменты импорта документов и изображений");
 
         webSearchEnabled = new CheckBox(this); webSearchEnabled.setText("Искать в Интернете · независимо от режима ИИ"); webSearchEnabled.setTextColor(TEXT); webSearchEnabled.setTextSize(13); webSearchEnabled.setButtonTintList(android.content.res.ColorStateList.valueOf(TEAL)); LinearLayout.LayoutParams wsp = lp(-1, -2); wsp.topMargin = dp(12); taskCard.addView(webSearchEnabled, wsp); webSearchEnabled.setVisibility(View.GONE);
-        TextView webHelp = text("Поиск независим от режима локальных ИИ.", 11, MUTED, false); taskCard.addView(webHelp); webHelp.setVisibility(View.GONE);
+        TextView webHelp = text("В режиме «Только локальные ИИ» поиск выключен и внешние поисковые сервисы не вызываются.", 11, MUTED, false); taskCard.addView(webHelp); webHelp.setVisibility(View.GONE);
         boolean webDetailsExpanded = prefs.getBoolean("ui_web_details_expanded", false);
         Button webDetailsToggle = button((webDetailsExpanded ? "⌃  Свернуть параметры поиска" : "⌄  Параметры поиска и источников"), false);
         taskCard.addView(webDetailsToggle, withTop(lp(-1, 44), 7)); webDetailsToggle.setVisibility(View.GONE);
@@ -430,7 +437,7 @@ public class MainActivity extends Activity {
         webDetails.setBackground(shape(Color.rgb(12, 18, 33), 18, Color.rgb(42, 55, 80)));
         webDetails.setVisibility(webDetailsExpanded ? View.VISIBLE : View.GONE);
         taskCard.addView(webDetails, withTop(lp(-1, -2), 4)); webDetails.setVisibility(View.GONE);
-        webDetails.addView(text("При включении очищенная поисковая фраза отправляется внешним поисковым сервисам. Найденные материалы могут передаваться настроенным ИИ-провайдерам. При использовании локальных моделей поиск всё равно обращается в Интернет.", 10, MUTED, false));
+        webDetails.addView(text("Обычный режим: при включении очищенная поисковая фраза отправляется внешним поисковым сервисам. Режим «Только локальные ИИ» блокирует внешние поисковые запросы и оставляет обработку задачи на выбранном локальном сервере.", 10, MUTED, false));
         webDetails.addView(text("Источники: Brave Search и Tavily (если настроены ключи), Wikipedia и DuckDuckGo Instant Answer (JSON). Порядок выдачи эвристический и не является проверкой достоверности.", 10, MUTED, false), withTop(lp(-1, -2), 6));
         webDetails.addView(label("СКОЛЬКО ВЕБ-КОНТЕКСТА ПЕРЕДАВАТЬ ИИ"));
         webContextModeSpinner = new Spinner(this); webContextModeSpinner.setPadding(dp(10), dp(6), dp(10), dp(6)); webContextModeSpinner.setBackground(shape(FIELD, 14, Color.rgb(53, 67, 96)));
@@ -557,7 +564,7 @@ public class MainActivity extends Activity {
         settingsCard.addView(text("Локальный режим не означает, что модель встроена в APK: вычисления идут на выбранном локальном сервере. Android localhost — сам телефон, а не компьютер.", 11, Color.rgb(255, 200, 135), false), withTop(lp(-1, -2), 6));
         localOnlyMode = new CheckBox(this); localOnlyMode.setText("Только локальные ИИ · блокировать облачные API"); localOnlyMode.setTextColor(TEXT); localOnlyMode.setTextSize(12); localOnlyMode.setButtonTintList(android.content.res.ColorStateList.valueOf(TEAL));
         settingsCard.addView(localOnlyMode, withTop(lp(-1, -2), 7));
-        settingsCard.addView(text("Этот режим ограничивает только ИИ-провайдеры: запросы к моделям отправляются только на локальные адреса. Интернет-поиск управляется отдельно и может оставаться включённым. Если поиск включён, поисковая фраза и запросы к поисковым сервисам покидают устройство, но результаты можно передать локальным моделям без облачного ИИ.", 10, MUTED, false), withTop(lp(-1, -2), 2));
+        settingsCard.addView(text("Строгий локальный режим: запросы к моделям идут только на локальные адреса, интернет-поиск принудительно выключается, а поисковые запросы не отправляются внешним сервисам. Чтобы использовать поиск, сначала отключите локальный режим.", 10, MUTED, false), withTop(lp(-1, -2), 2));
         localOnlyMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (adjustingPrivacyControls) return;
             if (!LocalAiPolicy.mayChangePrivacyControls(working)) {
@@ -567,31 +574,39 @@ public class MainActivity extends Activity {
                 setStatus("Нельзя менять режим приватности во время запроса. Остановите задачу и повторите.", RED);
                 return;
             }
-            prefs.edit().putBoolean("localOnlyMode", isChecked).apply();
             if (isChecked) {
-                String message = webSearchEnabled != null && webSearchEnabled.isChecked()
-                    ? "Локальные ИИ включены. Интернет-поиск остаётся включённым по вашему выбору; поисковые запросы будут отправляться внешним поисковым сервисам."
-                    : "Локальные ИИ включены. Интернет-поиск управляется отдельно и сейчас выключен.";
-                setStatus(message, TEAL);
+                // Change both controls atomically: never leave a stale web-search preference active.
+                adjustingPrivacyControls = true;
+                if (webSearchEnabled != null) webSearchEnabled.setChecked(false);
+                adjustingPrivacyControls = false;
+                if (webSearchEnabled != null) webSearchEnabled.setEnabled(false);
+                prefs.edit().putBoolean("localOnlyMode", true).putBoolean("webSearchEnabled", false).apply();
+                setStatus("Строгий локальный режим включён: интернет-поиск выключен, внешние поисковые сервисы не вызываются.", TEAL);
             } else {
-                setStatus("Ограничение только локальными ИИ выключено. Интернет-поиск по-прежнему управляется отдельно.", TEAL);
+                if (webSearchEnabled != null) webSearchEnabled.setEnabled(true);
+                prefs.edit().putBoolean("localOnlyMode", false).apply();
+                setStatus("Локальное ограничение выключено. Интернет-поиск остаётся выключенным, пока вы не включите его отдельно.", TEAL);
             }
         });
         webSearchEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (adjustingPrivacyControls) return;
             if (!LocalAiPolicy.mayChangePrivacyControls(working)) {
                 adjustingPrivacyControls = true;
-                webSearchEnabled.setChecked(!isChecked);
+                webSearchEnabled.setChecked(false);
                 adjustingPrivacyControls = false;
                 setStatus("Нельзя менять режим поиска во время запроса. Остановите задачу и повторите.", RED);
                 return;
             }
-            prefs.edit().putBoolean("webSearchEnabled", isChecked).apply();
             if (isChecked && localOnlyMode != null && localOnlyMode.isChecked()) {
-                setStatus("Интернет-поиск включён вместе с локальными ИИ. Поисковая фраза отправляется поисковым сервисам; ответы моделей остаются на локальных серверах.", TEAL);
-            } else {
-                setStatus(isChecked ? "Интернет-поиск включён." : "Интернет-поиск выключен.", TEAL);
+                adjustingPrivacyControls = true;
+                webSearchEnabled.setChecked(false);
+                adjustingPrivacyControls = false;
+                prefs.edit().putBoolean("webSearchEnabled", false).apply();
+                setStatus("В режиме «Только локальные ИИ» интернет-поиск запрещён.", RED);
+                return;
             }
+            prefs.edit().putBoolean("webSearchEnabled", isChecked).apply();
+            setStatus(isChecked ? "Интернет-поиск включён." : "Интернет-поиск выключен.", TEAL);
         });
         for (int i = 0; i < 3; i++) {
             final int ix = i;
@@ -931,7 +946,8 @@ public class MainActivity extends Activity {
             prompt.setText(state.getString("ui.prompt", ""));
             followUpInput.setText(state.getString("ui.followUp", ""));
             modeSpinner.setSelection(Math.max(0, Math.min(MODES.length - 1, state.getInt("ui.mode", modeSpinner.getSelectedItemPosition()))));
-            webSearchEnabled.setChecked(state.getBoolean("ui.webSearch", prefs.getBoolean("webSearchEnabled", false)));
+            webSearchEnabled.setChecked(!(localOnlyMode != null && localOnlyMode.isChecked())
+                    && state.getBoolean("ui.webSearch", prefs.getBoolean("webSearchEnabled", false)));
             if (webContextModeSpinner != null) webContextModeSpinner.setSelection(Math.max(0, Math.min(WEB_CONTEXT_MODES.length - 1, state.getInt("ui.webContextMode", prefs.getInt("webContextMode", 2)))));
             lastCompletedTask = state.getString("ui.lastTask", "");
             lastCompletedMode = Math.max(0, Math.min(MODES.length - 1, state.getInt("ui.lastMode", 0)));
@@ -944,7 +960,8 @@ public class MainActivity extends Activity {
         } else {
             prompt.setText(dataStore.getString("draftPrompt", ""));
             followUpInput.setText(dataStore.getString("draftFollowUp", ""));
-            webSearchEnabled.setChecked(prefs.getBoolean("webSearchEnabled", false));
+            webSearchEnabled.setChecked(!(localOnlyMode != null && localOnlyMode.isChecked())
+                    && prefs.getBoolean("webSearchEnabled", false));
             if (webContextModeSpinner != null) webContextModeSpinner.setSelection(Math.max(0, Math.min(WEB_CONTEXT_MODES.length - 1, prefs.getInt("webContextMode", 2))));
             modeSpinner.setSelection(Math.max(0, Math.min(MODES.length - 1, dataStore.getInt("draftMode", 0))));
         }
@@ -2390,7 +2407,7 @@ public class MainActivity extends Activity {
         int chosenMode = selectedMode == 4 ? chooseAutomaticMode(task) : selectedMode;
         final int mode = chosenMode;
         final boolean localOnlyRequested = localOnlyMode != null && localOnlyMode.isChecked();
-        final boolean doWebSearch = LocalAiPolicy.shouldUseWebSearch(localOnlyRequested, webSearchEnabled.isChecked()); // Search is an independent user choice, including local-only AI mode.
+        final boolean doWebSearch = LocalAiPolicy.shouldUseWebSearch(localOnlyRequested, webSearchEnabled.isChecked()); // Defensive privacy invariant: local-only always disables external search.
         final int selectedWebContextMode = webContextModeSpinner == null ? 2 : Math.max(0, Math.min(WEB_CONTEXT_MODES.length - 1, webContextModeSpinner.getSelectedItemPosition()));
         if (localOnlyRequested) {
             int[] required = mode == 0 ? new int[]{0} : (mode == 2 ? new int[]{0,1} : new int[]{0,1,2});
