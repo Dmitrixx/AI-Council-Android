@@ -214,6 +214,9 @@ public final class DeliberationIntelligence {
         detectAppealToAuthority(a, b, conflicts);
         detectEmotionalFraming(a, b, conflicts);
         detectFalseDichotomy(a, b, conflicts);
+        detectStrawman(a, b, conflicts);
+        detectAdHominem(a, b, conflicts);
+        detectCircularReasoning(a, b, conflicts);
 
         int hedge = hedgeScore(a + " " + b);
         int agreement = jaccardAgreement(a, b);
@@ -265,6 +268,7 @@ public final class DeliberationIntelligence {
         sb.append("Не усредняй срочность, силу доказательств, рамку издержек и выгод и обязательность. ");
         sb.append("Порядок шагов не переставляй. Необходимое условие не называй достаточным. Носителя решения и бремя доказательства сохрани как есть. Причину и следствие не меняй местами. ");
         sb.append("Апелляцию к авторитету без опоры не принимай как доказательство. Сильную эмоциональную рамку не уравнивай с аналитической. Ложную дихотомию не схлопывай в единственный выбор. ");
+        sb.append("Strawman (искажение позиции оппонента) не принимай. Ad hominem (атака на личность) не считай аргументом. Циркулярное рассуждение не принимай как доказательство. ");
         sb.append("Предпочитай ответы с более высокой evidence density; при разрыве ≥20 явно укажи предпочтение.\n");
         return sb.toString().trim();
     }
@@ -1086,5 +1090,60 @@ public final class DeliberationIntelligence {
                 || lower.contains("other options") || lower.contains("alternatives") || lower.contains("more than")
                 || lower.contains("інші варіанти") || lower.contains("третій");
     }
+
+
+    /** Strawman: one expert misrepresents the other's position. */
+    private static void detectStrawman(String a, String b, List<String> conflicts) {
+        boolean strawA = hasStrawmanMarkers(a), strawB = hasStrawmanMarkers(b);
+        if (strawA || strawB) {
+            conflicts.add("strawman: искажение позиции другого эксперта вместо ответа по существу");
+        }
+    }
+
+    private static boolean hasStrawmanMarkers(String text) {
+        if (text == null) return false;
+        String lower = text.toLowerCase(Locale.ROOT);
+        String[] markers = {"на самом деле вы говорите", "вы имеете в виду что", "your real position is",
+                "искажаете", "не то что я сказал", "вы утверждаете будто", "you claim that",
+                "неправильно поняли", "misrepresent", "straw man", "соломенное чучело"};
+        for (String m : markers) if (lower.contains(m)) return true;
+        return false;
+    }
+
+    /** Ad hominem: attack on the person rather than the argument. */
+    private static void detectAdHominem(String a, String b, List<String> conflicts) {
+        boolean adA = hasAdHominem(a), adB = hasAdHominem(b);
+        if (adA || adB) {
+            conflicts.add("ad hominem: атака на личность эксперта или источник вместо разбора аргументов");
+        }
+    }
+
+    private static boolean hasAdHominem(String text) {
+        if (text == null) return false;
+        String lower = text.toLowerCase(Locale.ROOT);
+        String[] markers = {"некомпетентен", "предвзятый", "идиот", "дурак", "biased person",
+                "you are just", "ты просто", "не профессионал", "unqualified", "personal attack",
+                "оскорбляет", "insult"};
+        for (String m : markers) if (lower.contains(m)) return true;
+        return lower.contains("ты ") && (lower.contains("глуп") || lower.contains("неправ"));
+    }
+
+    /** Circular reasoning: conclusion restates the premise. */
+    private static void detectCircularReasoning(String a, String b, List<String> conflicts) {
+        if (isCircular(a) || isCircular(b)) {
+            conflicts.add("циркулярное рассуждение: вывод повторяет предпосылку без новых оснований");
+        }
+    }
+
+    private static boolean isCircular(String text) {
+        if (text == null || text.length() < 40) return false;
+        String lower = text.toLowerCase(Locale.ROOT);
+        // Simple heuristic: "because X is true because X" or "очевидно потому что очевидно"
+        return (lower.contains("потому что это правда") || lower.contains("because it is true")
+                || lower.contains("очевидно, что") && lower.contains("потому что очевидно")
+                || lower.contains("circular") || lower.contains("циркулярн")
+                || (lower.contains("это так, потому что") && lower.contains("это так")));
+    }
+
 
 }
