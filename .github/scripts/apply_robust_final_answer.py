@@ -26,6 +26,14 @@ def main():
         src = engine.read_text(encoding="utf-8")
         print("Engine restored:", len(src), "bytes")
 
+    # Three experts and a dedicated slot-4 coordinator use a distinct failure path.
+    # Never apply the legacy two-expert patch to the structured four-slot engine.
+    if ("String review = cb.callApi(3, r.endpoints[3], r.models[3], r.keys[3], reviewerPrompt, r.roles[3]);" in src
+            and "Проведи независимый аудит доказательств" in src
+            and "StructuredClaimPolicy.addContract" in src):
+        print("Robust final answer: four-slot council integration already applied")
+        return
+
     if "partialExpertCoordinatorNote" in src and "Разбор сбоев" in src:
         print("Robust final answer: already applied")
         return
