@@ -8,9 +8,9 @@ public final class TaskRoutingPolicySmokeTest {
         System.out.println("PASS: " + name);
     }
     public static void main(String[] args) {
-        boolean[] all = {true, true, true};
-        boolean[] free = {true, true, true};
-        boolean[] notAllFree = {true, false, true};
+        boolean[] all = {true, true, true, true};
+        boolean[] free = {true, true, true, true};
+        boolean[] notAllFree = {true, false, true, true};
         check("empty prompt safely defaults to quick answer", TaskRoutingPolicy.chooseMode(" ", all, false, free) == 0);
         check("short ordinary prompt uses quick answer", TaskRoutingPolicy.chooseMode("Explain photosynthesis", all, false, free) == 0);
         check("Russian audit selects independent audit", TaskRoutingPolicy.chooseMode("Проверь ответ на ошибки", all, false, free) == 2);
@@ -20,8 +20,9 @@ public final class TaskRoutingPolicySmokeTest {
         check("complex English task selects deep analysis", TaskRoutingPolicy.chooseMode("Compare options and design an architecture step by step", all, false, free) == 3);
         check("complex Ukrainian task selects deep analysis", TaskRoutingPolicy.chooseMode("Порівняй варіанти та спроєктуй архітектуру", all, false, free) == 3);
         check("medium task with full team selects council", TaskRoutingPolicy.chooseMode(repeat("ordinary detail ", 12), all, false, free) == 1);
-        check("audit falls back when second expert unavailable", TaskRoutingPolicy.chooseMode("Check this response", new boolean[]{true, false, true}, false, free) == 0);
-        check("complex task falls back when coordinator unavailable", TaskRoutingPolicy.chooseMode("Compare options and design architecture", new boolean[]{true, true, false}, false, free) == 0);
+        check("audit falls back when second expert unavailable", TaskRoutingPolicy.chooseMode("Check this response", new boolean[]{true, false, true, true}, false, free) == 0);
+        check("complex task falls back when coordinator unavailable", TaskRoutingPolicy.chooseMode("Compare options and design architecture", new boolean[]{true, true, true, false}, false, free) == 0);
+        check("complex task falls back when third expert unavailable", TaskRoutingPolicy.chooseMode("Compare options and design architecture", new boolean[]{true, true, false, true}, false, free) == 0);
         check("free-only policy excludes unmarked second expert", TaskRoutingPolicy.chooseMode("проверь ошибки", all, true, notAllFree) == 0);
         check("free-only policy allows marked audit expert", TaskRoutingPolicy.chooseMode("проверь ошибки", all, true, free) == 2);
         check("missing capability arrays are safe", TaskRoutingPolicy.chooseMode("audit this", null, false, null) == 0);

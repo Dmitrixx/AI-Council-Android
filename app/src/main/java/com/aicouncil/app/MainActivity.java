@@ -37,12 +37,13 @@ public class MainActivity extends Activity {
     private boolean lightTheme = false;
     private Spinner themeSpinner;
     private static final String KEY_ALIAS = "AICouncilKeyV4";
-    private static final String APP_VERSION = "2.27.0";
+    private static final String APP_VERSION = "2.35.0";
     private static final int REQUEST_SAVE_TEXT = 1401;
     private static final int REQUEST_SAVE_BACKUP = 1402;
     private static final int REQUEST_SAVE_MARKDOWN = 1408;
     private static final int REQUEST_OPEN_BACKUP = 1403;
     private static final int REQUEST_OPEN_TEXT = 1404;
+    private static final int REQUEST_OPEN_MATERIALS = 1410;
     private static final int REQUEST_OPEN_IMAGE = 1405;
     private static final int REQUEST_OPEN_IMAGE_CYRILLIC = 1406;
     private static final int REQUEST_OPEN_PDF_CYRILLIC = 1407;
@@ -62,10 +63,10 @@ public class MainActivity extends Activity {
         {"Локальная модель · Ollama по Wi-Fi", "http://192.168.1.100:11434/v1"},
         {"Локальная модель · LM Studio по Wi-Fi", "http://192.168.1.100:1234/v1"}
     };
-    private EditText[] endpoint = new EditText[3], model = new EditText[3], key = new EditText[3], expertRole = new EditText[3];
-    private Button[] testButtons = new Button[3], presetButtons = new Button[3], modelListButtons = new Button[3];
-    private TextView[] providerStatus = new TextView[3], providerModelsStatus = new TextView[3];
-    private CheckBox[] providerFree = new CheckBox[3];
+    private EditText[] endpoint = new EditText[4], model = new EditText[4], key = new EditText[4], expertRole = new EditText[4];
+    private Button[] testButtons = new Button[4], presetButtons = new Button[4], modelListButtons = new Button[4];
+    private TextView[] providerStatus = new TextView[4], providerModelsStatus = new TextView[4];
+    private CheckBox[] providerFree = new CheckBox[4];
     private CheckBox freeOnly;
     private volatile boolean working = false;
     private volatile int runningMode = 0;
@@ -74,7 +75,7 @@ public class MainActivity extends Activity {
     private Spinner modeSpinner, tokenLimitSpinner;
     private TextView output, status, historyCount, headerStatus;
     private LinearLayout historyContainer, projectContainer, resultCards, expertStatusPanel;
-    private TextView[] expertStatus = new TextView[3];
+    private TextView[] expertStatus = new TextView[4];
     private ProgressBar taskProgress;
     private EditText historySearch, projectSearch, projectName, followUpInput;
     private Button followUpButton, exportTextButton, continueButton;
@@ -82,6 +83,7 @@ public class MainActivity extends Activity {
     private volatile boolean ocrCancelRequested = false;
     private android.app.AlertDialog ocrDownloadDialog;
     private String pendingCyrillicLanguage = "rus";
+    private String pendingBatchPhotoOcrLanguage = "eng";
     private volatile boolean documentImportInProgress = false;
     private Spinner followUpExpertSpinner;
     private String pendingExportText = "";
@@ -109,18 +111,18 @@ public class MainActivity extends Activity {
     private final WebSearchService webSearchService = new WebSearchService(pool, new WebSearchClient(), new WebPageFetchClient());
     private final ProviderModelsClient providerModelsClient = new ProviderModelsClient();
     private final CouncilExecutionEngine executionEngine = new CouncilExecutionEngine(pool);
-    private final TextView[] streamingExpertText = new TextView[3];
-    private final StringBuilder[] streamingExpertBuffers = {new StringBuilder(), new StringBuilder(), new StringBuilder()};
-    private final long[] streamingExpertDurationMs = new long[3];
+    private final TextView[] streamingExpertText = new TextView[4];
+    private final StringBuilder[] streamingExpertBuffers = {new StringBuilder(), new StringBuilder(), new StringBuilder(), new StringBuilder()};
+    private final long[] streamingExpertDurationMs = new long[4];
     private volatile boolean streamingMainTaskActive = false;
     private volatile long lastPartialPersistMs = 0L;
-    private final long[] lastStreamUiUpdateMs = new long[3];
+    private final long[] lastStreamUiUpdateMs = new long[4];
     private final android.os.Handler draftHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     private final Runnable pendingDraftSave = () -> persistDraftNow();
     private final android.os.Handler promptMetricsHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     private final Runnable pendingPromptMetricsUpdate = () -> refreshPromptMetricsEstimate();
-    private static final String[] MODES = {"⚡ Быстрый ответ · 1 ИИ", "🤝 Совет ИИ · 3 ИИ", "🛡 Проверка ответа · 2 ИИ", "🔬 Глубокий анализ · 3 ИИ", "🤖 Автовыбор команды"};
-    private static final String[] PROVIDERS = {"ИИ №1  ·  Основной эксперт", "ИИ №2  ·  Независимый эксперт", "ИИ №3  ·  Координатор"};
+    private static final String[] MODES = {"⚡ Быстрый ответ · 1 ИИ", "🤝 Совет ИИ · 3 эксперта + координатор", "🛡 Проверка ответа · 2 ИИ", "🔬 Глубокий анализ · 3 эксперта + координатор", "🤖 Автовыбор команды"};
+    private static final String[] PROVIDERS = {"ИИ №1 · Основной эксперт", "ИИ №2 · Независимый эксперт", "ИИ №3 · Аудитор доказательств", "ИИ №4 · Координатор"};
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -299,21 +301,28 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams p = lp(-1, -2); p.topMargin = dp(top); parent.addView(c, p); return c;
     }
     private void showImportSheet() {
-        final String[] actions = {"Добавить документ · TXT / PDF / DOCX / XLSX", "Извлечь текст с изображения · OCR", "OCR кириллицы · русский / українська", "OCR кириллицы в сканированном PDF"};
+        final String[] actions = {"Выбрать несколько документов, файлов и фото", "Добавить один документ · TXT / PDF / DOCX / XLSX", "Извлечь текст с одного изображения · OCR", "OCR кириллицы · русский / українська", "OCR кириллицы в сканированном PDF"};
         new android.app.AlertDialog.Builder(this).setTitle("Добавить материалы")
             .setItems(actions, (dialog, which) -> {
-                if (which == 0) importTaskTextFile();
-                else if (which == 1) importTaskImage();
-                else if (which == 2) chooseCyrillicOcrLanguage();
+                if (which == 0) importMultipleMaterials();
+                else if (which == 1) importTaskTextFile();
+                else if (which == 2) importTaskImage();
+                else if (which == 3) chooseCyrillicOcrLanguage();
                 else chooseCyrillicPdfLanguage();
             }).setNegativeButton("Закрыть", null).show();
     }
 
     private void showSearchSheet() {
         LinearLayout content = column(); content.setPadding(dp(20), dp(8), dp(20), dp(4));
+        boolean searchBlockedByLocalOnly = localOnlyMode != null && localOnlyMode.isChecked();
         CheckBox enabled = new CheckBox(this); enabled.setText("Использовать интернет-поиск"); enabled.setTextSize(16); enabled.setTextColor(TEXT);
-        enabled.setButtonTintList(android.content.res.ColorStateList.valueOf(TEAL)); enabled.setChecked(prefs.getBoolean("webSearchEnabled", false)); content.addView(enabled, lp(-1, 48));
-        content.addView(text("Поиск работает независимо от локальных ИИ. Поисковая фраза отправляется поисковым сервисам, а выбранные материалы могут передаваться моделям.", 13, MUTED, false), withTop(lp(-1,-2), 4));
+        enabled.setButtonTintList(android.content.res.ColorStateList.valueOf(TEAL));
+        enabled.setChecked(!searchBlockedByLocalOnly && prefs.getBoolean("webSearchEnabled", false));
+        enabled.setEnabled(!searchBlockedByLocalOnly);
+        content.addView(enabled, lp(-1, 48));
+        content.addView(text(searchBlockedByLocalOnly
+                ? "В режиме «Только локальные ИИ» интернет-поиск полностью отключён. Чтобы отправлять запросы внешним сервисам, сначала выключите локальный режим."
+                : "Интернет-поиск отправляет поисковую фразу внешним сервисам, а найденные материалы могут передаваться моделям.", 13, MUTED, false), withTop(lp(-1,-2), 4));
         content.addView(text("Объём контекста для ИИ", 14, TEXT, true), withTop(lp(-1,-2), 16));
         Spinner context = new Spinner(this); context.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, WEB_CONTEXT_MODES));
         context.setSelection(Math.max(0, Math.min(WEB_CONTEXT_MODES.length-1, prefs.getInt("webContextMode", 1)))); content.addView(context, withTop(lp(-1,48),6));
@@ -321,10 +330,11 @@ public class MainActivity extends Activity {
         keyButton.setOnClickListener(v -> showWebSearchSettings());
         new android.app.AlertDialog.Builder(this).setTitle("Поиск в сети").setView(content)
             .setNegativeButton("Отмена", null).setPositiveButton("Применить", (d,w) -> {
-                if (webSearchEnabled != null) webSearchEnabled.setChecked(enabled.isChecked());
+                boolean searchEnabled = !(localOnlyMode != null && localOnlyMode.isChecked()) && enabled.isChecked();
+                if (webSearchEnabled != null) webSearchEnabled.setChecked(searchEnabled);
                 if (webContextModeSpinner != null) webContextModeSpinner.setSelection(context.getSelectedItemPosition());
-                prefs.edit().putBoolean("webSearchEnabled", enabled.isChecked()).putInt("webContextMode", context.getSelectedItemPosition()).apply();
-                setStatus(enabled.isChecked() ? "Интернет-поиск включён." : "Интернет-поиск выключен.", TEAL);
+                prefs.edit().putBoolean("webSearchEnabled", searchEnabled).putInt("webContextMode", context.getSelectedItemPosition()).apply();
+                setStatus(searchEnabled ? "Интернет-поиск включён." : "Интернет-поиск выключен или заблокирован локальным режимом.", TEAL);
             }).show();
     }
 
@@ -388,14 +398,17 @@ public class MainActivity extends Activity {
         addQuickPromptActions(taskCard);
         // Progressive disclosure keeps the task composer focused on the actual question.
         boolean attachmentsExpanded = prefs.getBoolean("ui_attachments_expanded", false);
-        Button attachmentsToggle = button((attachmentsExpanded ? "⌃  Скрыть инструменты импорта" : "＋  Документы и изображения · PDF, DOCX, XLSX, OCR"), false);
-        taskCard.addView(attachmentsToggle, withTop(lp(-1, 46), 9)); attachmentsToggle.setVisibility(View.GONE);
+        Button attachmentsToggle = button((attachmentsExpanded ? "⌃  Скрыть инструменты импорта" : "＋  Документы, файлы и фото · выбрать несколько"), false);
+        taskCard.addView(attachmentsToggle, withTop(lp(-1, 46), 9));
         LinearLayout attachmentOptions = column();
         attachmentOptions.setPadding(dp(10), dp(8), dp(10), dp(10));
         attachmentOptions.setBackground(shape(Color.rgb(12, 18, 33), 18, Color.rgb(42, 55, 80)));
         attachmentOptions.setVisibility(attachmentsExpanded ? View.VISIBLE : View.GONE);
-        taskCard.addView(attachmentOptions, withTop(lp(-1, -2), 5)); attachmentOptions.setVisibility(View.GONE);
-        Button importTextButton = button("📎  Добавить файл · TXT / PDF / DOCX / XLSX", false);
+        taskCard.addView(attachmentOptions, withTop(lp(-1, -2), 5));
+        Button importMultipleButton = button("＋  Выбрать несколько файлов и фото", false);
+        attachmentOptions.addView(importMultipleButton, lp(-1, 46));
+        importMultipleButton.setOnClickListener(v -> importMultipleMaterials());
+        Button importTextButton = button("📎  Добавить один файл · TXT / PDF / DOCX / XLSX", false);
         attachmentOptions.addView(importTextButton, lp(-1, 44));
         importTextButton.setOnClickListener(v -> importTaskTextFile());
         Button importImageButton = button("🖼  Извлечь текст с изображения · OCR", false);
@@ -415,14 +428,14 @@ public class MainActivity extends Activity {
         attachmentsToggle.setOnClickListener(v -> {
             boolean expand = attachmentOptions.getVisibility() != View.VISIBLE;
             attachmentOptions.setVisibility(expand ? View.VISIBLE : View.GONE);
-            attachmentsToggle.setText(expand ? "⌃  Скрыть инструменты импорта" : "＋  Документы и изображения · PDF, DOCX, XLSX, OCR");
-            attachmentsToggle.setContentDescription(expand ? "Скрыть инструменты импорта" : "Показать инструменты импорта документов и изображений");
+            attachmentsToggle.setText(expand ? "⌃  Скрыть инструменты импорта" : "＋  Документы, файлы и фото · выбрать несколько");
+            attachmentsToggle.setContentDescription(expand ? "Скрыть инструменты импорта" : "Показать инструменты импорта документов, файлов и фото");
             prefs.edit().putBoolean("ui_attachments_expanded", expand).apply();
         });
         attachmentsToggle.setContentDescription(attachmentsExpanded ? "Скрыть инструменты импорта" : "Показать инструменты импорта документов и изображений");
 
         webSearchEnabled = new CheckBox(this); webSearchEnabled.setText("Искать в Интернете · независимо от режима ИИ"); webSearchEnabled.setTextColor(TEXT); webSearchEnabled.setTextSize(13); webSearchEnabled.setButtonTintList(android.content.res.ColorStateList.valueOf(TEAL)); LinearLayout.LayoutParams wsp = lp(-1, -2); wsp.topMargin = dp(12); taskCard.addView(webSearchEnabled, wsp); webSearchEnabled.setVisibility(View.GONE);
-        TextView webHelp = text("Поиск независим от режима локальных ИИ.", 11, MUTED, false); taskCard.addView(webHelp); webHelp.setVisibility(View.GONE);
+        TextView webHelp = text("В режиме «Только локальные ИИ» поиск выключен и внешние поисковые сервисы не вызываются.", 11, MUTED, false); taskCard.addView(webHelp); webHelp.setVisibility(View.GONE);
         boolean webDetailsExpanded = prefs.getBoolean("ui_web_details_expanded", false);
         Button webDetailsToggle = button((webDetailsExpanded ? "⌃  Свернуть параметры поиска" : "⌄  Параметры поиска и источников"), false);
         taskCard.addView(webDetailsToggle, withTop(lp(-1, 44), 7)); webDetailsToggle.setVisibility(View.GONE);
@@ -430,7 +443,7 @@ public class MainActivity extends Activity {
         webDetails.setBackground(shape(Color.rgb(12, 18, 33), 18, Color.rgb(42, 55, 80)));
         webDetails.setVisibility(webDetailsExpanded ? View.VISIBLE : View.GONE);
         taskCard.addView(webDetails, withTop(lp(-1, -2), 4)); webDetails.setVisibility(View.GONE);
-        webDetails.addView(text("При включении очищенная поисковая фраза отправляется внешним поисковым сервисам. Найденные материалы могут передаваться настроенным ИИ-провайдерам. При использовании локальных моделей поиск всё равно обращается в Интернет.", 10, MUTED, false));
+        webDetails.addView(text("Обычный режим: при включении очищенная поисковая фраза отправляется внешним поисковым сервисам. Режим «Только локальные ИИ» блокирует внешние поисковые запросы и оставляет обработку задачи на выбранном локальном сервере.", 10, MUTED, false));
         webDetails.addView(text("Источники: Brave Search и Tavily (если настроены ключи), Wikipedia и DuckDuckGo Instant Answer (JSON). Порядок выдачи эвристический и не является проверкой достоверности.", 10, MUTED, false), withTop(lp(-1, -2), 6));
         webDetails.addView(label("СКОЛЬКО ВЕБ-КОНТЕКСТА ПЕРЕДАВАТЬ ИИ"));
         webContextModeSpinner = new Spinner(this); webContextModeSpinner.setPadding(dp(10), dp(6), dp(10), dp(6)); webContextModeSpinner.setBackground(shape(FIELD, 14, Color.rgb(53, 67, 96)));
@@ -460,8 +473,8 @@ public class MainActivity extends Activity {
         }; adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); modeSpinner.setAdapter(adapter); taskCard.addView(modeSpinner, lp(1, 1));
         ChipFlowLayout modeChips = new ChipFlowLayout(this); modeChips.setPadding(0,dp(4),0,dp(4));
         String[] compactModes={"Быстрый","Совет","Проверка","Разбор","Авто"}; TextView[] chipViews=new TextView[compactModes.length];
-        TextView modeDescription=text("Два независимых ответа и вывод координатора.",13,MUTED,false);
-        for(int mi=0;mi<compactModes.length;mi++){ final int m=mi; TextView chip=text(compactModes[mi],13,mi==1?Color.rgb(243,255,252):TEXT,false); chip.setGravity(Gravity.CENTER); chip.setPadding(dp(11),dp(10),dp(11),dp(10)); chip.setMinHeight(dp(44)); chip.setBackground(shape(mi==1?TEAL:BG,22,mi==1?0:Color.rgb(70,78,88))); LinearLayout.LayoutParams cp=lp(-2,-2); cp.rightMargin=dp(6); modeChips.addView(chip,cp); chipViews[mi]=chip; chip.setOnClickListener(v->{modeSpinner.setSelection(m); for(int k=0;k<chipViews.length;k++){boolean selected=k==m; chipViews[k].setTextColor(selected?Color.rgb(243,255,252):TEXT); chipViews[k].setBackground(shape(selected?TEAL:BG,22,selected?0:Color.rgb(70,78,88)));} modeDescription.setText(new String[]{"Один ИИ отвечает быстро.","Два независимых ответа и вывод координатора.","Два ИИ проверяют ответ и ищут ошибки.","Глубокая критика, источники и итоговый разбор.","Подбор стратегии под задачу."}[m]); prefs.edit().putInt("mode",m).apply();}); }
+        TextView modeDescription=text("Три независимых эксперта (включая аудит доказательств), затем отдельный координатор.",13,MUTED,false);
+        for(int mi=0;mi<compactModes.length;mi++){ final int m=mi; TextView chip=text(compactModes[mi],13,mi==1?Color.rgb(243,255,252):TEXT,false); chip.setGravity(Gravity.CENTER); chip.setPadding(dp(11),dp(10),dp(11),dp(10)); chip.setMinHeight(dp(44)); chip.setBackground(shape(mi==1?TEAL:BG,22,mi==1?0:Color.rgb(70,78,88))); LinearLayout.LayoutParams cp=lp(-2,-2); cp.rightMargin=dp(6); modeChips.addView(chip,cp); chipViews[mi]=chip; chip.setOnClickListener(v->{modeSpinner.setSelection(m); for(int k=0;k<chipViews.length;k++){boolean selected=k==m; chipViews[k].setTextColor(selected?Color.rgb(243,255,252):TEXT); chipViews[k].setBackground(shape(selected?TEAL:BG,22,selected?0:Color.rgb(70,78,88)));} modeDescription.setText(new String[]{"Один ИИ отвечает быстро.","Три независимых эксперта (включая аудит доказательств), затем отдельный координатор.","Два ИИ проверяют ответ и ищут ошибки.","Три эксперта, циклическая критика и итог координатора.","Подбор стратегии под задачу."}[m]); prefs.edit().putInt("mode",m).apply();}); }
         taskCard.addView(modeChips,withTop(lp(-1,-2),dp(6)));
         modeDescription.setPadding(0,dp(3),0,dp(10)); taskCard.addView(modeDescription);
         runButton = button("Запустить ИИ-совет  →", true); LinearLayout.LayoutParams runP = lp(-1, 50); runP.topMargin = dp(8); taskCard.addView(runButton, runP); elevate(runButton, 0);
@@ -496,7 +509,7 @@ public class MainActivity extends Activity {
         LinearLayout progressHead = row(); progressCard.addView(progressHead); progressHead.addView(text("Эксперты", 14, TEXT, true), new LinearLayout.LayoutParams(0,-2,1));
         taskProgress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal); taskProgress.setMax(100); taskProgress.setProgress(0); taskProgress.setContentDescription("Прогресс выполнения задачи"); if (android.os.Build.VERSION.SDK_INT >= 21) taskProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(TEAL)); progressHead.addView(taskProgress, lp(88,5));
         expertStatusPanel = column(); progressCard.addView(expertStatusPanel, withTop(lp(-1,-2), 7));
-        for (int i=0;i<3;i++) { LinearLayout line=row(); line.setPadding(0,dp(5),0,dp(5)); TextView name=text(new String[]{"Эксперт","Критик","Координатор"}[i],12,TEXT,false); line.addView(name,new LinearLayout.LayoutParams(0,-2,1)); expertStatus[i]=text("· ждёт",11,MUTED,false); line.addView(expertStatus[i]); expertStatusPanel.addView(line); }
+        for (int i=0;i<4;i++) { LinearLayout line=row(); line.setPadding(0,dp(5),0,dp(5)); TextView name=text(new String[]{"Основной эксперт","Независимый эксперт","Аудитор доказательств","Координатор"}[i],12,TEXT,false); line.addView(name,new LinearLayout.LayoutParams(0,-2,1)); expertStatus[i]=text("· ждёт",11,MUTED,false); line.addView(expertStatus[i]); expertStatusPanel.addView(line); }
         resultCards = column(); resultCard.addView(resultCards);
 
         LinearLayout followUpCard = column(); followUpCard.setPadding(dp(13), dp(13), dp(13), dp(14));
@@ -557,7 +570,7 @@ public class MainActivity extends Activity {
         settingsCard.addView(text("Локальный режим не означает, что модель встроена в APK: вычисления идут на выбранном локальном сервере. Android localhost — сам телефон, а не компьютер.", 11, Color.rgb(255, 200, 135), false), withTop(lp(-1, -2), 6));
         localOnlyMode = new CheckBox(this); localOnlyMode.setText("Только локальные ИИ · блокировать облачные API"); localOnlyMode.setTextColor(TEXT); localOnlyMode.setTextSize(12); localOnlyMode.setButtonTintList(android.content.res.ColorStateList.valueOf(TEAL));
         settingsCard.addView(localOnlyMode, withTop(lp(-1, -2), 7));
-        settingsCard.addView(text("Этот режим ограничивает только ИИ-провайдеры: запросы к моделям отправляются только на локальные адреса. Интернет-поиск управляется отдельно и может оставаться включённым. Если поиск включён, поисковая фраза и запросы к поисковым сервисам покидают устройство, но результаты можно передать локальным моделям без облачного ИИ.", 10, MUTED, false), withTop(lp(-1, -2), 2));
+        settingsCard.addView(text("Строгий локальный режим: запросы к моделям идут только на локальные адреса, интернет-поиск принудительно выключается, а поисковые запросы не отправляются внешним сервисам. Чтобы использовать поиск, сначала отключите локальный режим.", 10, MUTED, false), withTop(lp(-1, -2), 2));
         localOnlyMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (adjustingPrivacyControls) return;
             if (!LocalAiPolicy.mayChangePrivacyControls(working)) {
@@ -567,39 +580,47 @@ public class MainActivity extends Activity {
                 setStatus("Нельзя менять режим приватности во время запроса. Остановите задачу и повторите.", RED);
                 return;
             }
-            prefs.edit().putBoolean("localOnlyMode", isChecked).apply();
             if (isChecked) {
-                String message = webSearchEnabled != null && webSearchEnabled.isChecked()
-                    ? "Локальные ИИ включены. Интернет-поиск остаётся включённым по вашему выбору; поисковые запросы будут отправляться внешним поисковым сервисам."
-                    : "Локальные ИИ включены. Интернет-поиск управляется отдельно и сейчас выключен.";
-                setStatus(message, TEAL);
+                // Change both controls atomically: never leave a stale web-search preference active.
+                adjustingPrivacyControls = true;
+                if (webSearchEnabled != null) webSearchEnabled.setChecked(false);
+                adjustingPrivacyControls = false;
+                if (webSearchEnabled != null) webSearchEnabled.setEnabled(false);
+                prefs.edit().putBoolean("localOnlyMode", true).putBoolean("webSearchEnabled", false).apply();
+                setStatus("Строгий локальный режим включён: интернет-поиск выключен, внешние поисковые сервисы не вызываются.", TEAL);
             } else {
-                setStatus("Ограничение только локальными ИИ выключено. Интернет-поиск по-прежнему управляется отдельно.", TEAL);
+                if (webSearchEnabled != null) webSearchEnabled.setEnabled(true);
+                prefs.edit().putBoolean("localOnlyMode", false).apply();
+                setStatus("Локальное ограничение выключено. Интернет-поиск остаётся выключенным, пока вы не включите его отдельно.", TEAL);
             }
         });
         webSearchEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (adjustingPrivacyControls) return;
             if (!LocalAiPolicy.mayChangePrivacyControls(working)) {
                 adjustingPrivacyControls = true;
-                webSearchEnabled.setChecked(!isChecked);
+                webSearchEnabled.setChecked(false);
                 adjustingPrivacyControls = false;
                 setStatus("Нельзя менять режим поиска во время запроса. Остановите задачу и повторите.", RED);
                 return;
             }
-            prefs.edit().putBoolean("webSearchEnabled", isChecked).apply();
             if (isChecked && localOnlyMode != null && localOnlyMode.isChecked()) {
-                setStatus("Интернет-поиск включён вместе с локальными ИИ. Поисковая фраза отправляется поисковым сервисам; ответы моделей остаются на локальных серверах.", TEAL);
-            } else {
-                setStatus(isChecked ? "Интернет-поиск включён." : "Интернет-поиск выключен.", TEAL);
+                adjustingPrivacyControls = true;
+                webSearchEnabled.setChecked(false);
+                adjustingPrivacyControls = false;
+                prefs.edit().putBoolean("webSearchEnabled", false).apply();
+                setStatus("В режиме «Только локальные ИИ» интернет-поиск запрещён.", RED);
+                return;
             }
+            prefs.edit().putBoolean("webSearchEnabled", isChecked).apply();
+            setStatus(isChecked ? "Интернет-поиск включён." : "Интернет-поиск выключен.", TEAL);
         });
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             final int ix = i;
             LinearLayout providerCard = column(); providerCard.setPadding(dp(13), dp(12), dp(13), dp(13)); providerCard.setBackground(shape(Color.rgb(12, 18, 33), 17, Color.rgb(43, 55, 81)));
             LinearLayout.LayoutParams providerP = lp(-1, -2); providerP.topMargin = dp(13); settingsCard.addView(providerCard, providerP);
             LinearLayout providerHead = row(); providerCard.addView(providerHead);
-            TextView dot = text(i == 2 ? "✦" : "●", 13, i == 2 ? PURPLE : TEAL, true); dot.setGravity(Gravity.CENTER); dot.setBackground(shape(i == 2 ? Color.rgb(46, 37, 72) : Color.rgb(24, 54, 55), 11, 0)); providerHead.addView(dot, lp(30, 30));
-            TextView pLabel = text(PROVIDERS[i], 13, i == 2 ? PURPLE : TEXT, true); LinearLayout.LayoutParams pl = lp(-2, -2); pl.leftMargin = dp(9); providerHead.addView(pLabel, pl);
+            TextView dot = text(i == 3 ? "✦" : "●", 13, i == 3 ? PURPLE : TEAL, true); dot.setGravity(Gravity.CENTER); dot.setBackground(shape(i == 3 ? Color.rgb(46, 37, 72) : Color.rgb(24, 54, 55), 11, 0)); providerHead.addView(dot, lp(30, 30));
+            TextView pLabel = text(PROVIDERS[i], 13, i == 3 ? PURPLE : TEXT, true); LinearLayout.LayoutParams pl = lp(-2, -2); pl.leftMargin = dp(9); providerHead.addView(pLabel, pl);
             providerStatus[i] = text("○  Не проверено", 11, MUTED, true);
             providerStatus[i].setPadding(dp(10), dp(7), dp(10), dp(7));
             providerStatus[i].setBackground(shape(Color.rgb(12, 22, 34), 10, Color.rgb(43, 55, 81)));
@@ -674,7 +695,7 @@ public class MainActivity extends Activity {
         TextView footer = text("AI COUNCIL " + APP_VERSION + "   ·   ИИ МОЖЕТ ОШИБАТЬСЯ — ПРОВЕРЯЙТЕ ВАЖНЫЕ ФАКТЫ", 9, MUTED, true); footer.setGravity(Gravity.CENTER); footer.setPadding(dp(8), dp(20), dp(8), dp(4)); connectionsScreen.addView(footer);
 
         runButton.setOnClickListener(v -> runCouncil()); stopButton.setOnClickListener(v -> stopCouncil()); save.setOnClickListener(v -> saveSettings()); refresh.setOnClickListener(v -> showHistory());
-        for (int i = 0; i < 3; i++) { final int ix = i; testButtons[i].setOnClickListener(v -> testProvider(ix)); modelListButtons[i].setOnClickListener(v -> fetchProviderModels(ix)); }
+        for (int i = 0; i < 4; i++) { final int ix = i; testButtons[i].setOnClickListener(v -> testProvider(ix)); modelListButtons[i].setOnClickListener(v -> fetchProviderModels(ix)); }
         copy.setOnClickListener(v -> { String s = output.getText().toString(); if (s.trim().isEmpty() || s.startsWith("Ваш итоговый ответ появится здесь")) { setStatus("Сначала получите или откройте результат.", RED); return; } ClipboardManager cm = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE); cm.setPrimaryClip(ClipData.newPlainText("AI Council", s)); setStatus("●  Результат скопирован", TEAL); });
         clear.setOnClickListener(v -> new android.app.AlertDialog.Builder(MainActivity.this).setTitle("Очистить историю?").setMessage("Будут удалены только записи истории. Сохранённые проекты останутся.").setNegativeButton("Отмена", null).setPositiveButton("Очистить", (d,w) -> { dataStore.putString("history", "[]"); showHistory(); setStatus("●  История очищена", TEAL); }).show());
         mainScroll = scroll;
@@ -931,7 +952,8 @@ public class MainActivity extends Activity {
             prompt.setText(state.getString("ui.prompt", ""));
             followUpInput.setText(state.getString("ui.followUp", ""));
             modeSpinner.setSelection(Math.max(0, Math.min(MODES.length - 1, state.getInt("ui.mode", modeSpinner.getSelectedItemPosition()))));
-            webSearchEnabled.setChecked(state.getBoolean("ui.webSearch", prefs.getBoolean("webSearchEnabled", false)));
+            webSearchEnabled.setChecked(!(localOnlyMode != null && localOnlyMode.isChecked())
+                    && state.getBoolean("ui.webSearch", prefs.getBoolean("webSearchEnabled", false)));
             if (webContextModeSpinner != null) webContextModeSpinner.setSelection(Math.max(0, Math.min(WEB_CONTEXT_MODES.length - 1, state.getInt("ui.webContextMode", prefs.getInt("webContextMode", 2)))));
             lastCompletedTask = state.getString("ui.lastTask", "");
             lastCompletedMode = Math.max(0, Math.min(MODES.length - 1, state.getInt("ui.lastMode", 0)));
@@ -944,7 +966,8 @@ public class MainActivity extends Activity {
         } else {
             prompt.setText(dataStore.getString("draftPrompt", ""));
             followUpInput.setText(dataStore.getString("draftFollowUp", ""));
-            webSearchEnabled.setChecked(prefs.getBoolean("webSearchEnabled", false));
+            webSearchEnabled.setChecked(!(localOnlyMode != null && localOnlyMode.isChecked())
+                    && prefs.getBoolean("webSearchEnabled", false));
             if (webContextModeSpinner != null) webContextModeSpinner.setSelection(Math.max(0, Math.min(WEB_CONTEXT_MODES.length - 1, prefs.getInt("webContextMode", 2))));
             modeSpinner.setSelection(Math.max(0, Math.min(MODES.length - 1, dataStore.getInt("draftMode", 0))));
         }
@@ -1019,6 +1042,55 @@ public class MainActivity extends Activity {
         });
         try { startActivityForResult(intent, REQUEST_OPEN_TEXT); }
         catch (Exception e) { setStatus("Не удалось открыть выбор файла: " + e.getMessage(), RED); }
+    }
+
+    /** Select OCR language before the shared multi-select documents/photos picker. */
+    private void importMultipleMaterials() {
+        final String[] choices = {"English / Latin", "Русский", "Українська"};
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Язык распознавания текста на фото")
+            .setMessage("Документы обрабатываются по своему формату; выбранный язык применяется только к фотографиям.")
+            .setItems(choices, (dialog, which) -> launchMultipleMaterialsPicker(
+                    which == 1 ? "rus" : (which == 2 ? "ukr" : "eng")))
+            .setNegativeButton("Отмена", null)
+            .show();
+    }
+
+    private void launchMultipleMaterialsPicker(String photoOcrLanguage) {
+        pendingBatchPhotoOcrLanguage = "rus".equals(photoOcrLanguage) || "ukr".equals(photoOcrLanguage)
+                ? photoOcrLanguage : "eng";
+        android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(android.content.Intent.EXTRA_ALLOW_MULTIPLE, true);
+        intent.putExtra(android.content.Intent.EXTRA_MIME_TYPES, new String[]{
+            "text/*", "application/json", "application/xml", "application/javascript",
+            "application/x-yaml", "application/yaml", "application/toml", "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "image/jpeg", "image/png", "image/webp", "image/bmp", "image/gif"
+        });
+        try { startActivityForResult(intent, REQUEST_OPEN_MATERIALS); }
+        catch (Exception e) { setStatus("Не удалось открыть выбор файлов и фото: " + e.getMessage(), RED); }
+    }
+
+    private java.util.List<android.net.Uri> selectedMaterialUris(android.content.Intent data) throws java.io.IOException {
+        java.util.LinkedHashMap<String, android.net.Uri> unique = new java.util.LinkedHashMap<>();
+        android.content.ClipData clip = data == null ? null : data.getClipData();
+        if (clip != null) {
+            for (int i = 0; i < clip.getItemCount(); i++) {
+                android.net.Uri uri = clip.getItemAt(i) == null ? null : clip.getItemAt(i).getUri();
+                if (uri != null) unique.put(uri.toString(), uri);
+            }
+        } else if (data != null && data.getData() != null) {
+            unique.put(data.getData().toString(), data.getData());
+        }
+        if (unique.isEmpty()) throw new java.io.IOException("Не выбраны файлы.");
+        if (unique.size() > MaterialImportPolicy.MAX_SELECTED_FILES) {
+            throw new java.io.IOException("За один раз можно выбрать не более "
+                    + MaterialImportPolicy.MAX_SELECTED_FILES + " файлов или фото.");
+        }
+        return new java.util.ArrayList<>(unique.values());
     }
 
     private void importTaskImage() {
@@ -1217,6 +1289,7 @@ public class MainActivity extends Activity {
     private void showExtractedTextPreview(String sourceType, String sourceName, String extractedText) {
         if (isFinishing() || isDestroyed() || prompt == null) return;
         final boolean isOcr = sourceType != null && sourceType.startsWith("OCR");
+        final boolean isBatch = "BATCH".equals(sourceType);
         final boolean isCyrillicOcr = sourceType != null && sourceType.contains("кириллица");
         final boolean isCyrillicPdfOcr = isCyrillicOcr && sourceType.contains("PDF");
         final EditText preview = edit("Проверьте и при необходимости исправьте извлечённый текст…", true);
@@ -1231,7 +1304,9 @@ public class MainActivity extends Activity {
 
         LinearLayout contentLayout = column();
         contentLayout.setPadding(dp(20), dp(4), dp(20), dp(4));
-        TextView details = text(isCyrillicPdfOcr
+        TextView details = text(isBatch
+            ? "Выбранные документы и файлы извлечены локально; для фото выполняется локальное OCR. Ничего не отправляется ИИ до нажатия «Добавить в задачу» и последующего запуска. Проверьте содержимое и предупреждения по пропущенным файлам."
+            : isCyrillicPdfOcr
             ? "Страницы PDF распознаны локально с помощью Tesseract. Модель языка хранится в закрытой папке приложения; сам PDF не отправлялся на сервер. Текущий лимит — " + ocrPdfPageLimit() + " страниц. OCR может ошибаться, поэтому проверьте результат. Ничего не добавится, пока вы не нажмёте «Добавить в задачу»."
             : isCyrillicOcr
                 ? "Кириллица распознана локально с помощью Tesseract. Модель языка хранится в закрытой папке приложения; изображение не загружалось на сервер. OCR может ошибаться, поэтому проверьте результат. Ничего не добавится, пока вы не нажмёте «Добавить в задачу»."
@@ -1431,6 +1506,170 @@ public class MainActivity extends Activity {
             }
         });
     }
+    /**
+     * Processes selected files sequentially on the I/O worker. Image bytes stay on-device:
+     * photos are converted to editable OCR text before the user can insert them into a task.
+     */
+    private void handleTaskMaterialsImport(java.util.List<android.net.Uri> uris, String photoOcrLanguage) {
+        if (uris == null || uris.isEmpty()) { setStatus("Не выбраны материалы.", MUTED); return; }
+        if (documentImportInProgress || imageOcrInProgress) {
+            setStatus("Другая операция импорта или OCR уже выполняется.", MUTED); return;
+        }
+        final String language = "rus".equals(photoOcrLanguage) || "ukr".equals(photoOcrLanguage)
+                ? photoOcrLanguage : "eng";
+        final boolean hasPhotos = containsPhotoMaterial(uris);
+        if (hasPhotos && !"eng".equals(language) && !hasUsableCyrillicModel(language)) {
+            String languageLabel = "ukr".equals(language) ? "украинской" : "русской";
+            new android.app.AlertDialog.Builder(this)
+                .setTitle("Загрузка модели OCR")
+                .setMessage("Для распознавания " + languageLabel + " текста на выбранных фото нужно один раз скачать и проверить языковую модель примерно 3,7 МБ. Она сохранится в закрытой папке приложения. Сами фото останутся на устройстве и не будут отправлены на сервер для распознавания. Продолжить?")
+                .setNegativeButton("Отмена", null)
+                .setPositiveButton("Продолжить", (dialog, which) -> startTaskMaterialsImport(uris, language, true))
+                .show();
+            return;
+        }
+        startTaskMaterialsImport(uris, language, hasPhotos);
+    }
+
+    private boolean containsPhotoMaterial(java.util.List<android.net.Uri> uris) {
+        if (uris == null) return false;
+        for (android.net.Uri uri : uris) {
+            if (uri == null) continue;
+            String name = displayNameForUri(uri);
+            if (MaterialImportPolicy.isImageFile(name, getContentResolver().getType(uri))) return true;
+        }
+        return false;
+    }
+
+    private void startTaskMaterialsImport(java.util.List<android.net.Uri> uris, String photoOcrLanguage, boolean hasPhotos) {
+        if (documentImportInProgress || imageOcrInProgress) {
+            setStatus("Другая операция импорта или OCR уже выполняется.", MUTED); return;
+        }
+        documentImportInProgress = true;
+        imageOcrInProgress = true;
+        ocrCancelRequested = false;
+        if (hasPhotos && ("rus".equals(photoOcrLanguage) || "ukr".equals(photoOcrLanguage))) {
+            showOcrDownloadDialogIfNeeded(photoOcrLanguage);
+        }
+        setStatus("Обрабатываем выбранные файлы и фото локально…", BLUE);
+        ioPool.submit(() -> {
+            StringBuilder combined = new StringBuilder();
+            java.util.ArrayList<String> warnings = new java.util.ArrayList<>();
+            int successCount = 0;
+            try {
+                for (int i = 0; i < uris.size(); i++) {
+                    if (ocrCancelRequested || Thread.currentThread().isInterrupted()) {
+                        throw new java.io.IOException("Пакетный импорт отменён.");
+                    }
+                    android.net.Uri uri = uris.get(i);
+                    String rawName = displayNameForUri(uri);
+                    String safeName = MaterialImportPolicy.safeDisplayName(rawName);
+                    String mimeType = getContentResolver().getType(uri);
+                    boolean image = MaterialImportPolicy.isImageFile(safeName, mimeType);
+                    try {
+                        if (!MaterialImportPolicy.isSupportedMaterial(safeName, mimeType)) {
+                            throw new java.io.IOException("Тип файла не поддерживается.");
+                        }
+                        String extracted = extractMaterialText(uri, safeName, mimeType, image, photoOcrLanguage);
+                        if (extracted == null || extracted.trim().isEmpty()) {
+                            throw new java.io.IOException("Не удалось извлечь текст.");
+                        }
+                        String block = MaterialImportPolicy.formatMaterialBlock(i + 1, uris.size(), safeName, image, extracted);
+                        int separatorChars = combined.length() > 0 ? 1 : 0;
+                        int contentWithSeparator = combined.length() + separatorChars;
+                        int contentLimit = MaterialImportPolicy.MAX_BATCH_TEXT_CHARS - MaterialImportPolicy.MAX_BATCH_WARNING_CHARS;
+                        if (!MaterialImportPolicy.canAppend(contentWithSeparator, block.length())
+                                || contentWithSeparator + block.length() > contentLimit) {
+                            throw new java.io.IOException("Превышен лимит текста материалов с резервом под предупреждения ("
+                                    + contentLimit + " символов содержимого).");
+                        }
+                        if (separatorChars > 0) combined.append("\n");
+                        combined.append(block);
+                        successCount++;
+                    } catch (Exception itemError) {
+                        String why = itemError.getMessage();
+                        if (why == null || why.trim().isEmpty()) why = itemError.getClass().getSimpleName();
+                        if (why.length() > 180) why = why.substring(0, 179) + "…";
+                        warnings.add(safeName + ": " + why.replace("\n", " ").replace("\r", " "));
+                    }
+                }
+                if (successCount == 0) {
+                    throw new java.io.IOException(warnings.isEmpty()
+                            ? "Не удалось извлечь содержимое выбранных материалов."
+                            : "Ни один файл не обработан: " + warnings.get(0));
+                }
+                if (!warnings.isEmpty()) {
+                    StringBuilder note = new StringBuilder("\n\n--- ПРЕДУПРЕЖДЕНИЯ ИМПОРТА ---\n");
+                    for (String warning : warnings) note.append("• ").append(warning).append("\n");
+                    if (MaterialImportPolicy.canAppend(combined.length(), note.length())) combined.append(note);
+                }
+                final String previewText = combined.toString();
+                final int imported = successCount;
+                final int failed = warnings.size();
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    showExtractedTextPreview("BATCH", "Материалы " + imported + "/" + uris.size(), previewText);
+                    setStatus(failed == 0
+                            ? "Извлечено материалов: " + imported + ". Проверьте общий предпросмотр перед вставкой."
+                            : "Извлечено материалов: " + imported + "; пропущено: " + failed + ". Подробности включены в предпросмотр.",
+                            failed == 0 ? TEAL : BLUE);
+                });
+            } catch (Exception e) {
+                String message = e.getMessage() == null || e.getMessage().trim().isEmpty()
+                        ? "Не удалось обработать выбранные материалы." : e.getMessage();
+                runOnUiThread(() -> {
+                    if (!isFinishing() && !isDestroyed()) new android.app.AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Пакетный импорт")
+                            .setMessage(message)
+                            .setPositiveButton("ОК", null).show();
+                });
+                runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) setStatus("Импорт не выполнен: " + message, RED); });
+            } finally {
+                documentImportInProgress = false;
+                imageOcrInProgress = false;
+                ocrCancelRequested = false;
+                runOnUiThread(this::dismissOcrDownloadDialog);
+            }
+        });
+    }
+
+    private String extractMaterialText(android.net.Uri uri, String displayName, String mimeType, boolean image,
+                                       String photoOcrLanguage) throws Exception {
+        if (image) {
+            return ocrDocumentProcessor.process(OcrDocumentProcessor.Input.image(uri, photoOcrLanguage),
+                    () -> ocrCancelRequested || Thread.currentThread().isInterrupted(),
+                    message -> runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) setStatus(message, BLUE); }))
+                    .previewText();
+        }
+        byte[] fileBytes;
+        try (InputStream stream = getContentResolver().openInputStream(uri)) {
+            if (stream == null) throw new java.io.IOException("Не удалось открыть файл.");
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192]; int n;
+            while ((n = stream.read(buffer)) != -1) {
+                if (bytes.size() + n > MAX_DOCUMENT_IMPORT_BYTES) {
+                    throw new java.io.IOException("Файл превышает 10 МБ.");
+                }
+                bytes.write(buffer, 0, n);
+            }
+            fileBytes = bytes.toByteArray();
+        }
+        String ext = extensionOf(displayName);
+        if (MaterialImportPolicy.isTextMaterial(displayName, mimeType)) {
+            if (fileBytes.length > MAX_TEXT_IMPORT_BYTES) {
+                throw new java.io.IOException("Текстовый файл превышает 256 КБ.");
+            }
+            return decodeImportedText(fileBytes, ext);
+        }
+        if ("pdf".equals(ext) || "application/pdf".equals(mimeType)) {
+            return ocrDocumentProcessor.process(OcrDocumentProcessor.Input.pdf(fileBytes, displayName, "eng", ocrPdfPageLimit()),
+                    () -> ocrCancelRequested || Thread.currentThread().isInterrupted(),
+                    message -> runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) setStatus(message, BLUE); }))
+                    .previewText();
+        }
+        return DocumentTextExtractor.extract(getApplicationContext(), fileBytes, displayName);
+    }
+
     private void handleCyrillicPdfImport(android.net.Uri uri, String language) {
         if (documentImportInProgress || imageOcrInProgress) {
             setStatus("Другая операция импорта или OCR уже выполняется.", MUTED);
@@ -1655,7 +1894,7 @@ public class MainActivity extends Activity {
         expertStatus[index].setText(value); expertStatus[index].setTextColor(color);
     }
     private void resetExpertStates() {
-        for (int i=0;i<3;i++) setExpertState(i, "○ Ожидает", MUTED);
+        for (int i=0;i<4;i++) setExpertState(i, "○ Ожидает", MUTED);
         if (taskProgress != null) taskProgress.setProgress(0);
     }
 
@@ -1678,16 +1917,68 @@ public class MainActivity extends Activity {
         Cipher c = Cipher.getInstance("AES/GCM/NoPadding"); c.init(Cipher.DECRYPT_MODE, getSecretKey(), new GCMParameterSpec(128, Base64.decode(parts[1], Base64.NO_WRAP)));
         return new String(c.doFinal(Base64.decode(parts[2], Base64.NO_WRAP)), StandardCharsets.UTF_8);
     }
+    /**
+     * One-time migration from the old three-slot topology (two experts + coordinator)
+     * to three experts + a dedicated fourth-slot coordinator. The saved API key is
+     * copied as ciphertext; it is decrypted only by the normal settings loader.
+     */
+    private void migrateLegacyCoordinatorSlot() {
+        if (prefs == null || prefs.getBoolean("fourSlotTeamMigration", false)) return;
+        String oldUrl = prefs.getString("url2", "");
+        String oldModel = prefs.getString("model2", "");
+        String oldKey = prefs.getString("key2", "");
+        String oldRole = prefs.getString("expertRole2", "");
+        boolean oldFree = prefs.getBoolean("freeProvider2", false);
+        boolean legacyHasData = !oldUrl.trim().isEmpty() || !oldModel.trim().isEmpty()
+                || !oldKey.trim().isEmpty() || !oldRole.trim().isEmpty() || oldFree;
+        boolean slotFourHasData = !prefs.getString("url3", "").trim().isEmpty()
+                || !prefs.getString("model3", "").trim().isEmpty()
+                || !prefs.getString("key3", "").trim().isEmpty();
+        SharedPreferences.Editor edit = prefs.edit();
+        if (legacyHasData && !slotFourHasData) {
+            edit.putString("url3", oldUrl)
+                    .putString("model3", oldModel)
+                    .putString("key3", oldKey)
+                    .putString("expertRole3", oldRole.trim().isEmpty()
+                            ? ExpertRolePolicy.defaultRole(3) : oldRole)
+                    .putBoolean("freeProvider3", oldFree)
+                    .putString("providerStatusMessage3", prefs.getString("providerStatusMessage2", "Не проверено"))
+                    .putInt("providerStatusColor3", prefs.getInt("providerStatusColor2", MUTED))
+                    .putString("providerTestFingerprint3", prefs.getString("providerTestFingerprint2", ""))
+                    .putString("providerModelsStatusMessage3", prefs.getString("providerModelsStatusMessage2", "Список моделей не проверен"))
+                    .putInt("providerModelsStatusColor3", prefs.getInt("providerModelsStatusColor2", MUTED))
+                    .putString("providerModelsConfigFingerprint3", prefs.getString("providerModelsConfigFingerprint2", ""));
+            edit.putString("url2", "")
+                    .putString("model2", "")
+                    .putString("key2", "")
+                    .putString("expertRole2", ExpertRolePolicy.defaultRole(2))
+                    .putBoolean("freeProvider2", false)
+                    .putString("providerStatusMessage2", "Не проверено")
+                    .putInt("providerStatusColor2", MUTED)
+                    .putString("providerTestFingerprint2", "")
+                    .putString("providerModelsStatusMessage2", "Список моделей не проверен")
+                    .putInt("providerModelsStatusColor2", MUTED)
+                    .putString("providerModelsConfigFingerprint2", "");
+        } else if (legacyHasData && slotFourHasData
+                && (oldRole.trim().isEmpty() || oldRole.toLowerCase(java.util.Locale.ROOT).contains("координатор"))) {
+            // Keep both configured endpoints; make the legacy third provider's
+            // new role explicit rather than leaving the old coordinator system prompt attached to it.
+            edit.putString("expertRole2", ExpertRolePolicy.defaultRole(2));
+        }
+        edit.putBoolean("fourSlotTeamMigration", true).apply();
+    }
+
     private void loadSettings() {
+        migrateLegacyCoordinatorSlot();
         boolean legacy = false;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             endpoint[i].setText(prefs.getString("url" + i, "")); model[i].setText(prefs.getString("model" + i, ""));
             expertRole[i].setText(prefs.getString("expertRole" + i, ExpertRolePolicy.defaultRole(i)));
             String saved = prefs.getString("key" + i, "");
             try { key[i].setText(decrypt(saved)); if (!saved.isEmpty() && !saved.startsWith("enc:")) legacy = true; }
             catch (Exception ex) { key[i].setText(""); setStatus("Не удалось расшифровать ключ №" + (i+1) + ". Введите его заново.", RED); }
         }
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             providerFree[i].setChecked(prefs.getBoolean("freeProvider" + i, false));
             String lastStatus = prefs.getString("providerStatusMessage" + i, "Не проверено");
             int lastColor = prefs.getInt("providerStatusColor" + i, MUTED);
@@ -1729,12 +2020,12 @@ public class MainActivity extends Activity {
     private boolean saveSettings() {
         try {
             SharedPreferences.Editor ed = prefs.edit();
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 4; i++) {
                 ed.putString("url" + i, endpoint[i].getText().toString().trim()); ed.putString("model" + i, model[i].getText().toString().trim());
                 String k = key[i].getText().toString().trim(); ed.putString("key" + i, encrypt(k));
                 ed.putString("expertRole" + i, ExpertRolePolicy.sanitizeRole(expertRole[i].getText().toString()));
             }
-            for (int i = 0; i < 3; i++) ed.putBoolean("freeProvider" + i, providerFree[i].isChecked());
+            for (int i = 0; i < 4; i++) ed.putBoolean("freeProvider" + i, providerFree[i].isChecked());
             ed.putBoolean("freeOnly", freeOnly.isChecked());
             ed.putBoolean("localOnlyMode", localOnlyMode != null && localOnlyMode.isChecked());
             int[] limits={512,1024,2048,4096,8192,16384}; ed.putInt("maxTokens", limits[Math.max(0,Math.min(limits.length-1,tokenLimitSpinner.getSelectedItemPosition()))]);
@@ -1844,7 +2135,7 @@ public class MainActivity extends Activity {
     }
 
     private void attachProviderStatusListeners() {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             final int index = i;
             android.text.TextWatcher changed = new android.text.TextWatcher() {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -2039,7 +2330,7 @@ public class MainActivity extends Activity {
         if (contextAnswer.isEmpty() || contextAnswer.startsWith("Ваш итоговый ответ появится здесь")) {
             setStatus("Сначала получите или откройте результат, по которому нужен уточняющий вопрос.", RED); return;
         }
-        final int expertIndex = Math.max(0, Math.min(2, followUpExpertSpinner.getSelectedItemPosition()));
+        final int expertIndex = Math.max(0, Math.min(3, followUpExpertSpinner.getSelectedItemPosition()));
         if (localOnlyMode != null && localOnlyMode.isChecked() && !isLocalEndpoint(endpoint[expertIndex].getText().toString())) {
             setStatus("Режим «Только локальные ИИ» блокирует облачный follow-up. Выберите настроенную локальную модель.", RED); return;
         }
@@ -2196,6 +2487,17 @@ public class MainActivity extends Activity {
             }
             return;
         }
+        if (requestCode == REQUEST_OPEN_MATERIALS) {
+            if (resultCode != RESULT_OK || data == null) {
+                setStatus("Выбор файлов и фото отменён.", MUTED); return;
+            }
+            try {
+                handleTaskMaterialsImport(selectedMaterialUris(data), pendingBatchPhotoOcrLanguage);
+            } catch (Exception e) {
+                setStatus(e.getMessage() == null ? "Не удалось прочитать выбор файлов." : e.getMessage(), RED);
+            }
+            return;
+        }
         if (requestCode == REQUEST_OPEN_TEXT) {
             if (resultCode != RESULT_OK || data == null || data.getData() == null) {
                 setStatus("Импорт текстового файла отменён.", MUTED); return;
@@ -2301,9 +2603,9 @@ public class MainActivity extends Activity {
     }
 
     private int chooseAutomaticMode(String task) {
-        boolean[] configuredProviders = new boolean[3];
-        boolean[] markedFree = new boolean[3];
-        for (int i = 0; i < 3; i++) {
+        boolean[] configuredProviders = new boolean[4];
+        boolean[] markedFree = new boolean[4];
+        for (int i = 0; i < 4; i++) {
             configuredProviders[i] = configured(i);
             markedFree[i] = providerFree[i] != null && providerFree[i].isChecked();
         }
@@ -2390,10 +2692,10 @@ public class MainActivity extends Activity {
         int chosenMode = selectedMode == 4 ? chooseAutomaticMode(task) : selectedMode;
         final int mode = chosenMode;
         final boolean localOnlyRequested = localOnlyMode != null && localOnlyMode.isChecked();
-        final boolean doWebSearch = LocalAiPolicy.shouldUseWebSearch(localOnlyRequested, webSearchEnabled.isChecked()); // Search is an independent user choice, including local-only AI mode.
+        final boolean doWebSearch = LocalAiPolicy.shouldUseWebSearch(localOnlyRequested, webSearchEnabled.isChecked()); // Defensive privacy invariant: local-only always disables external search.
         final int selectedWebContextMode = webContextModeSpinner == null ? 2 : Math.max(0, Math.min(WEB_CONTEXT_MODES.length - 1, webContextModeSpinner.getSelectedItemPosition()));
         if (localOnlyRequested) {
-            int[] required = mode == 0 ? new int[]{0} : (mode == 2 ? new int[]{0,1} : new int[]{0,1,2});
+            int[] required = mode == 0 ? new int[]{0} : (mode == 2 ? new int[]{0,1} : new int[]{0,1,2,3});
             for (int requiredIndex : required) {
                 if (!isLocalEndpoint(endpoint[requiredIndex].getText().toString())) {
                     setStatus("Включён режим «Только локальные ИИ»: URL ИИ №" + (requiredIndex + 1) + " не распознан как локальный. Запрос не отправлен. Настройте localhost / .local / приватный IP либо отключите режим.", RED);
@@ -2403,10 +2705,11 @@ public class MainActivity extends Activity {
         }
         if (!configured(0) || (freeOnly.isChecked() && !providerFree[0].isChecked())) { setStatus(freeOnly.isChecked() ? "ИИ №1 не настроен или не отмечен как бесплатный. Проверьте настройки режима бесплатных источников." : "Настройте ИИ №1: URL и ID модели; для облачного API нужен ключ.", RED); return; }
         if ((mode == 1 || mode == 2 || mode == 3) && (!configured(1) || (freeOnly.isChecked() && !providerFree[1].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №2, отмеченный как бесплатный." : "Для этого режима настройте ИИ №2: URL и ID модели (для облачного API нужен ключ).", RED); return; }
-        if ((mode == 1 || mode == 3) && (!configured(2) || (freeOnly.isChecked() && !providerFree[2].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №3, отмеченный как бесплатный." : "Для этого режима настройте ИИ №3 — координатора (для облачного API нужен ключ).", RED); return; }
+        if ((mode == 1 || mode == 3) && (!configured(2) || (freeOnly.isChecked() && !providerFree[2].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №3, отмеченный как бесплатный." : "Для этого режима настройте ИИ №3 — аудитора доказательств (для облачного API нужен ключ).", RED); return; }
+        if ((mode == 1 || mode == 3) && (!configured(3) || (freeOnly.isChecked() && !providerFree[3].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №4, отмеченный как бесплатный." : "Для этого режима настройте ИИ №4 — координатора (для облачного API нужен ключ).", RED); return; }
         if (selectedMode == 4) setStatus("Автовыбор: " + MODES[mode] + (freeOnly.isChecked() ? " · только отмеченные бесплатными" : "") + (localOnlyMode != null && localOnlyMode.isChecked() ? " · локальные модели" : ""), TEAL);
-        final String[] urls = new String[3], models = new String[3], keys = new String[3], roleInstructions = new String[3];
-        try { for (int i=0;i<3;i++) { urls[i]=endpoint[i].getText().toString().trim(); models[i]=model[i].getText().toString().trim(); keys[i]=decrypt(prefs.getString("key"+i, "")); roleInstructions[i]=ExpertRolePolicy.sanitizeRole(expertRole[i].getText().toString()); } }
+        final String[] urls = new String[4], models = new String[4], keys = new String[4], roleInstructions = new String[4];
+        try { for (int i=0;i<4;i++) { urls[i]=endpoint[i].getText().toString().trim(); models[i]=model[i].getText().toString().trim(); keys[i]=decrypt(prefs.getString("key"+i, "")); roleInstructions[i]=ExpertRolePolicy.sanitizeRole(expertRole[i].getText().toString()); } }
         catch (Exception e) { setStatus("Ошибка чтения зашифрованных ключей. Введите их заново.", RED); return; }
         ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(prompt.getWindowToken(), 0);
         cancelRequested = false;
@@ -2456,10 +2759,10 @@ public class MainActivity extends Activity {
                 stopButton.setEnabled(false); stopButton.setAlpha(0.55f);
                 runButton.setEnabled(true); runButton.setAlpha(1f); runButton.setText("Запустить");
                 if (webContextModeSpinner != null) webContextModeSpinner.setEnabled(true);
-                for (int i = 0; i < 3; i++) testButtons[i].setEnabled(true);
+                for (int i = 0; i < 4; i++) testButtons[i].setEnabled(true);
                 long elapsedSeconds = Math.max(0, (System.currentTimeMillis() - taskStartedAt) / 1000);
                 if (cancelRequested) {
-                    for (int i = 0; i < 3; i++) {
+                    for (int i = 0; i < 4; i++) {
                         if (expertStatus[i].getText().toString().contains("Работает")
                                 || expertStatus[i].getText().toString().contains("Проверяет")
                                 || expertStatus[i].getText().toString().contains("Сравнивает")) {
@@ -2598,9 +2901,9 @@ public class MainActivity extends Activity {
             resetExpertDurations();
             synchronized (lastStreamUiUpdateMs) { for (int i = 0; i < lastStreamUiUpdateMs.length; i++) lastStreamUiUpdateMs[i] = 0L; }
         }
-        int count = mode == 0 ? 1 : (mode == 2 ? 2 : 3);
-        String[] titles = {"ИИ №1 · основной эксперт", "ИИ №2 · независимый эксперт", "ИИ №3 · координатор"};
-        int[] accents = {TEAL, BLUE, PURPLE};
+        int count = mode == 0 ? 1 : (mode == 2 ? 2 : 4);
+        String[] titles = {"ИИ №1 · основной эксперт", "ИИ №2 · независимый эксперт", "ИИ №3 · аудитор доказательств", "ИИ №4 · координатор"};
+        int[] accents = {TEAL, BLUE, TEAL, PURPLE};
         for (int i = 0; i < count; i++) {
             LinearLayout block = column();
             block.setPadding(dp(14), dp(13), dp(14), dp(14));
@@ -2680,7 +2983,7 @@ public class MainActivity extends Activity {
         StringBuilder report = new StringBuilder(processInterrupted
                 ? "⚠️ Задача прервана системой. Ниже сохранён текст, который успел прийти до прерывания.\n\n"
                 : "■ Остановлено пользователем. Ниже частичные ответы, полученные до отмены.\n\n");
-        String[] titles = {"ИИ №1 · основной эксперт", "ИИ №2 · независимый эксперт", "ИИ №3 · координатор"};
+        String[] titles = {"ИИ №1 · основной эксперт", "ИИ №2 · независимый эксперт", "ИИ №3 · аудитор доказательств", "ИИ №4 · координатор"};
         boolean any = false;
         for (int i = 0; i < streamingExpertBuffers.length; i++) {
             String partial = "";
@@ -2723,7 +3026,7 @@ public class MainActivity extends Activity {
     private void beginPersistedTask(String task, int mode, String[] models) {
         dataStore.putString("activeTaskText", task);
         dataStore.putString("activeTaskMode", String.valueOf(mode));
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             dataStore.putString("activeModel" + i, models != null && i < models.length ? models[i] : "");
             dataStore.putString("activePartial" + i, "");
         }

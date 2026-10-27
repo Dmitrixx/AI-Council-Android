@@ -40,7 +40,7 @@ public final class FallbackProviderPolicy {
 
     private static int clampSlot(int slot) {
         if (slot < 0) return 0;
-        if (slot > 2) return 2;
+        if (slot > 3) return 3;
         return slot;
     }
 

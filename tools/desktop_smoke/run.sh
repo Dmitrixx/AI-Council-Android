@@ -25,6 +25,12 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/BackupExportPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilAnalysisPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CouncilExecutionEngine.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ExpertClaim.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ExpertClaimJsonParser.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/StructuredClaimAnalyzer.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/StructuredClaimPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/MaterialImportPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/DeterministicCalculatorPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertRolePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/TruncatedAnswerPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/UiThemePolicy.java" \
@@ -70,6 +76,12 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.InputImportPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.BackupExportPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilAnalysisPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilExecutionEngineSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertClaimSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertClaimJsonParserSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.StructuredClaimAnalyzerSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.StructuredClaimPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.MaterialImportPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.DeterministicCalculatorPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest
