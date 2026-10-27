@@ -49,21 +49,21 @@ public final class StructuredClaimAnalyzer {
             if (isDefinite(left.polarity) && isDefinite(right.polarity)
                     && left.polarity != right.polarity) {
                 conflicts.add(new Conflict(Type.POLARITY, statement, left.polarity.name(),
-                        right.polarity.name(), "Experts assign opposite polarity to the same normalized claim."));
+                        right.polarity.name(), "Experts assign opposite polarity to the same normalized claim.", left, right));
             }
             if (!left.timeHorizon.isEmpty() && !right.timeHorizon.isEmpty()
                     && !normalize(left.timeHorizon).equals(normalize(right.timeHorizon))) {
                 conflicts.add(new Conflict(Type.TIME_HORIZON, statement, left.timeHorizon,
-                        right.timeHorizon, "Time horizons differ; determine whether the claims can both hold."));
+                        right.timeHorizon, "Time horizons differ; determine whether the claims can both hold.", left, right));
             }
             if (left.reversible != null && right.reversible != null
                     && !left.reversible.equals(right.reversible)) {
                 conflicts.add(new Conflict(Type.REVERSIBILITY, statement, left.reversible.toString(),
-                        right.reversible.toString(), "Experts disagree about whether the decision can be reversed."));
+                        right.reversible.toString(), "Experts disagree about whether the decision can be reversed.", left, right));
             }
             if (left.evidenceClass != right.evidenceClass) {
                 conflicts.add(new Conflict(Type.EVIDENCE_QUALITY, statement, left.evidenceClass.name(),
-                        right.evidenceClass.name(), "Evidence classes differ; inspect the cited evidence before choosing."));
+                        right.evidenceClass.name(), "Evidence classes differ; inspect the cited evidence before choosing.", left, right));
             }
         }
         return Collections.unmodifiableList(conflicts);
@@ -90,7 +90,7 @@ public final class StructuredClaimAnalyzer {
             conflicts.add(new Conflict(Type.NUMERIC_VALUE, statement,
                     format(a.numericValue) + " " + a.unit,
                     format(b.numericValue) + " " + a.unit,
-                    "Comparable units disagree after normalization."));
+                    "Comparable units disagree after normalization.", a, b));
         }
     }
 
