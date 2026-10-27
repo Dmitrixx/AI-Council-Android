@@ -15,6 +15,7 @@ public final class CouncilExecutionEngineSmokeTest {
         testQuickModeUsesOnlyPrimaryExpert();
         testAuditModeUsesTwoSlotsWithoutCoordinator();
         testCouncilRunsTwoExpertsAndCoordinator();
+        testStructuredClaimsReachCoordinator();
         testDeepAnalysisAddsMutualCritique();
         testSingleExpertFailureDoesNotSuppressCoordinator();
         testSearchContextIsPassedAndCitedInOutput();
@@ -51,6 +52,20 @@ public final class CouncilExecutionEngineSmokeTest {
             check(o.text.contains("ИИ №1") && o.text.contains("ИИ №2"), "council output keeps both independent answers");
             check(o.text.contains("ИТОГ КООРДИНАТОРА"), "council output has a separate coordinator section");
             check(f.slotCalls(0) == 1 && f.slotCalls(1) == 1 && f.slotCalls(2) == 1, "council uses all three slots");
+        } finally { f.close(); }
+    }
+
+    private static void testStructuredClaimsReachCoordinator() {
+        Fake f = new Fake();
+        f.emitStructuredClaims = true;
+        try {
+            CouncilExecutionEngine.Outcome o = f.engine().execute(f.request(1, false), f);
+            check(!f.promptsContaining("СТРУКТУРИРОВАННЫЕ КОНФЛИКТЫ").isEmpty(),
+                    "structured conflict map reaches coordinator");
+            check(!f.promptsContaining("NUMERIC_VALUE").isEmpty(), "numeric disagreement is typed");
+            check(!f.promptsContaining("POLARITY").isEmpty(), "polarity disagreement is typed");
+            check(o.text.contains("answer A") && !o.text.contains(StructuredClaimPolicy.START_MARKER),
+                    "claim payload is hidden from rendered expert answer");
         } finally { f.close(); }
     }
 
@@ -136,6 +151,7 @@ public final class CouncilExecutionEngineSmokeTest {
         volatile String lastPrompt = "";
         volatile String searchResults = "";
         volatile boolean failIndependentSecond;
+        volatile boolean emitStructuredClaims;
         volatile int searchCalls;
 
         CouncilExecutionEngine engine() { return new CouncilExecutionEngine(pool); }
@@ -151,12 +167,25 @@ public final class CouncilExecutionEngineSmokeTest {
             lastPrompt = prompt;
             if (slot == 1 && failIndependentSecond && prompt.startsWith("Независимо реши")) return "Ошибка API: simulated failure";
             if (prompt.startsWith("Проведи независимый аудит")) return "audit result";
+            if (emitStructuredClaims && slot == 0 && prompt.startsWith("Реши задачу самостоятельно")) return structuredAnswer("answer A", 10, "positive", "source-a");
+            if (emitStructuredClaims && slot == 1 && prompt.startsWith("Независимо реши")) return structuredAnswer("answer B", 8, "negative", "source-b");
             if (prompt.startsWith("Реши задачу самостоятельно")) return "answer A";
             if (prompt.startsWith("Независимо реши")) return "answer B";
             if (prompt.contains("ОТВЕТ ДРУГОГО ЭКСПЕРТА ДЛЯ КРИТИКИ")) return "critique result";
             if (slot == 2) return "coordinator result";
             return "primary answer";
         }
+        private String structuredAnswer(String answer, double value, String polarity, String sourceId) {
+            String json = "{\"schema_version\":1,\"claims\":[{"
+                    + "\"id\":\"revenue\",\"statement\":\"Revenue rises\","
+                    + "\"numeric_value\":" + value + ",\"unit\":\"%\","
+                    + "\"polarity\":\"" + polarity + "\",\"time_horizon\":\"12 months\","
+                    + "\"confidence\":0.8,\"evidence_class\":\"measured_data\","
+                    + "\"stakeholders\":[\"investor\"],\"reversible\":true,"
+                    + "\"source_quote\":\"Revenue estimate\",\"source_id\":\"" + sourceId + "\"}]}";
+            return answer + "\n\n" + StructuredClaimPolicy.START_MARKER + json + StructuredClaimPolicy.END_MARKER;
+        }
+
         @Override public String searchWeb(String task, int contextMode) { searchCalls++; return searchResults; }
         @Override public String partialReport() { return "PARTIAL_REPORT"; }
         @Override public boolean isApiFailure(String value) {
