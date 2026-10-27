@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
     private boolean lightTheme = false;
     private Spinner themeSpinner;
     private static final String KEY_ALIAS = "AICouncilKeyV4";
-    private static final String APP_VERSION = "2.35.0";
+    private static final String APP_VERSION = "2.36.0";
     private static final int REQUEST_SAVE_TEXT = 1401;
     private static final int REQUEST_SAVE_BACKUP = 1402;
     private static final int REQUEST_SAVE_MARKDOWN = 1408;
