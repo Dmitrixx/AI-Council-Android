@@ -28,7 +28,7 @@ public final class ReasoningFallacyPolicySmokeTest {
         noSignal("personal disagreement without insult is not ad hominem",
                 "I disagree with the author's conclusion because the sample is too small.");
         noSignal("ordinary slippery slope discussion is not a causal assertion",
-                "The term slippery slope is used in logic classes and can be defined carefully.");
+                "Permitting one trial is not argued to imply an inevitable chain of extreme consequences.");
 
         List<String> capped = new ArrayList<>();
         String many = "No evidence therefore X is false. Everyone does it, so it must be correct. "
