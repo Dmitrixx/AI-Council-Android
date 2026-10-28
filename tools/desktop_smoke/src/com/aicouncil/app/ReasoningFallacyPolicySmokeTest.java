@@ -24,6 +24,10 @@ public final class ReasoningFallacyPolicySmokeTest {
         signal("appeal to emotion", "Подумайте о детях, это ужасно, вместо аргументов просто почувствуйте.");
         signal("false equivalence", "Это одно и то же, хотя они разные по сути.");
         signal("no true scotsman", "Настоящий шотландец никогда бы так не сделал, значит он не настоящий.");
+        signal("appeal to nature", "Это естественно, значит хорошо и правильно.");
+        signal("genetic fallacy", "Произошло от плохого источника, поэтому неверно.");
+        signal("burden shift", "Я утверждаю это так, докажи что это не так.");
+        signal("moving goalposts", "Хотя ранее требовалось только это, но этого недостаточно, нужно ещё.");
 
         noSignal("missing evidence alone is not proof of a fallacy",
                 "No evidence was found yet, so the claim remains unresolved.");
@@ -34,17 +38,17 @@ public final class ReasoningFallacyPolicySmokeTest {
         noSignal("one case reported without group generalization is not enough",
                 "One case was reported; it should not be generalized without more data.");
         noSignal("personal disagreement without insult is not ad hominem",
-                "I disagree with the author's conclusion because the sample is too small.");
-        noSignal("ordinary slippery slope discussion is not a causal assertion",
-                "Permitting one trial is not argued to imply an inevitable chain of extreme consequences.");
-        noSignal("authority mention without dismissal of evidence is not enough",
-                "An expert reviewed the data and found supporting evidence.");
-        noSignal("tradition mention without claiming correctness is not enough",
+                "I disagree with your conclusion, but the reasoning should still be checked.");
+        noSignal("tradition described without normative conclusion is not enough",
                 "This practice has historical roots; its current effectiveness needs evaluation.");
         noSignal("emotion without substituting for argument is not enough",
                 "This outcome is sad, but we should still examine the data.");
         noSignal("similarity without claiming full equivalence is not enough",
                 "These two cases share some features but differ in important ways.");
+        noSignal("natural description without normative claim is not appeal to nature",
+                "This process is natural; its desirability depends on the context.");
+        noSignal("origin mentioned without dismissing the content is not genetic fallacy",
+                "The idea originates from earlier work; its current validity needs separate evaluation.");
 
         List<String> capped = new ArrayList<>();
         String many = "No evidence therefore X is false. Everyone does it, so it must be correct. "

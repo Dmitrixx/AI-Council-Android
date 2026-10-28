@@ -55,6 +55,14 @@ public final class ReasoningFallacyPolicy {
                 "ложная эквивалентность: существенно разные явления представлены как равноценные без обоснования сопоставимости");
         addIf(conflicts, initialSize, noTrueScotsman(a) || noTrueScotsman(b),
                 "«нет настоящего шотландца»: определение группы сужается после контрпримера, чтобы исключить неудобные случаи");
+        addIf(conflicts, initialSize, appealToNature(a) || appealToNature(b),
+                "апелляция к природе: естественность явления подменяет обоснование его желательности или правильности");
+        addIf(conflicts, initialSize, geneticFallacy(a) || geneticFallacy(b),
+                "генетическая ошибка: происхождение или источник идеи используется для оценки её истинности без разбора содержания");
+        addIf(conflicts, initialSize, burdenShift(a) || burdenShift(b),
+                "перенос бремени доказательства: требование опровергнуть утверждение вместо предоставления положительных оснований");
+        addIf(conflicts, initialSize, movingGoalposts(a) || movingGoalposts(b),
+                "перенос ворот: критерии принятия меняются после того, как первоначальные условия были выполнены");
     }
 
     private static void addIf(List<String> out, int initialSize, boolean condition, String message) {
@@ -219,6 +227,42 @@ public final class ReasoningFallacyPolicy {
                 "so he is not a real", "therefore not a true",
                 "отже він не справжній");
         return redefine && exclude;
+    }
+
+    private static boolean appealToNature(String text) {
+        if (hasAny(text, "appeal to nature", "апелляция к природе", "argumentum ad naturam")) return true;
+        boolean natural = hasAny(text, "это естественно", "натурально", "природно", "natural is", "because it is natural",
+                "це природно", "натуральне");
+        boolean good = hasAny(text, "значит хорошо", "поэтому правильно", "so it is good", "therefore it is better",
+                "отже добре", "тому правильно");
+        return natural && good;
+    }
+
+    private static boolean geneticFallacy(String text) {
+        if (hasAny(text, "genetic fallacy", "генетическая ошибка", "генетична помилка")) return true;
+        boolean origin = hasAny(text, "произошло от", "исходит из", "originates from", "comes from",
+                "походить від", "виникло з");
+        boolean dismiss = hasAny(text, "поэтому плохо", "значит неверно", "so it is bad", "therefore invalid",
+                "отже погано", "тому невірно");
+        return origin && dismiss;
+    }
+
+    private static boolean burdenShift(String text) {
+        if (hasAny(text, "shifting the burden of proof", "перенос бремени доказательства", "перекладення тягаря доведення")) return true;
+        boolean shift = hasAny(text, "докажи что это не так", "докажите обратное", "prove it is not", "disprove it",
+                "докажіть що це не так");
+        boolean claim = hasAny(text, "я утверждаю", "это так", "i claim", "it is true",
+                "я стверджую", "це правда");
+        return shift && claim;
+    }
+
+    private static boolean movingGoalposts(String text) {
+        if (hasAny(text, "moving the goalposts", "перенос ворот", "переміщення воріт")) return true;
+        boolean move = hasAny(text, "но этого недостаточно", "нужно ещё", "that is not enough", "need more",
+                "але цього недостатньо", "потрібно ще");
+        boolean prior = hasAny(text, "хотя ранее требовалось", "раньше было достаточно", "previously required",
+                "хоча раніше вимагалося");
+        return move && prior;
     }
 
     private static String normalize(String text) {
