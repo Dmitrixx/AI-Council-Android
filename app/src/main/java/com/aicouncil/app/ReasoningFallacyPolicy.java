@@ -49,6 +49,12 @@ public final class ReasoningFallacyPolicy {
                 "ложная дихотомия: сведение выбора к двум крайним вариантам без учёта промежуточных");
         addIf(conflicts, initialSize, redHerring(a) || redHerring(b),
                 "отвлекающий манёвр (red herring): обсуждение смещается на побочную тему вместо основного вопроса");
+        addIf(conflicts, initialSize, appealToEmotion(a) || appealToEmotion(b),
+                "апелляция к эмоциям: сильный эмоциональный призыв подменяет разбор аргументов и данных");
+        addIf(conflicts, initialSize, falseEquivalence(a) || falseEquivalence(b),
+                "ложная эквивалентность: существенно разные явления представлены как равноценные без обоснования сопоставимости");
+        addIf(conflicts, initialSize, noTrueScotsman(a) || noTrueScotsman(b),
+                "«нет настоящего шотландца»: определение группы сужается после контрпримера, чтобы исключить неудобные случаи");
     }
 
     private static void addIf(List<String> out, int initialSize, boolean condition, String message) {
@@ -182,6 +188,37 @@ public final class ReasoningFallacyPolicy {
         boolean ignoreMain = hasAny(text, "вместо ответа", "не отвечает на вопрос", "avoids the question",
                 "instead of addressing", "замість відповіді");
         return divert && ignoreMain;
+    }
+
+    private static boolean appealToEmotion(String text) {
+        if (hasAny(text, "appeal to emotion", "апелляция к эмоциям", "argumentum ad passiones")) return true;
+        boolean emotion = hasAny(text, "подумайте о детях", "это ужасно", "как вы можете быть таким жестоким",
+                "think of the children", "this is horrible", "how can you be so heartless",
+                "подумайте про дітей", "це жахливо", "як ви можете бути таким жорстоким");
+        boolean insteadOf = hasAny(text, "вместо аргументов", "не нужно данных", "просто почувствуйте",
+                "instead of arguments", "no need for data", "just feel it", "замість аргументів", "не потрібно даних");
+        return emotion && insteadOf;
+    }
+
+    private static boolean falseEquivalence(String text) {
+        if (hasAny(text, "false equivalence", "ложная эквивалентность", "false comparison")) return true;
+        boolean equate = hasAny(text, "это одно и то же", "ничем не отличается", "такое же самое",
+                "it's the same thing", "no different from", "exactly the same as",
+                "це одне й те саме", "нічим не відрізняється");
+        boolean different = hasAny(text, "хотя они разные", "несмотря на различия", "even though different",
+                "despite the differences", "хоча вони різні");
+        return equate && different;
+    }
+
+    private static boolean noTrueScotsman(String text) {
+        if (hasAny(text, "no true scotsman", "нет настоящего шотландца", "немає справжнього шотландця")) return true;
+        boolean redefine = hasAny(text, "настоящий ... никогда бы", "истинный ... не сделал бы",
+                "a real ... would never", "no true ... would",
+                "справжній ... ніколи б не");
+        boolean exclude = hasAny(text, "значит он не настоящий", "поэтому он не считается",
+                "so he is not a real", "therefore not a true",
+                "отже він не справжній");
+        return redefine && exclude;
     }
 
     private static String normalize(String text) {

@@ -21,6 +21,9 @@ public final class ReasoningFallacyPolicySmokeTest {
         signal("tu quoque", "А ты сам так делаешь, поэтому твой аргумент неверен.");
         signal("false dichotomy", "Либо соглашайся, либо уходи, других вариантов нет.");
         signal("red herring", "Но что насчёт другой проблемы вместо ответа на основной вопрос.");
+        signal("appeal to emotion", "Подумайте о детях, это ужасно, вместо аргументов просто почувствуйте.");
+        signal("false equivalence", "Это одно и то же, хотя они разные по сути.");
+        signal("no true scotsman", "Настоящий шотландец никогда бы так не сделал, значит он не настоящий.");
 
         noSignal("missing evidence alone is not proof of a fallacy",
                 "No evidence was found yet, so the claim remains unresolved.");
@@ -38,13 +41,18 @@ public final class ReasoningFallacyPolicySmokeTest {
                 "An expert reviewed the data and found supporting evidence.");
         noSignal("tradition mention without claiming correctness is not enough",
                 "This practice has historical roots; its current effectiveness needs evaluation.");
+        noSignal("emotion without substituting for argument is not enough",
+                "This outcome is sad, but we should still examine the data.");
+        noSignal("similarity without claiming full equivalence is not enough",
+                "These two cases share some features but differ in important ways.");
 
         List<String> capped = new ArrayList<>();
         String many = "No evidence therefore X is false. Everyone does it, so it must be correct. "
                 + "После этого значит из-за этого. Правило для всех кроме нас, потому что мы особенные. "
                 + "Если разрешить это, то это неизбежно приведёт к хаосу. По одному случаю ясно, что все люди всегда так делают. "
                 + "This response misrepresents my position. You are an idiot, so your argument is wrong. "
-                + "Это верно, потому что это верно. Эксперт сказал поэтому это верно. Так всегда делали значит правильно.";
+                + "Это верно, потому что это верно. Эксперт сказал поэтому это верно. Так всегда делали значит правильно. "
+                + "Подумайте о детях вместо аргументов. Это одно и то же хотя разные. Настоящий никогда бы так не сделал значит не настоящий.";
         ReasoningFallacyPolicy.detect(many, many, capped);
         check(capped.size() <= 10, "number of signals is bounded");
         List<String> unique = new ArrayList<>(capped);
