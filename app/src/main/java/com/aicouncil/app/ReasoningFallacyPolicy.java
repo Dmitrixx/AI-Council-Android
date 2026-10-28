@@ -57,6 +57,144 @@ public final class ReasoningFallacyPolicy {
         out.add(formatted);
     }
 
-    // ... (methods for old and new detectors as written earlier)
-    // Full methods omitted in this abbreviated call for brevity; in practice full content is used
+    private static boolean appealToIgnorance(String text) {
+        boolean absence = hasAny(text, "нет доказательств", "отсутствие доказательств", "не нашли доказательств",
+                "no evidence", "absence of evidence", "no proof", "немає доказів", "відсутність доказів");
+        boolean inference = hasAny(text, "значит", "следовательно", "доказывает", "therefore", "thus", "proves", "отже", "отож");
+        boolean absoluteConclusion = hasAny(text, "не существует", "невозможно", "точно лож", "точно вер",
+                "неверно", "ложь", "does not exist", "doesn't exist", "impossible", "must be false", "must be true",
+                "це неправда", "не існує", "неможливо");
+        return hasAny(text, "argument from ignorance", "апелляция к незнанию", "довід від незнання")
+                || (absence && inference && absoluteConclusion);
+    }
+
+    private static boolean bandwagon(String text) {
+        if (hasAny(text, "ad populum", "argumentum ad populum", "апелляция к большинству")) return true;
+        boolean crowd = hasAny(text, "все так делают", "все так считают", "все используют", "все это делают",
+                "everyone does it", "everyone believes it", "everybody uses it", "everyone uses it",
+                "most people do it", "усі так роблять", "усі так вважають", "всі використовують");
+        boolean validation = hasAny(text, "значит правильно", "поэтому правильно", "значит это верно",
+                "so it is right", "therefore it is correct", "so it must be true", "so it must be correct", "therefore it must be correct", "отже це правильно", "тому це вірно");
+        return crowd && validation;
+    }
+
+    private static boolean postHoc(String text) {
+        if (hasAny(text, "post hoc ergo propter hoc", "post hoc fallacy", "ошибка post hoc")) return true;
+        boolean after = hasAny(text, "после этого", "после того как", "after this", "after that", "afterwards", "після цього", "після того як");
+        boolean cause = hasAny(text, "значит из-за этого", "следовательно из-за", "поэтому это вызвало",
+                "значит это причина", "therefore because of this", "so this caused", "must have caused",
+                "отже через це", "тому це спричинило");
+        return after && cause;
+    }
+
+    private static boolean specialPleading(String text) {
+        return hasAny(text, "special pleading", "особое исключение без обоснования", "специальное исключение без обоснования")
+                || (hasAny(text, "правило для всех кроме нас", "правило для всех, кроме меня",
+                            "правило не относится ко мне", "правило не относится к нам",
+                            "rules apply to everyone except me", "rules apply to everyone except us",
+                            "same rule does not apply to me", "для інших це правило діє, але не для мене",
+                            "для всіх, крім нас")
+                    && hasAny(text, "потому что я", "потому что мы", "because i", "because we", "просто так", "без объяснения", "без обґрунтування"));
+    }
+
+    private static boolean slipperySlope(String text) {
+        if (hasAny(text, "slippery slope", "скользкий склон", "ефект доміно без проміжних доказів")) return true;
+        boolean opening = hasAny(text, "если разрешить", "если допустить", "если позволить", "if we allow", "if this is allowed",
+                "if you let this happen", "якщо дозволити", "якщо допустити");
+        boolean inevitability = hasAny(text, "неизбежно приведёт", "в конце концов все", "потом все закончится",
+                "will inevitably lead", "then everything will", "will lead to chaos", "eventually everyone",
+                "неодмінно призведе", "зрештою всі");
+        return opening && inevitability;
+    }
+
+    private static boolean hastyGeneralization(String text) {
+        if (hasAny(text, "hasty generalization", "поспішне узагальнення", "поспешное обобщение")) return true;
+        boolean sample = hasAny(text, "по одному случаю", "на одном примере", "один пример доказывает",
+                "one example proves", "from one case", "based on a single case", "за одним випадком");
+        boolean broad = hasAny(text, "все люди", "все такие", "всегда так", "никто никогда",
+                "everyone is", "all people are", "they all", "always do this", "усі люди", "всі такі");
+        return sample && broad;
+    }
+
+    private static boolean strawman(String text) {
+        return hasAny(text, "strawman", "straw man", "соломенное чучело", "искажает позицию",
+                "исказили мою позицию", "перекручивает мои слова", "misrepresents my position",
+                "misrepresented the argument", "спотворює позицію", "перекручує мої слова");
+    }
+
+    private static boolean adHominem(String text) {
+        if (hasAny(text, "ad hominem", "атака на личность", "переход на личности")) return true;
+        boolean insult = hasAny(text, "идиот", "дурак", "глупый человек", "ты некомпетентен",
+                "некомпетентный человек", "you are an idiot", "you are stupid", "you are incompetent",
+                "непрофесіонал", "ти дурний", "ти некомпетентний");
+        boolean argument = hasAny(text, "поэтому твой аргумент неверен", "поэтому вас нельзя слушать",
+                "so your argument is wrong", "therefore we should ignore you", "тому твій аргумент хибний");
+        return insult && argument;
+    }
+
+    private static boolean circularReasoning(String text) {
+        return hasAny(text, "circular reasoning", "begging the question", "циркулярное рассуждение",
+                "круговое доказательство", "тому що це правда, бо це правда",
+                "because it is true because", "это верно, потому что это верно",
+                "правда, потому что это правда", "істинно, бо воно істинне");
+    }
+
+    private static boolean appealToAuthority(String text) {
+        if (hasAny(text, "appeal to authority", "апелляция к авторитету", "argumentum ad verecundiam")) return true;
+        boolean authority = hasAny(text, "эксперт сказал", "учёные доказали", "авторитетный источник утверждает",
+                "expert says", "scientists say", "authority claims", "професор сказав", "експерт стверджує");
+        boolean withoutEvidence = hasAny(text, "поэтому это верно", "значит так и есть", "не нужно проверять",
+                "so it is true", "therefore it must be", "no need to check", "отже це правда");
+        return authority && withoutEvidence;
+    }
+
+    private static boolean appealToTradition(String text) {
+        if (hasAny(text, "appeal to tradition", "апелляция к традиции", "argumentum ad antiquitatem")) return true;
+        boolean tradition = hasAny(text, "так всегда делали", "так принято", "по традиции", "всегда было так",
+                "it has always been done this way", "traditional practice", "так завжди робили", "за традицією");
+        boolean validation = hasAny(text, "значит правильно", "поэтому так и нужно", "so it is right",
+                "therefore we should continue", "отже так і треба");
+        return tradition && validation;
+    }
+
+    private static boolean tuQuoque(String text) {
+        if (hasAny(text, "tu quoque", "ты тоже", "а ты сам", "you also", "what about you")) return true;
+        boolean hypocrisy = hasAny(text, "а ты сам так делаешь", "ты тоже нарушаешь", "you do the same",
+                "you are a hypocrite", "а ти сам так робиш");
+        boolean dismiss = hasAny(text, "поэтому твой аргумент неверен", "значит тебя нельзя слушать",
+                "so your point is invalid", "therefore ignore you", "тому твій аргумент недійсний");
+        return hypocrisy && dismiss;
+    }
+
+    private static boolean falseDichotomy(String text) {
+        if (hasAny(text, "false dichotomy", "ложная дихотомия", "false dilemma", "ложная дилемма")) return true;
+        boolean eitherOr = hasAny(text, "либо ... либо", "или ... или", "either ... or", "only two choices",
+                "либо соглашайся, либо", "або ... або");
+        boolean noMiddle = hasAny(text, "других вариантов нет", "третьего не дано", "no other option",
+                "nothing in between", "інших варіантів немає");
+        return eitherOr && noMiddle;
+    }
+
+    private static boolean redHerring(String text) {
+        if (hasAny(text, "red herring", "отвлекающий манёвр", "red herring fallacy")) return true;
+        boolean divert = hasAny(text, "но что насчёт", "а как же", "what about", "but what about",
+                "але що щодо", "а як же");
+        boolean ignoreMain = hasAny(text, "вместо ответа", "не отвечает на вопрос", "avoids the question",
+                "instead of addressing", "замість відповіді");
+        return divert && ignoreMain;
+    }
+
+    private static String normalize(String text) {
+        return text == null ? "" : text.toLowerCase(Locale.ROOT)
+                .replace('\u2019', '\'').replace('\u2018', '\'')
+                .replace('\u201c', '"').replace('\u201d', '"')
+                .replace('\u00a0', ' ').trim();
+    }
+
+    private static boolean hasAny(String text, String... phrases) {
+        for (String phrase : phrases) {
+            if (text.contains(phrase)) return true;
+        }
+        return false;
+    }
 }
