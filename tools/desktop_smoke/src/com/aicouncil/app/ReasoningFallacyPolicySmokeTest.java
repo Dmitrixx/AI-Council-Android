@@ -28,6 +28,12 @@ public final class ReasoningFallacyPolicySmokeTest {
         signal("genetic fallacy", "Произошло от плохого источника, поэтому неверно.");
         signal("burden shift", "Я утверждаю это так, докажи что это не так.");
         signal("moving goalposts", "Хотя ранее требовалось только это, но этого недостаточно, нужно ещё.");
+        signal("sunk cost", "Уже вложили много, значит надо продолжать несмотря на данные.");
+        signal("composition", "Каждая часть хорошая, значит целое тоже хорошее без обоснования.");
+        signal("division", "Целое надёжное, значит каждая часть надёжная.");
+        signal("equivocation", "Слово используется в разных смыслах внутри аргумента.");
+        signal("cherry picking", "Только удобные данные подтверждают, игнорируя противоположные.");
+        signal("false cause", "Вместе с этим значит причина без механизма.");
 
         noSignal("missing evidence alone is not proof of a fallacy",
                 "No evidence was found yet, so the claim remains unresolved.");
@@ -49,6 +55,10 @@ public final class ReasoningFallacyPolicySmokeTest {
                 "This process is natural; its desirability depends on the context.");
         noSignal("origin mentioned without dismissing the content is not genetic fallacy",
                 "The idea originates from earlier work; its current validity needs separate evaluation.");
+        noSignal("past investment described without requiring continuation is not sunk cost",
+                "We already invested; future decisions should still be based on current data.");
+        noSignal("parts properties mentioned without transferring to whole is not composition",
+                "Each part has this property; the whole needs separate analysis.");
 
         List<String> capped = new ArrayList<>();
         String many = "No evidence therefore X is false. Everyone does it, so it must be correct. "
@@ -56,7 +66,8 @@ public final class ReasoningFallacyPolicySmokeTest {
                 + "Если разрешить это, то это неизбежно приведёт к хаосу. По одному случаю ясно, что все люди всегда так делают. "
                 + "This response misrepresents my position. You are an idiot, so your argument is wrong. "
                 + "Это верно, потому что это верно. Эксперт сказал поэтому это верно. Так всегда делали значит правильно. "
-                + "Подумайте о детях вместо аргументов. Это одно и то же хотя разные. Настоящий никогда бы так не сделал значит не настоящий.";
+                + "Подумайте о детях вместо аргументов. Это одно и то же хотя разные. Настоящий никогда бы так не сделал значит не настоящий. "
+                + "Уже вложили значит продолжать. Каждая часть значит целое.";
         ReasoningFallacyPolicy.detect(many, many, capped);
         check(capped.size() <= 10, "number of signals is bounded");
         List<String> unique = new ArrayList<>(capped);
