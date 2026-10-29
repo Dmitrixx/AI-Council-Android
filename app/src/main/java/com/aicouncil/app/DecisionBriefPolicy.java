@@ -5,7 +5,7 @@ import java.util.Locale;
 
 /**
  * Extra offline reasoning-risk signals that the coordinator must not average away.
- * Each note is a hypothesis, not a verdict. Expanded in v2.40–v2.47.
+ * Each note is a hypothesis, not a verdict. Expanded in v2.40–v2.49.
  */
 public final class DecisionBriefPolicy {
     private static final int MAX_SIGNALS = 8;
@@ -59,6 +59,10 @@ public final class DecisionBriefPolicy {
                 "смещение к настоящему: близкая выгода берётся без сравнения более поздней цены");
         add(conflicts, initial, omissionBias(a) || omissionBias(b),
                 "смещение бездействия: отказ действовать предпочитается при том же ожидаемом вреде");
+        add(conflicts, initial, lossAversion(a) || lossAversion(b),
+                "несклонность к потерям: избегание потери предпочитается равной или большей выгоде без сравнения ожидаемой полезности");
+        add(conflicts, initial, framingEffect(a) || framingEffect(b),
+                "эффект фрейминга: одно и то же относится оценивается по-разному в зависимости от формулировки (выигрыш вс потери)");
     }
 
     private static void add(List<String> out, int initial, boolean condition, String message) {
@@ -210,6 +214,20 @@ public final class DecisionBriefPolicy {
         return has(text, "бездействие лучше действия", "inaction is safer than action", "бездіяльність краща за дію")
                 && has(text, "при том же вреде", "same expected harm", "при тій самій шкоді")
                 && !has(text, "ожидаемый вред меньше", "expected harm is lower", "очікувана шкода менша");
+    }
+
+    private static boolean lossAversion(String text) {
+        return has(text, "лучше не потерять", "избежать потери важнее", "avoid the loss", "loss is worse than",
+                "не хочу потерять", "better to avoid losing")
+                && has(text, "чем получить", "than to gain", "чем выиграть", "rather than gain")
+                && !has(text, "ожидаемая полезность", "expected value", "очікувана корисність", "net expected");
+    }
+
+    private static boolean framingEffect(String text) {
+        return has(text, "в терминах выигрыша", "как выигрыш", "framed as gain", "as a gain",
+                "в термінах виграшу")
+                && has(text, "вместо потери", "instead of loss", "замість втрати", "rather than as a loss")
+                && !has(text, "одна и та же цифра", "same number", "одна й та сама цифра", "identical outcome");
     }
 
     private static boolean has(String text, String... words) {
