@@ -5,10 +5,10 @@ import java.util.Locale;
 
 /**
  * Extra offline reasoning-risk signals that the coordinator must not average away.
- * Each note is a hypothesis, not a verdict.
+ * Each note is a hypothesis, not a verdict. Expanded in v2.40–v2.42.
  */
 public final class DecisionBriefPolicy {
-    private static final int MAX_SIGNALS = 6;
+    private static final int MAX_SIGNALS = 8;
 
     private DecisionBriefPolicy() {}
 
@@ -31,6 +31,14 @@ public final class DecisionBriefPolicy {
                 "базовая частота: яркий единичный случай подменяет долю в похожем классе");
         add(conflicts, initial, nirvana(a) || nirvana(b),
                 "идеальное решение: неидеальный вариант отвергается только потому, что он не идеален");
+        add(conflicts, initial, anchoring(a) || anchoring(b),
+                "якорение: первое число/пример непропорционально задаёт итоговую оценку без пересмотра");
+        add(conflicts, initial, planningFallacy(a) || planningFallacy(b),
+                "ошибка планирования: сроки/стоимость даны точечно без reference class и без буфера на срыв");
+        add(conflicts, initial, availability(a) || availability(b),
+                "доступность: яркий недавний пример подменяет частоту в reference class");
+        add(conflicts, initial, confirmation(a) || confirmation(b),
+                "подтверждающий уклон: ищутся только данные «за», контрпримеры не рассматриваются");
     }
 
     private static void add(List<String> out, int initial, boolean condition, String message) {
@@ -74,6 +82,29 @@ public final class DecisionBriefPolicy {
     private static boolean nirvana(String text) {
         return has(text, "если не идеально, то не стоит", "unless it is perfect", "не идеально, значит бесполезно",
                 "not perfect so worthless", "если решение не идеально, оно бесполезно");
+    }
+
+    private static boolean anchoring(String text) {
+        return has(text, "исходя из первой оценки", "начальная цифра", "starting number", "anchor of",
+                "оттолкнёмся от") && has(text, "поэтому итог", "therefore the estimate", "финальная оценка около")
+                && !has(text, "пересмотрели", "reference class", "outside view", "пересчитали независимо");
+    }
+
+    private static boolean planningFallacy(String text) {
+        return has(text, "займёт ровно", "точно за", "will take exactly", "deadline is firm", "срок — ровно")
+                && has(text, "дней", "недель", "месяц", "hours", "days", "weeks")
+                && !has(text, "буфер", "reference class", "исторически такие", "outside view", "диапазон сроков");
+    }
+
+    private static boolean availability(String text) {
+        return has(text, "недавно все говорят", "в новостях", "я только что видел", "recent news", "just saw a case")
+                && has(text, "значит часто", "therefore common", "типично")
+                && !has(text, "статистика", "base rate", "за период", "incidence");
+    }
+
+    private static boolean confirmation(String text) {
+        return has(text, "ищем подтверждения", "только данные за", "look only for supporting", "confirming evidence only")
+                && has(text, "игнорируем противореча", "skip disconfirming", "не смотрим на опровержения");
     }
 
     private static boolean has(String text, String... words) {
