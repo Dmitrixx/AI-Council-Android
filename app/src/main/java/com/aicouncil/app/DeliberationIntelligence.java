@@ -161,11 +161,19 @@ public final class DeliberationIntelligence {
     }
 
     public static String expertAddendum(int slot, String task) {
+        if (task == null) return "";
         List<String> qs = subquestions(task);
-        if (qs.isEmpty() || task.length() < 40) return "";
+        boolean numeric = ForecastCoherencePolicy.wantsNumericContract(task);
+        if ((qs.isEmpty() || task.length() < 40) && !numeric) return "";
+        if (qs.isEmpty() || task.length() < 40) {
+            return "\n\nЧИСЛОВОЙ КОНТРАКТ: если оцениваешь шанс или срок, запиши явно «вероятность успеха N%», «выигрыш X» и «потеря Y», плюс reference class похожих случаев. Не подменяй это одной уверенностью.";
+        }
         StringBuilder sb = new StringBuilder("\n\nОБЩИЕ ПОДВОПРОСЫ (для согласованного разбора):\n");
         for (String q : qs) sb.append("- ").append(q).append("\n");
         if (slot == 1) sb.append("\nИспользуй другой метод / другую ветвь рассуждения относительно первого эксперта.");
+        if (numeric) {
+            sb.append("\nЧИСЛОВОЙ КОНТРАКТ: запиши «вероятность успеха N%», «выигрыш X» и «потеря Y», плюс reference class. Не подменяй это одной уверенностью.");
+        }
         return sb.toString();
     }
 
@@ -210,6 +218,7 @@ public final class DeliberationIntelligence {
         detectDecisionOwner(a, b, conflicts);
         detectBurden(a, b, conflicts);
         detectCausalDirection(a, b, conflicts);
+        ForecastCoherencePolicy.detect(task, a, b, conflicts);
 
         int hedge = hedgeScore(a + " " + b);
         int agreement = jaccardAgreement(a, b);
@@ -260,6 +269,7 @@ public final class DeliberationIntelligence {
         sb.append("Условную рекомендацию не превращай в безусловную. Квантор «все» не сужай и не расширяй до «некоторые». Проценты и процентные пункты не считай одной метрикой. ");
         sb.append("Не усредняй срочность, силу доказательств, рамку издержек и выгод и обязательность. ");
         sb.append("Порядок шагов не переставляй. Необходимое условие не называй достаточным. Носителя решения и бремя доказательства сохрани как есть. Причину и следствие не меняй местами. ");
+        sb.append("Если посчитана ожидаемая ценность или вероятности не сходятся, не заменяй их средним двух историй: сначала сверь шанс, выигрыш и потерю. ");
         sb.append("Предпочитай ответы с более высокой evidence density; при разрыве ≥20 явно укажи предпочтение.\n");
         return sb.toString().trim();
     }
@@ -994,6 +1004,7 @@ public final class DeliberationIntelligence {
         // Logical-risk and decision-map signals are hypotheses, but they must stay visible.
         // They outrank choice/number clashes so the coordinator cannot average them away.
         if (conflict.startsWith("логический риск") || conflict.startsWith("карта решения")) return -1;
+        if (conflict.startsWith("вероятности") || conflict.startsWith("ожидаемая ценность")) return 0;
         if (conflict.startsWith("полярность") || conflict.startsWith("исключительность")) return 0;
         if (conflict.startsWith("выбор") || conflict.startsWith("условие")
                 || conflict.startsWith("срочность") || conflict.startsWith("обязательство")
@@ -1007,6 +1018,7 @@ public final class DeliberationIntelligence {
         if (conflict.startsWith("предпосылки") || conflict.startsWith("метрика")) return 4;
         if (conflict.startsWith("причина")) return 5;
         if (conflict.startsWith("масштаб выборки")) return 6;
+        if (conflict.startsWith("прогноз")) return 6;
         if (conflict.startsWith("калибровка")) return 7;
         if (conflict.startsWith("уверенность")) return 8;
         if (conflict.startsWith("residual")) return 9;

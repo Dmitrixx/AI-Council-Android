@@ -34,6 +34,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ReasoningFallacyPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DecisionBriefPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/EvidenceIndependencePolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ForecastCoherencePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertRolePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/TruncatedAnswerPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/UiThemePolicy.java" \
@@ -88,6 +89,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.DeterministicCalculatorPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ReasoningFallacyPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.DecisionBriefPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.EvidenceIndependencePolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.ForecastCoherencePolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest
