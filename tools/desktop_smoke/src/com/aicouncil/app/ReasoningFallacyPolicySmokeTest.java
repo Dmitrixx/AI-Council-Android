@@ -28,6 +28,12 @@ public final class ReasoningFallacyPolicySmokeTest {
         signal("genetic fallacy", "Произошло от плохого источника, поэтому неверно.");
         signal("burden shift", "Я утверждаю это так, докажи что это не так.");
         signal("moving goalposts", "Хотя ранее требовалось только это, но этого недостаточно, нужно ещё.");
+        signal("false compromise", "Истина посередине, поэтому усредним позиции и оба понемногу правы.");
+        signal("anchoring", "Первое названное число стало якорем, поэтому около него и останемся рядом.");
+        signal("gambler", "Уже три раза подряд неудача, значит сейчас вероятность выросла и должно выпасть.");
+        pair("opposing recommendations must not be averaged",
+                "Нужно запретить запуск, делать это нельзя.",
+                "Стоит разрешить запуск: истина посередине, усредним позиции.");
 
         noSignal("missing evidence alone is not proof of a fallacy",
                 "No evidence was found yet, so the claim remains unresolved.");
@@ -49,6 +55,12 @@ public final class ReasoningFallacyPolicySmokeTest {
                 "This process is natural; its desirability depends on the context.");
         noSignal("origin mentioned without dismissing the content is not genetic fallacy",
                 "The idea originates from earlier work; its current validity needs separate evaluation.");
+        noSignal("refusing to average is not a false compromise",
+                "Не усреднять развилку: середина скрыла бы конфликт, нужно выбрать сторону.");
+        noSignal("independent trials are not the gambler's fallacy",
+                "Серия неудач не меняет шанс: испытания независимы, вероятность не меняется.");
+        noSignal("a number with a separate estimate is not anchoring",
+                "Первое названное число отброшено: отдельно оценил диапазон, а не останемся рядом.");
 
         List<String> capped = new ArrayList<>();
         String many = "No evidence therefore X is false. Everyone does it, so it must be correct. "
@@ -72,6 +84,13 @@ public final class ReasoningFallacyPolicySmokeTest {
         ReasoningFallacyPolicy.detect(answer, "", out);
         check(!out.isEmpty(), label + " signal detected");
         check(out.stream().allMatch(x -> x.contains("логический риск")), label + " is not stated as proven");
+    }
+
+    private static void pair(String label, String left, String right) {
+        List<String> out = new ArrayList<>();
+        ReasoningFallacyPolicy.detect(left, right, out);
+        check(out.stream().anyMatch(x -> x.contains("рекомендации расходятся")), label);
+        check(out.stream().noneMatch(x -> x.contains("без критерия")), label + " does not also file the unpaired form");
     }
 
     private static void noSignal(String label, String answer) {

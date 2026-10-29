@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Conservative offline reasoning-risk detectors (v2.36+).
+ * Conservative offline reasoning-risk detectors (v2.36+; false compromise in 2.44).
  * Signals are hypotheses that require context, not definitive fallacy verdicts.
  * Coordinator must rank these highest and must not average them away.
  */
@@ -71,6 +71,16 @@ public final class ReasoningFallacyPolicy {
                 "поспешное обобщение: вывод о классе делается по слишком малой или смещённой выборке");
         add(conflicts, initial, correlationCausation(a) || correlationCausation(b),
                 "корреляция ≠ причинность: совместное появление принимается за причинную связь");
+        boolean mid = middleGround(a) || middleGround(b);
+        boolean oppose = opposingAction(a, b);
+        add(conflicts, initial, mid && oppose,
+                "ложный компромисс: рекомендации расходятся, а вместо разбора развилки предлагается середина");
+        add(conflicts, initial, mid && !oppose,
+                "ложный компромисс: истина объявляется серединой без критерия, какая сторона верна");
+        add(conflicts, initial, anchoring(a) || anchoring(b),
+                "якорение: первое названное число удерживает оценку без независимой оценки");
+        add(conflicts, initial, gambler(a) || gambler(b),
+                "ошибка игрока: независимые испытания считаются должными компенсировать прошлую серию");
     }
 
     private static void add(List<String> out, int initial, boolean condition, String message) {
@@ -231,6 +241,41 @@ public final class ReasoningFallacyPolicy {
         return has(t, "коррелирует", "вместе растут", "correlated", "associated with")
                 && has(t, "значит вызывает", "поэтому причина", "therefore causes", "so it causes")
                 && !has(t, "причинн ещё не", "causal evidence", "эксперимент", "intervention", "не доказана причин");
+    }
+
+
+    /** Truth-is-in-the-middle language, unless the text explicitly refuses to average a crux. */
+    private static boolean middleGround(String t) {
+        if (has(t, "не усредн", "do not average", "не смешивать развил")) return false;
+        return has(t, "истина посередине", "золотая середина", "усредним позиции",
+                "the truth is in the middle", "split the difference", "meet in the middle",
+                "оба понемногу правы", "just average the positions");
+    }
+
+    /** Narrow action poles so a compromise is only "false" when the two answers really oppose. */
+    private static boolean opposingAction(String a, String b) {
+        int pa = actionPole(a);
+        int pb = actionPole(b);
+        return pa != 0 && pb != 0 && pa != pb;
+    }
+
+    private static int actionPole(String t) {
+        boolean forbid = has(t, "запретить запуск", "запрещаю запуск", "делать это нельзя", "reject this option");
+        boolean allow = has(t, "стоит разрешить запуск", "разрешить запуск", "approve this option", "should proceed");
+        if (forbid == allow) return 0;
+        return forbid ? -1 : 1;
+    }
+
+    private static boolean anchoring(String t) {
+        return has(t, "первое названное", "начальное число", "якорем", "anchor number", "anchored on")
+                && has(t, "поэтому около", "останемся рядом", "around that figure", "близко к этому числу")
+                && !has(t, "независим", "independent estimate", "отдельно оценил");
+    }
+
+    private static boolean gambler(String t) {
+        return has(t, "уже три раза", "серия неудач", "несколько раз подряд", "due to win", "должен выпасть", "пора выпасть")
+                && has(t, "теперь вероятнее", "значит сейчас", "вероятность выросла", "therefore more likely", "next one must")
+                && !has(t, "независим", "independent", "вероятность не меняется");
     }
 
     private static int count(String text, String token) {
