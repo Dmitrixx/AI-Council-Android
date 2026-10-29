@@ -5,7 +5,7 @@ import java.util.Locale;
 
 /**
  * Conservative offline reasoning-risk detectors (v2.36+; false compromise 2.44;
- * texas sharpshooter / relative privation / nirvana in 2.45).
+ * texas sharpshooter / relative privation / nirvana in 2.45; continuum/sorites + broader UK markers in 2.47).
  * Signals are hypotheses that require context, not definitive fallacy verdicts.
  * Coordinator must rank these highest and must not average them away.
  */
@@ -88,6 +88,8 @@ public final class ReasoningFallacyPolicy {
                 "относительная малозначимость: «есть хуже» подменяет разбор текущего вреда или выгоды");
         add(conflicts, initial, nirvana(a) || nirvana(b),
                 "нирвана: хороший вариант отвергается только потому, что он не идеален");
+        add(conflicts, initial, continuum(a) || continuum(b),
+                "континуум / сорит: отсутствие чёткой границы используется для отрицания различия");
     }
 
     private static void add(List<String> out, int initial, boolean condition, String message) {
@@ -100,9 +102,12 @@ public final class ReasoningFallacyPolicy {
     }
 
     private static boolean appealToIgnorance(String t) {
-        return has(t, "no evidence", "нет доказательств", "нет свидетельств", "there is no evidence")
-                && has(t, "does not exist", "не существует", "is false", "значит ложно", "therefore false")
-                && !has(t, "unresolved", "remains", "пока не известно", "не доказано и не опровергнуто");
+        return has(t, "no evidence", "нет доказательств", "нет свидетельств", "there is no evidence",
+                "немає доказів", "немає свідчень")
+                && has(t, "does not exist", "не существует", "is false", "значит ложно", "therefore false",
+                "не існує", "значить хибно")
+                && !has(t, "unresolved", "remains", "пока не известно", "не доказано и не опровергнуто",
+                "поки не відомо", "не доведено і не спростовано");
     }
 
     private static boolean bandwagon(String t) {
@@ -208,9 +213,11 @@ public final class ReasoningFallacyPolicy {
     }
 
     private static boolean slipperySlope(String t) {
-        return has(t, "если разрешить", "if we allow", "скользкий склон", "this will lead to")
-                && has(t, "неизбежно", "приведёт к", "затем", "потом", "eventually", "в итоге", "will lead to")
-                && !has(t, "вероятност", "probability", "оценка шага");
+        return has(t, "если разрешить", "if we allow", "скользкий склон", "this will lead to",
+                "якщо дозволити", "якщо дозволити це")
+                && has(t, "неизбежно", "приведёт к", "затем", "потом", "eventually", "в итоге", "will lead to",
+                "неминуче", "приведе до", "потім")
+                && !has(t, "вероятност", "probability", "оценка шага", "ймовірність", "оцінка кроку");
     }
 
     private static boolean strawMan(String t) {
@@ -226,9 +233,11 @@ public final class ReasoningFallacyPolicy {
     }
 
     private static boolean postHoc(String t) {
-        return has(t, "после этого", "затем произошло", "after this", "post hoc", "сразу после")
-                && has(t, "значит из-за", "поэтому причина", "caused by", "caused it")
-                && !has(t, "контролир", "controlled", "рандомиз", "confound", "do not know why", "не знаем почему");
+        return has(t, "после этого", "затем произошло", "after this", "post hoc", "сразу после",
+                "після цього", "після того")
+                && has(t, "значит из-за", "поэтому причина", "caused by", "caused it", "значить через", "тому причина")
+                && !has(t, "контролир", "controlled", "рандомиз", "confound", "do not know why", "не знаем почему",
+                "не знаємо чому");
     }
 
     private static boolean circular(String t) {
@@ -273,8 +282,8 @@ public final class ReasoningFallacyPolicy {
     }
 
     private static boolean anchoring(String t) {
-        return has(t, "первое названное", "начальное число", "якорем", "anchor number", "anchored on")
-                && has(t, "поэтому около", "останемся рядом", "around that figure", "близко к этому числу")
+        return has(t, "первое названное", "начальное число", "якорем", "anchor",
+                "останемся рядом", "around that figure", "близко к этому числу")
                 && !has(t, "независим", "independent estimate", "отдельно оценил");
     }
 
@@ -300,10 +309,19 @@ public final class ReasoningFallacyPolicy {
     }
 
     private static boolean nirvana(String t) {
-        return has(t, "не идеально", "не совершенн", "not perfect", "not ideal", "есть недостатки")
+        return has(t, "не идеально", "не совершенн", "not perfect", "not ideal", "есть недостатки", "не ідеально")
                 && has(t, "поэтому отвергнуть", "нельзя принимать", "reject the option", "so discard",
-                "лучше ничего")
-                && !has(t, "лучше текущего", "better than status quo", "incremental", "поэтапн", "улучшает");
+                "лучше ничего", "тому відкинути")
+                && !has(t, "лучше текущего", "better than status quo", "incremental", "поэтапн", "улучшает", "краще поточного");
+    }
+
+    private static boolean continuum(String t) {
+        return has(t, "нет чёткой границы", "нет резкой границы", "no sharp boundary", "no clear cutoff",
+                "нема чіткої межі", "відсутня чітка межа", "gray area means")
+                && has(t, "значит нет различия", "поэтому различия нет", "therefore no difference",
+                "so the distinction fails", "тому різниці немає", "отже відмінності немає")
+                && !has(t, "различие всё равно", "difference still matters", "threshold is useful",
+                "пороговый критерий", "різниця все одно важлива");
     }
 
     private static int count(String text, String token) {
