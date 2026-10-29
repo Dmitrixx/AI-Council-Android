@@ -34,6 +34,7 @@ public final class ReasoningFallacyPolicySmokeTest {
         signal("texas sharpshooter", "После данных выбрали кластер и нарисовали круг, поэтому паттерн значим.");
         signal("relative privation", "Есть проблемы хуже, не так плохо как там, поэтому не важно и можно не учитывать.");
         signal("nirvana", "Вариант не идеально и есть недостатки, поэтому отвергнуть и лучше ничего.");
+        signal("continuum", "Нет чёткой границы между ними, значит нет различия и можно не различать.");
         pair("opposing recommendations must not be averaged",
                 "Нужно запретить запуск, делать это нельзя.",
                 "Стоит разрешить запуск: истина посередине, усредним позиции.");
@@ -70,6 +71,8 @@ public final class ReasoningFallacyPolicySmokeTest {
                 "Есть проблемы хуже, но оба важны и нужно сравнивать масштаб текущего вреда.");
         noSignal("imperfect but better than status quo is not nirvana",
                 "Вариант не идеален, но лучше текущего и улучшает ситуацию поэтапно.");
+        noSignal("gray area acknowledged without erasing the distinction is not continuum",
+                "Нет резкой границы, но различие всё равно важно и пороговый критерий полезен.");
 
         List<String> capped = new ArrayList<>();
         String many = "No evidence therefore X is false. Everyone does it, so it must be correct. "
