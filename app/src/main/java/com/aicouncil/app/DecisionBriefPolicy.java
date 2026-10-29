@@ -5,7 +5,7 @@ import java.util.Locale;
 
 /**
  * Extra offline reasoning-risk signals that the coordinator must not average away.
- * Each note is a hypothesis, not a verdict. Expanded in v2.40–v2.46.
+ * Each note is a hypothesis, not a verdict. Expanded in v2.40–v2.47.
  */
 public final class DecisionBriefPolicy {
     private static final int MAX_SIGNALS = 8;
@@ -47,6 +47,18 @@ public final class DecisionBriefPolicy {
                 "нулевой риск: полное устранение одного малого риска предпочитается большему снижению крупного");
         add(conflicts, initial, scopeNeglect(a) || scopeNeglect(b),
                 "пренебрежение масштабом: влияние на 10 и на 10 000 трактуется почти одинаково");
+        add(conflicts, initial, opportunityCost(a) || opportunityCost(b),
+                "упущенная альтернатива: вариант выбирается без цены отказа от следующего лучшего");
+        add(conflicts, initial, affirmingConsequent(a) || affirmingConsequent(b),
+                "утверждение консеквента: наличие следствия принимается за доказательство именно этой причины");
+        add(conflicts, initial, denyingAntecedent(a) || denyingAntecedent(b),
+                "отрицание антецедента: отсутствие одного достаточного условия принимается за отсутствие следствия");
+        add(conflicts, initial, outcomeBias(a) || outcomeBias(b),
+                "ошибка исхода: качество решения оценивается по уже известному итогу, а не по информации на момент выбора");
+        add(conflicts, initial, presentBias(a) || presentBias(b),
+                "смещение к настоящему: близкая выгода берётся без сравнения более поздней цены");
+        add(conflicts, initial, omissionBias(a) || omissionBias(b),
+                "смещение бездействия: отказ действовать предпочитается при том же ожидаемом вреде");
     }
 
     private static void add(List<String> out, int initial, boolean condition, String message) {
@@ -158,6 +170,46 @@ public final class DecisionBriefPolicy {
                 && has(text, "10 или 10000", "десять или десять тысяч", "10 vs 10000", "few or many",
                 "10 чи 10000")
                 && !has(text, "пропорционально", "per person", "на человека", "масштабируется", "scales with");
+    }
+
+    private static boolean opportunityCost(String text) {
+        return has(text, "не считая от чего отказываемся", "without pricing what we give up",
+                "ігноруючи від чого відмовляємось", "ignoring the opportunity")
+                && has(text, "поэтому выбираем", "so we choose", "тому обираємо", "therefore we pick")
+                && !has(text, "упущенн", "opportunity cost", "next-best", "альтернативн");
+    }
+
+    private static boolean affirmingConsequent(String text) {
+        return has(text, "если бы это было причиной", "if it were the cause", "якби це було причиною")
+                && has(text, "эффект есть, значит это и есть причина", "we see the effect, so it is the cause",
+                "наслідок є, отже це і є причина")
+                && !has(text, "другие причины", "other causes", "не единственн", "not the only", "інші причини");
+    }
+
+    private static boolean denyingAntecedent(String text) {
+        return has(text, "раз условия нет, вывода тоже нет", "antecedent is false so the consequent is false",
+                "раз умови немає, то й висновку немає")
+                && !has(text, "необходим", "necessary", "необхідн", "бывает и без", "буває і без");
+    }
+
+    private static boolean outcomeBias(String text) {
+        return has(text, "решение было плохим, потому что итог плохой",
+                "the decision was bad because the outcome was bad",
+                "рішення було поганим, бо підсумок поганий",
+                "мы всегда это знали после итога", "we knew it all along after the outcome")
+                && !has(text, "на тот момент", "at the time", "information available", "інформація на той момент");
+    }
+
+    private static boolean presentBias(String text) {
+        return has(text, "возьмём сейчас", "take the reward now", "візьмемо зараз")
+                && has(text, "даже если потом дороже", "even if it costs more later", "навіть якщо потім дорожче")
+                && !has(text, "дисконт", "discount rate", "приведённ", "net present", "приведен");
+    }
+
+    private static boolean omissionBias(String text) {
+        return has(text, "бездействие лучше действия", "inaction is safer than action", "бездіяльність краща за дію")
+                && has(text, "при том же вреде", "same expected harm", "при тій самій шкоді")
+                && !has(text, "ожидаемый вред меньше", "expected harm is lower", "очікувана шкода менша");
     }
 
     private static boolean has(String text, String... words) {

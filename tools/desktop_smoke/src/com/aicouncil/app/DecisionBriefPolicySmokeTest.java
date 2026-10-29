@@ -18,6 +18,17 @@ public final class DecisionBriefPolicySmokeTest {
         signal("status quo", "Оставьте как есть, потому что так привычно и уже работает.");
         signal("zero risk", "Полностью устранить риск важнее чем снизить большой, даже если крупный останется.");
         signal("scope neglect", "Одинаково важно, 10 или 10000 — scale does not matter.");
+        signal("anchoring", "Оттолкнёмся от начальной цифры, поэтому итог около ста.");
+        signal("planning fallacy", "Займёт ровно 10 дней, срок без запаса.");
+        signal("availability", "Недавно все говорят об этом, значит часто так бывает.");
+        signal("confirmation", "Ищем подтверждения и игнорируем противоречащие данные.");
+        signal("opportunity cost", "Поэтому выбираем этот путь, не считая от чего отказываемся.");
+        signal("affirming the consequent",
+                "Если бы это было причиной, мы бы видели эффект. Эффект есть, значит это и есть причина.");
+        signal("denying the antecedent", "Раз условия нет, вывода тоже нет.");
+        signal("outcome bias", "Решение было плохим, потому что итог плохой.");
+        signal("present bias", "Возьмём сейчас, даже если потом дороже.");
+        signal("omission bias", "Бездействие лучше действия при том же вреде.");
 
         noSignal("spent effort without a continue-because claim",
                 "Мы уже вложили год. Это не причина продолжать само по себе.");
@@ -38,6 +49,26 @@ public final class DecisionBriefPolicySmokeTest {
                 "Снижаем крупный риск по expected harm, а не гонимся за zero risk малого.");
         noSignal("scope treated proportionally",
                 "Влияние масштабируется: на 10 000 человек это пропорционально сильнее, чем на 10.");
+        noSignal("anchor revised by an outside view",
+                "Оттолкнёмся от начальной цифры, но пересмотрели по reference class, поэтому итог другой.");
+        noSignal("dated plan with an explicit buffer",
+                "Займёт ровно 10 дней только как нижняя граница: буфер и диапазон сроков учтены.");
+        noSignal("recent story checked against incidence",
+                "Недавно все говорят, но статистика за период не показывает, что это значит часто.");
+        noSignal("search that still looks at disconfirmation",
+                "Ищем подтверждения и отдельно смотрим опровержения, а не только согласия.");
+        noSignal("choice priced against the next best",
+                "Поэтому выбираем этот путь только после того, как упущенная выгода next-best посчитана.");
+        noSignal("effect is not treated as a unique cause",
+                "Если бы это было причиной, мы бы видели эффект. Эффект есть, но другие причины тоже его дают.");
+        noSignal("absent condition is not treated as necessary",
+                "Раз условия нет, вывода тоже нет — но это не необходимое условие, вывод бывает и без него.");
+        noSignal("outcome separated from the decision",
+                "Итог плохой, но по информации на тот момент решение было разумным.");
+        noSignal("near reward checked by a discount rate",
+                "Возьмём сейчас только если discount rate это оправдывает, даже если потом дороже в номинале.");
+        noSignal("inaction compared by expected harm",
+                "Бездействие не лучше: ожидаемый вред меньше у действия при той же цене ошибки.");
 
         List<String> many = new ArrayList<>();
         String packed = "Мы уже вложили год, поэтому продолжаем и нельзя останавливаться. "
