@@ -5,7 +5,7 @@ import java.util.Locale;
 
 /**
  * Extra local deliberation signals (v2.26+): urgency, evidence grade,
- * cost/benefit framing and obligation clashes. No network.
+ * cost/benefit framing, obligation clashes and decision-quality risks. No network.
  */
 public final class DeliberationSignals {
     private DeliberationSignals() {}
@@ -18,6 +18,7 @@ public final class DeliberationSignals {
         ReasoningFallacyPolicy.detect(a, b, conflicts);
         DecisionBriefPolicy.detect(a, b, conflicts);
         EvidenceIndependencePolicy.detect(a, b, conflicts);
+        DecisionQualityPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
