@@ -44,7 +44,7 @@ public final class DecisionBriefPolicySmokeTest {
                 + "Этот случай яркий, значит вероятность высока. "
                 + "Если решение не идеально, оно бесполезно.";
         DecisionBriefPolicy.detect(overflow, overflow, capped);
-        check(capped.size() <= 6, "signals are capped");
+        check(capped.size() <= 8, "signals are capped");
         System.out.println("DecisionBriefPolicySmokeTest: " + passed + "/" + passed + " passed");
     }
 

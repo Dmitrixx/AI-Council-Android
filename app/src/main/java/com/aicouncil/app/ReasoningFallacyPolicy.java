@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Conservative offline reasoning-risk detectors (v2.36+ … v2.42).
+ * Conservative offline reasoning-risk detectors (v2.36+).
  * Signals are hypotheses that require context, not definitive fallacy verdicts.
  * Coordinator must rank these highest and must not average them away.
  */
@@ -19,7 +19,12 @@ public final class ReasoningFallacyPolicy {
         String b = lower(answerB);
         int initial = conflicts.size();
 
-        // v2.41: composition / division / incredulity / equivocation
+        add(conflicts, initial, appealToIgnorance(a) || appealToIgnorance(b),
+                "апелляция к незнанию: отсутствие найденных доказательств принимается за доказательство ложности");
+        add(conflicts, initial, bandwagon(a) || bandwagon(b),
+                "апелляция к большинству: распространённость практики принимается за её правильность");
+        add(conflicts, initial, specialPleading(a) || specialPleading(b),
+                "особое исключение: правило объявляется всеобщим, но автор выводит из него свою сторону без критерия");
         add(conflicts, initial, composition(a) || composition(b),
                 "ошибка композиции: свойства частей автоматически переносятся на целое");
         add(conflicts, initial, division(a) || division(b),
@@ -28,8 +33,6 @@ public final class ReasoningFallacyPolicy {
                 "личная недостоверность: «я не понимаю / не верю» используется как опровержение");
         add(conflicts, initial, equivocation(a) || equivocation(b),
                 "двусмысленность / эквивокация: одно слово меняет смысл между посылками");
-
-        // v2.39: nature, genetic, burden shift, moving goalposts
         add(conflicts, initial, appealToNature(a) || appealToNature(b),
                 "апелляция к природе: «естественно» отождествляется с «хорошо / правильно»");
         add(conflicts, initial, geneticFallacy(a) || geneticFallacy(b),
@@ -38,16 +41,12 @@ public final class ReasoningFallacyPolicy {
                 "сдвиг бремени доказательства: требующий утверждение перекладывает доказательство на оппонента");
         add(conflicts, initial, movingGoalposts(a) || movingGoalposts(b),
                 "перемещение ворот: критерии успеха меняются после того, как они были удовлетворены");
-
-        // v2.38: emotion, false equivalence, no true scotsman
         add(conflicts, initial, appealToEmotion(a) || appealToEmotion(b),
                 "апелляция к эмоциям: сильное чувство подменяет проверку утверждения");
         add(conflicts, initial, falseEquivalence(a) || falseEquivalence(b),
                 "ложная эквивалентность: разные по масштабу/типу вещи уравниваются без обоснования");
         add(conflicts, initial, noTrueScotsman(a) || noTrueScotsman(b),
                 "никакой настоящий … : определение группы сужается ad hoc, чтобы исключить контрпример");
-
-        // v2.37: authority, tradition, tu quoque, dichotomy, red herring
         add(conflicts, initial, appealToAuthority(a) || appealToAuthority(b),
                 "апелляция к авторитету: мнение авторитета принимается без связи с предметом и доказательствами");
         add(conflicts, initial, appealToTradition(a) || appealToTradition(b),
@@ -58,8 +57,6 @@ public final class ReasoningFallacyPolicy {
                 "ложная дихотомия: представлены только два варианта при наличии промежуточных");
         add(conflicts, initial, redHerring(a) || redHerring(b),
                 "отвлекающий манёвр: внимание уводится на побочный, эмоционально сильный вопрос");
-
-        // Additional high-value conservative detectors
         add(conflicts, initial, slipperySlope(a) || slipperySlope(b),
                 "скользкий склон: цепочка последствий утверждается без вероятностной оценки шагов");
         add(conflicts, initial, strawMan(a) || strawMan(b),
@@ -78,131 +75,174 @@ public final class ReasoningFallacyPolicy {
 
     private static void add(List<String> out, int initial, boolean condition, String message) {
         String formatted = "логический риск — возможный сигнал, требуется проверка контекста: " + message;
-        if (!condition || out.size() - initial >= MAX_SIGNALS || out.contains(formatted)) return;
+        if (!condition || out.contains(formatted)) return;
+        int own = 0;
+        for (String existing : out) if (existing.startsWith("логический риск")) own++;
+        if (own >= MAX_SIGNALS) return;
         out.add(formatted);
     }
 
-    // --- detectors (conservative multi-marker heuristics) ---
+    private static boolean appealToIgnorance(String t) {
+        return has(t, "no evidence", "нет доказательств", "нет свидетельств", "there is no evidence")
+                && has(t, "does not exist", "не существует", "is false", "значит ложно", "therefore false")
+                && !has(t, "unresolved", "remains", "пока не известно", "не доказано и не опровергнуто");
+    }
+
+    private static boolean bandwagon(String t) {
+        return has(t, "everyone does it", "все так делают", "все делают это", "большинство считает", "everybody does")
+                && has(t, "must be correct", "must be true", "значит верно", "so it is right", "значит правильно");
+    }
+
+    private static boolean specialPleading(String t) {
+        return has(t, "кроме нас", "except us", "кроме меня", "for everyone except")
+                && has(t, "особенн", "we are special", "потому что мы");
+    }
 
     private static boolean composition(String t) {
-        return has(t, "каждая часть", "каждый элемент", "все части") && has(t, "значит целое", "поэтому всё", "hence the whole")
-                || has(t, "parts are", "each component") && has(t, "therefore the whole", "so the system");
+        return (has(t, "каждая часть", "каждый элемент", "все части") && has(t, "значит целое", "поэтому всё", "hence the whole"))
+                || (has(t, "parts are", "each component") && has(t, "therefore the whole", "so the system"));
     }
 
     private static boolean division(String t) {
-        return has(t, "целое", "система", "the whole") && has(t, "значит каждая часть", "поэтому каждая", "so each part")
-                || has(t, "group is") && has(t, "therefore every member", "so each member");
+        return (has(t, "целое", "система", "the whole") && has(t, "значит каждая часть", "поэтому каждая", "so each part"))
+                || (has(t, "group is") && has(t, "therefore every member", "so each member"));
     }
 
     private static boolean personalIncredulity(String t) {
         return has(t, "я не понимаю", "я не верю", "невозможно представить", "i don't understand", "i can't believe",
-                "can't imagine how", "не могу представить") && has(t, "значит ложно", "значит неверно", "so it is false", "therefore false");
+                "can't imagine how", "не могу представить")
+                && has(t, "значит ложно", "значит неверно", "so it is false", "therefore false");
     }
 
     private static boolean equivocation(String t) {
-        return has(t, "в одном смысле", "в другом смысле", "в зависимости от значения", "ambiguous term",
-                "word means", "разные значения слова") && has(t, "поэтому", "therefore", "значит");
+        return has(t, "в одном смысле", "в другом смысле", "ambiguous term", "word means", "разные значения слова")
+                && has(t, "поэтому", "therefore", "значит");
     }
 
     private static boolean appealToNature(String t) {
-        return has(t, "потому что естественно", "это природно", "natural therefore", "because it is natural",
-                "природа так устроила") && has(t, "хорошо", "правильно", "нужно", "good", "right", "should");
+        return has(t, "это естественно", "потому что естественно", "natural therefore", "because it is natural",
+                "природа так устроила")
+                && has(t, "хорошо", "правильно", "нужно", "good", "right", "should")
+                && !has(t, "depends on the context", "зависит от контекста", "desirability");
     }
 
     private static boolean geneticFallacy(String t) {
-        return has(t, "происходит из", "придумал", "came from", "invented by", "источник идеи")
-                && has(t, "поэтому ложно", "поэтому верно", "so it is false", "so it is true")
-                && !has(t, "содержание", "содержание аргумента", "the content of");
+        return has(t, "произошло от", "происходит из", "плохого источника", "came from", "invented by", "источник идеи")
+                && has(t, "поэтому неверно", "поэтому ложно", "поэтому верно", "so it is false", "so it is true")
+                && !has(t, "current validity", "содержание аргумента", "the content of", "needs separate");
     }
 
     private static boolean burdenShift(String t) {
-        return has(t, "докажи что нет", "докажите обратное", "prove it is not", "prove the opposite",
-                "если не можете опровергнуть") && has(t, "значит верно", "значит правда", "therefore true");
+        return has(t, "докажи что это не", "докажи что нет", "докажите обратное", "prove it is not",
+                "prove the opposite", "если не можете опровергнуть")
+                && has(t, "я утверждаю", "значит верно", "значит правда", "therefore true");
     }
 
     private static boolean movingGoalposts(String t) {
-        return has(t, "теперь нужно ещё", "этого недостаточно, нужно", "now you also need", "that is not enough, also")
-                || has(t, "изменим критерий", "новый критерий после", "goalposts moved");
+        return has(t, "теперь нужно ещё", "этого недостаточно, нужно", "now you also need", "that is not enough, also",
+                "изменим критерий", "новый критерий после", "goalposts moved");
     }
 
     private static boolean appealToEmotion(String t) {
-        return has(t, "представьте ребёнка", "подумайте о семье", "how would you feel", "imagine the suffering")
-                && has(t, "поэтому нужно", "поэтому нельзя", "therefore we must", "so we cannot")
-                && !has(t, "данные", "evidence", "исследован", "study");
+        return has(t, "подумайте о детях", "представьте ребёнка", "подумайте о семье", "how would you feel",
+                "imagine the suffering")
+                && has(t, "вместо аргумент", "просто почувствуйте", "поэтому нужно", "поэтому нельзя",
+                "therefore we must", "so we cannot")
+                && !has(t, "данные", "evidence", "исследован", "study", "examine the data");
     }
 
     private static boolean falseEquivalence(String t) {
-        return has(t, "это то же самое что", "ничем не отличается от", "exactly the same as", "no different from")
-                && has(t, "поэтому", "therefore") && !has(t, "по масштабу", "by scale", "in degree");
+        return has(t, "одно и то же", "это то же самое", "exactly the same as", "no different from", "ничем не отличается")
+                && !has(t, "по масштабу", "by scale", "differ in important", "share some features");
     }
 
     private static boolean noTrueScotsman(String t) {
-        return has(t, "настоящий", "истинный", "true scotsman", "no true", "настоящий специалист")
-                && has(t, "не стал бы", "никогда не", "would never", "не сделал бы");
+        return has(t, "настоящий", "истинный", "true scotsman", "no true")
+                && has(t, "никогда бы", "никогда не", "would never", "не сделал бы", "не настоящий");
     }
 
     private static boolean appealToAuthority(String t) {
         return has(t, "эксперт сказал", "учёный утверждает", "authority says", "expert said")
-                && has(t, "значит верно", "therefore true", "so it is settled")
+                && has(t, "это верно", "значит верно", "therefore true", "so it is settled")
                 && !has(t, "данные", "метод", "исследование", "evidence", "study design");
     }
 
     private static boolean appealToTradition(String t) {
-        return has(t, "всегда так делали", "традиционно", "we've always", "tradition says", "испокон веков")
-                && has(t, "поэтому правильно", "therefore right", "so we should keep");
+        return has(t, "так всегда делали", "всегда так делали", "we've always", "tradition says", "испокон веков")
+                && has(t, "значит правильно", "поэтому правильно", "therefore right", "so we should keep");
     }
 
     private static boolean tuQuoque(String t) {
-        return has(t, "а сам ты", "ты тоже", "you also", "you yourself", "а вы сами")
-                && has(t, "поэтому твой аргумент", "so your argument", "значит ты не прав");
+        return has(t, "а ты сам", "а сам ты", "ты тоже", "you also", "you yourself", "а вы сами")
+                && has(t, "твой аргумент", "your argument", "значит ты не прав", "so your argument");
     }
 
     private static boolean falseDichotomy(String t) {
-        return has(t, "либо … либо", "только два варианта", "either … or", "only two options", "третьего не дано")
-                && has(t, "поэтому", "therefore") && !has(t, "промежуточн", "continuum", "spectrum", "градаци");
+        int forks = count(t, "либо");
+        boolean closedPair = forks >= 2 || has(t, "только два варианта", "only two options", "третьего не дано",
+                "either/or", "no other option");
+        boolean sealed = has(t, "других вариантов нет", "третьего не дано", "only two", "therefore", "поэтому");
+        return closedPair && sealed && !has(t, "промежуточн", "continuum", "spectrum", "градаци");
     }
 
     private static boolean redHerring(String t) {
-        return has(t, "но давайте поговорим о", "а что насчёт", "but what about", "instead let's discuss")
-                && has(t, "это важнее", "главное же", "the real issue is");
+        return has(t, "что насчёт", "но давайте поговорим", "but what about", "instead let's discuss")
+                && has(t, "вместо ответа", "другой проблем", "это важнее", "главное же", "the real issue is");
     }
 
     private static boolean slipperySlope(String t) {
-        return has(t, "если разрешить", "это приведёт к", "if we allow", "this will lead to", "скользкий склон")
-                && has(t, "затем", "потом", "eventually", "в итоге") && !has(t, "вероятност", "probability", "оценка шага");
+        return has(t, "если разрешить", "if we allow", "скользкий склон", "this will lead to")
+                && has(t, "неизбежно", "приведёт к", "затем", "потом", "eventually", "в итоге", "will lead to")
+                && !has(t, "вероятност", "probability", "оценка шага");
     }
 
     private static boolean strawMan(String t) {
-        return has(t, "оппонент якобы считает", "они хотят сказать", "straw man", "искажённая позиция",
-                "упрощённая версия аргумента") && has(t, "но это абсурд", "легко опровергнуть", "obviously false");
+        return has(t, "misrepresents my position", "misrepresent", "straw man", "соломенн",
+                "искажает позицию", "искажённая позиция", "оппонент якобы считает", "упрощённая версия аргумента")
+                && has(t, "instead of addressing", "но это абсурд", "легко опровергнуть", "obviously false", "instead of");
     }
 
     private static boolean adHominem(String t) {
-        return has(t, "он сам", "его мотивы", "ad hominem", "character attack", "личный интерес автора")
-                && has(t, "поэтому аргумент неверен", "so the argument fails", "значит нельзя доверять");
+        return has(t, "idiot", "идиот", "ad hominem", "character attack", "личный интерес автора", "его мотивы")
+                && has(t, "argument is wrong", "аргумент невер", "so the argument fails", "поэтому аргумент",
+                "значит нельзя доверять");
     }
 
     private static boolean postHoc(String t) {
         return has(t, "после этого", "затем произошло", "after this", "post hoc", "сразу после")
                 && has(t, "значит из-за", "поэтому причина", "caused by", "caused it")
-                && !has(t, "контролир", "controlled", "рандомиз", "confound");
+                && !has(t, "контролир", "controlled", "рандомиз", "confound", "do not know why", "не знаем почему");
     }
 
     private static boolean circular(String t) {
-        return has(t, "потому что это так", "истинно потому что истинно", "begging the question",
-                "circular", "доказывает само себя") || (has(t, "определение") && has(t, "уже содержит вывод"));
+        return has(t, "потому что это верно", "потому что это так", "because it is true",
+                "истинно потому что истинно", "begging the question", "circular", "доказывает само себя")
+                || (has(t, "определение") && has(t, "уже содержит вывод"));
     }
 
     private static boolean hastyGeneralization(String t) {
-        return has(t, "на основе одного", "всего несколько случаев", "from a single", "only a few cases",
-                "в моей практике все") && has(t, "всегда", "все", "always", "everyone", "никто")
-                && !has(t, "выборка", "sample size", "статистически", "representative");
+        return has(t, "по одному случаю", "на основе одного", "всего несколько случаев", "from a single",
+                "only a few cases", "в моей практике все")
+                && has(t, "всегда", "все люди", "everyone", "никто не")
+                && !has(t, "выборка", "sample size", "статистически", "representative", "should not be generalized");
     }
 
     private static boolean correlationCausation(String t) {
         return has(t, "коррелирует", "вместе растут", "correlated", "associated with")
-                && has(t, "значит вызывает", "поэтому причина", "causes", "causal")
-                && !has(t, "причинн", "causal evidence", "эксперимент", "intervention", "механизм");
+                && has(t, "значит вызывает", "поэтому причина", "therefore causes", "so it causes")
+                && !has(t, "причинн ещё не", "causal evidence", "эксперимент", "intervention", "не доказана причин");
+    }
+
+    private static int count(String text, String token) {
+        int n = 0;
+        int from = 0;
+        while (from < text.length()) {
+            int at = text.indexOf(token, from);
+            if (at < 0) break;
+            n++;
+            from = at + token.length();
+        }
+        return n;
     }
 
     private static boolean has(String text, String... words) {

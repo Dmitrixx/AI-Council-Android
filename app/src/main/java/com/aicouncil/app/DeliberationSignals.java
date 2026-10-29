@@ -17,6 +17,7 @@ public final class DeliberationSignals {
         detectObligation(a, b, conflicts);
         ReasoningFallacyPolicy.detect(a, b, conflicts);
         DecisionBriefPolicy.detect(a, b, conflicts);
+        EvidenceIndependencePolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
