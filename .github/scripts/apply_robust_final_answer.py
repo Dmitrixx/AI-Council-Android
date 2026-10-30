@@ -6,7 +6,7 @@ import urllib.request
 
 FALLBACK = (
     "https://raw.githubusercontent.com/Dmitrixx/AI-Council-Android/"
-    "b3615dc9b3edd89b91a5191a15ab25f5680a6e87/"
+    "c46669acb34b7654a7ecb89450c2cd64f343ce3a/"
     "app/src/main/java/com/aicouncil/app/CouncilExecutionEngine.java"
 )
 
@@ -16,12 +16,15 @@ def main():
     if not engine.is_file():
         raise SystemExit("CouncilExecutionEngine.java not found")
     src = engine.read_text(encoding="utf-8", errors="replace")
-    if len(src) < 5000 or "class CouncilExecutionEngine" not in src or src.strip() == "PLACEHOLDER":
+    if (len(src) < 20000 or "class CouncilExecutionEngine" not in src
+            or "truncated for this example" in src
+            or "StructuredClaimPolicy.addContract" not in src
+            or "r.endpoints[3]" not in src):
         print("Engine truncated; restoring known-good…")
         with urllib.request.urlopen(FALLBACK, timeout=60) as resp:
             data = resp.read()
-        if len(data) < 5000:
-            raise SystemExit("could not restore CouncilExecutionEngine")
+        if (len(data) < 20000 or b"StructuredClaimPolicy.addContract" not in data or b"r.endpoints[3]" not in data):
+            raise SystemExit("fallback CouncilExecutionEngine is not a complete four-slot engine")
         engine.write_bytes(data)
         src = engine.read_text(encoding="utf-8")
         print("Engine restored:", len(src), "bytes")
