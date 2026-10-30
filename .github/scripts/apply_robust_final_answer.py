@@ -23,8 +23,7 @@ def main():
         print("Engine truncated; restoring known-good…")
         with urllib.request.urlopen(FALLBACK, timeout=60) as resp:
             data = resp.read()
-        if len(data) < 5000:
-            if (len(data) < 20000 or b"StructuredClaimPolicy.addContract" not in data or b"r.endpoints[3]" not in data):
+        if (len(data) < 20000 or b"StructuredClaimPolicy.addContract" not in data or b"r.endpoints[3]" not in data):
             raise SystemExit("fallback CouncilExecutionEngine is not a complete four-slot engine")
         engine.write_bytes(data)
         src = engine.read_text(encoding="utf-8")
