@@ -25,10 +25,18 @@ public final class BayesianUpdatePolicySmokeTest {
                 "Распространённость 140%, чувствительность 90%, специфичность 90%.");
         check(nonsense.isEmpty(), "impossible percent is rejected");
 
-        if (passed != 6) {
-            throw new AssertionError("BayesianUpdatePolicySmokeTest failed: " + passed + "/6");
+        // Negative test: prevalence 1%, sens 99%, spec 95%
+        // P(H|neg) = (0.01 * 0.01) / (0.01*0.01 + 0.95*0.99) ≈ 0.0106% → 0.01%
+        String negative = BayesianUpdatePolicy.evaluateExplicitRequest(
+                "Тест отрицательный. Распространённость 1%, чувствительность 99%, специфичность 95%.");
+        check(negative.contains("отрицательного теста"), "negative polarity selected");
+        check(negative.contains("0.01%") || negative.contains("0.011%"), "classic negative test posterior");
+        check(negative.contains("не диагноз"), "negative note still not a diagnosis");
+
+        if (passed != 9) {
+            throw new AssertionError("BayesianUpdatePolicySmokeTest failed: " + passed + "/9");
         }
-        System.out.println("BayesianUpdatePolicySmokeTest: " + passed + "/6 passed");
+        System.out.println("BayesianUpdatePolicySmokeTest: " + passed + "/9 passed");
     }
 
     private static void check(boolean condition, String name) {
