@@ -102,6 +102,11 @@ public final class CouncilExecutionEngine {
                 taskForModels = taskForModels + "\n\n" + bayesianUpdate
                         + "\nНе заменяй этот процент оценкой на глаз. Если проценты в задаче означают не положительный тест, скажи об этом и не выдумывай другой процент.";
             }
+            String decisionArithmetic = DecisionArithmeticPolicy.evaluateExplicitRequest(request.task);
+            if (!decisionArithmetic.isEmpty()) {
+                taskForModels = taskForModels + "\n\n" + decisionArithmetic
+                        + "\nНе заменяй эти числа оценкой на глаз. Если подписи в задаче означают не то, что посчитал локальный блок, скажи об этом и не выдумывай другую цифру.";
+            }
 
             if (request.mode == 0) {
                 callbacks.onExpertState(0, "◉ Работает", Tone.PRIMARY);
