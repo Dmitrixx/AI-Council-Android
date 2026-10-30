@@ -38,6 +38,8 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ForecastCoherencePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/BayesianUpdatePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DecisionArithmeticPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/LikelihoodRatioPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/BaseRateReminderPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertRolePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/TruncatedAnswerPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/UiThemePolicy.java" \
@@ -96,6 +98,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.SampleEvidencePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ForecastCoherencePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.BayesianUpdatePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.DecisionArithmeticPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.LikelihoodRatioPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest
@@ -120,3 +123,5 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.ocr.OcrDocumentProcessorSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.OcrModelManagerSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ProviderModelsClientSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.WebSearchServiceSmokeTest
+
+java -cp "$TMP_DIR/out" com.aicouncil.app.BaseRateReminderPolicySmokeTest
