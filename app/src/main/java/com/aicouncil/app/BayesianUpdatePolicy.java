@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
  * Deterministic Bayes update for explicit positive- or negative-test wording.
  * The app does not infer that nearby percentages are medical facts;
  * all three cues must sit next to a percent, or the note is withheld.
+ * When the three numbers are present both positive and negative posteriors are reported.
  */
 public final class BayesianUpdatePolicy {
     private static final Pattern PERCENT = Pattern.compile("(\\d+(?:[.,]\\d+)?)\\s*%");
@@ -27,11 +28,23 @@ public final class BayesianUpdatePolicy {
         boolean wantsNegative = mentionsNegativeTest(task);
         boolean wantsPositive = mentionsPositiveTest(task);
 
-        // Prefer explicit polarity; if both or neither, fall back to positive (historical behaviour).
-        if (wantsNegative && !wantsPositive) {
-            return negativeNote(prior, sensitivity, specificity);
+        StringBuilder notes = new StringBuilder();
+        String pos = positiveNote(prior, sensitivity, specificity);
+        String neg = negativeNote(prior, sensitivity, specificity);
+        if (!pos.isEmpty()) notes.append(pos);
+        if (!neg.isEmpty()) {
+            if (notes.length() > 0) notes.append("\n\n");
+            notes.append(neg);
         }
-        return positiveNote(prior, sensitivity, specificity);
+        if (notes.length() == 0) return "";
+        if (wantsNegative && !wantsPositive) {
+            notes.append("\nЗапрос явно упоминал отрицательный тест — в первую очередь смотри блок для отрицательного.");
+        } else if (wantsPositive && !wantsNegative) {
+            notes.append("\nЗапрос явно упоминал положительный тест — в первую очередь смотри блок для положительного.");
+        } else {
+            notes.append("\nПолярность теста не указана явно или указаны обе — приведены оба расчёта.");
+        }
+        return notes.toString();
     }
 
     private static String positiveNote(double prior, double sensitivity, double specificity) {
