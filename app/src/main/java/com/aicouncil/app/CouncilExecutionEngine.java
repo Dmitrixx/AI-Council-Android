@@ -97,6 +97,11 @@ public final class CouncilExecutionEngine {
                 taskForModels = taskForModels + "\n\n" + deterministicCalculation
                         + "\nУчитывай этот локальный результат как арифметическую проверку, но не делай выводов о единицах или реальном смысле данных.";
             }
+            String bayesianUpdate = BayesianUpdatePolicy.evaluateExplicitRequest(request.task);
+            if (!bayesianUpdate.isEmpty()) {
+                taskForModels = taskForModels + "\n\n" + bayesianUpdate
+                        + "\nНе заменяй этот процент оценкой на глаз. Если проценты в задаче означают не положительный тест, скажи об этом и не выдумывай другой процент.";
+            }
 
             if (request.mode == 0) {
                 callbacks.onExpertState(0, "◉ Работает", Tone.PRIMARY);
