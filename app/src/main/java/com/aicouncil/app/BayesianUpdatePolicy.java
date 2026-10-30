@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Deterministic Bayes update for an explicit positive-test wording.
+ * Deterministic Bayes update for explicit positive- or negative-test wording.
  * The app does not infer that nearby percentages are medical facts;
  * all three cues must sit next to a percent, or the note is withheld.
  */
@@ -23,6 +23,18 @@ public final class BayesianUpdatePolicy {
         if (specificity == null && falsePositive != null) specificity = 1.0 - falsePositive;
         if (prior == null || sensitivity == null || specificity == null) return "";
         if (!unit(prior) || !unit(sensitivity) || !unit(specificity)) return "";
+
+        boolean wantsNegative = mentionsNegativeTest(task);
+        boolean wantsPositive = mentionsPositiveTest(task);
+
+        // Prefer explicit polarity; if both or neither, fall back to positive (historical behaviour).
+        if (wantsNegative && !wantsPositive) {
+            return negativeNote(prior, sensitivity, specificity);
+        }
+        return positiveNote(prior, sensitivity, specificity);
+    }
+
+    private static String positiveNote(double prior, double sensitivity, double specificity) {
         double miss = 1.0 - specificity;
         double evidence = sensitivity * prior + miss * (1.0 - prior);
         if (!(evidence > 1.0e-15) || !Double.isFinite(evidence)) return "";
@@ -34,6 +46,35 @@ public final class BayesianUpdatePolicy {
                 + "Специфичность: " + pct(specificity) + "\n"
                 + "P(гипотеза | положительный тест): " + pct(posterior) + "\n"
                 + "Метод: теорема Байеса в приложении. Это не диагноз. Если проценты означают другое, число не применять и сказать об этом явно.";
+    }
+
+    private static String negativeNote(double prior, double sensitivity, double specificity) {
+        // P(H|neg) = (1 - sens) * prior / [(1 - sens)*prior + specificity*(1 - prior)]
+        double falseNeg = 1.0 - sensitivity;
+        double evidence = falseNeg * prior + specificity * (1.0 - prior);
+        if (!(evidence > 1.0e-15) || !Double.isFinite(evidence)) return "";
+        double posterior = (falseNeg * prior) / evidence;
+        if (!Double.isFinite(posterior) || posterior < 0.0 || posterior > 1.0) return "";
+        return "ДЕТЕРМИНИРОВАННОЕ БАЙЕСОВСКОЕ ОБНОВЛЕНИЕ (не ответ ИИ, только для отрицательного теста):\n"
+                + "Априорная вероятность: " + pct(prior) + "\n"
+                + "Чувствительность: " + pct(sensitivity) + "\n"
+                + "Специфичность: " + pct(specificity) + "\n"
+                + "P(гипотеза | отрицательный тест): " + pct(posterior) + "\n"
+                + "Метод: теорема Байеса в приложении. Это не диагноз. Если проценты означают другое, число не применять и сказать об этом явно.";
+    }
+
+    private static boolean mentionsPositiveTest(String task) {
+        String lower = task.toLowerCase(Locale.ROOT);
+        return lower.contains("положительн") || lower.contains("positive test")
+                || lower.contains("тест положителен") || lower.contains("test is positive")
+                || lower.contains("позитивний тест") || lower.contains("тест позитивний");
+    }
+
+    private static boolean mentionsNegativeTest(String task) {
+        String lower = task.toLowerCase(Locale.ROOT);
+        return lower.contains("отрицательн") || lower.contains("negative test")
+                || lower.contains("тест отрицателен") || lower.contains("test is negative")
+                || lower.contains("негативний тест") || lower.contains("тест негативний");
     }
 
     private static boolean unit(double value) {
