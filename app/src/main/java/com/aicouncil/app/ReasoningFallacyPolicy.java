@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Conservative offline reasoning-risk detectors (v2.36+; false compromise 2.44;
+ * Conservative offline reasoning-risk detectors (v2.41+; false compromise 2.44;
  * texas sharpshooter / relative privation / nirvana in 2.45; continuum/sorites + broader UK markers in 2.47).
  * Signals are hypotheses that require context, not definitive fallacy verdicts.
  * Coordinator must rank these highest and must not average them away.
