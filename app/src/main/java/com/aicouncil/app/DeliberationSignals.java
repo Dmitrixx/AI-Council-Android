@@ -19,6 +19,7 @@ public final class DeliberationSignals {
         DecisionBriefPolicy.detect(a, b, conflicts);
         EvidenceIndependencePolicy.detect(a, b, conflicts);
         SampleEvidencePolicy.detect(a, b, conflicts);
+        ExpectedUtilityPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
@@ -58,68 +59,59 @@ public final class DeliberationSignals {
         int grade = 0;
         if (lower.contains("meta-analysis") || lower.contains("мета-анализ") || lower.contains("метааналіз")
                 || lower.contains("systematic review") || lower.contains("систематическ") || lower.contains("систематичн")) {
-            grade = Math.max(grade, 3);
-        }
-        if (lower.contains("randomized") || lower.contains("рандомиз") || lower.contains("rct")
-                || lower.contains("двойное слепое") || lower.contains("double-blind")) {
-            grade = Math.max(grade, 2);
-        }
-        if (lower.contains("когорт") || lower.contains("cohort") || lower.contains("case-control")
-                || lower.contains("controlled trial")) {
-            grade = Math.max(grade, 1);
-        }
-        if (lower.contains("анекдот") || lower.contains("anecdote") || lower.contains("один случай")
-                || lower.contains("в моей практике") || lower.contains("in my experience")
-                || lower.contains("у моїй практиці") || lower.contains("heard that")) {
-            grade = Math.min(grade, 0) - 1;
+            grade = 3;
+        } else if (lower.contains("randomized") || lower.contains("rct") || lower.contains("рандомизирован")
+                || lower.contains("рандомізован")) {
+            grade = 2;
+        } else if (lower.contains("anecdote") || lower.contains("анекдот") || lower.contains("единичный случай")
+                || lower.contains("one case") || lower.contains("один случай") || lower.contains("один випадок")) {
+            grade = 0;
+        } else {
+            grade = 1;
         }
         return grade;
     }
 
-    /** One answer frames only costs; the other only benefits. */
+    /** One frames as cost, the other as benefit / opportunity. */
     static void detectCostBenefitFraming(String a, String b, List<String> conflicts) {
-        int fa = costBenefitFrame(a), fb = costBenefitFrame(b);
-        if (fa != 0 && fb != 0 && fa != fb) {
-            conflicts.add("рамка: только издержки против только выгод (нет общего баланса)");
+        boolean aCost = costBenefitSign(a) < 0, aBen = costBenefitSign(a) > 0;
+        boolean bCost = costBenefitSign(b) < 0, bBen = costBenefitSign(b) > 0;
+        if ((aCost && bBen) || (bCost && aBen)) {
+            conflicts.add("фрейминг цены/выгоды: один акцент на затратах, другой на выгодах");
         }
     }
 
-    private static int costBenefitFrame(String text) {
+    private static int costBenefitSign(String text) {
         String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
-        int cost = count(lower, "стоимость", "затрат", "издержк", "цена", "риск", "убыт", "cost", "expense",
-                "drawback", "downside", "вартість", "витрат", "збитк");
-        int benefit = count(lower, "выгод", "польз", "преимущ", "профит", "benefit", "upside", "gain",
-                "advantage", "вигод", "переваг");
-        if (cost >= 2 && benefit == 0) return -1;
-        if (benefit >= 2 && cost == 0) return 1;
+        boolean cost = lower.contains("затрат") || lower.contains("cost") || lower.contains("цена")
+                || lower.contains("дорого") || lower.contains("expensive") || lower.contains("витрат");
+        boolean benefit = lower.contains("выгод") || lower.contains("benefit") || lower.contains("прибыл")
+                || lower.contains("дёшево") || lower.contains("cheap") || lower.contains("економія");
+        if (cost && benefit) return 0;
+        if (cost) return -1;
+        if (benefit) return 1;
         return 0;
     }
 
-    /** Must / required vs optional / discretionary. */
+    /** Obligation / must vs optional / can. */
     static void detectObligation(String a, String b, List<String> conflicts) {
         int oa = obligationSign(a), ob = obligationSign(b);
         if (oa != 0 && ob != 0 && oa != ob) {
-            conflicts.add("обязательство: обязательно / must против по желанию / optional");
+            conflicts.add("обязательность: «надо/должен» против «можно/опционально»");
         }
     }
 
     private static int obligationSign(String text) {
         String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
-        boolean must = lower.contains("обязательн") || lower.contains("необходимо") || lower.contains("должен")
-                || lower.contains("нужно обязательно") || lower.contains("must ") || lower.contains("required")
-                || lower.contains("mandatory") || lower.contains("обов'язков") || lower.contains("має бути");
-        boolean optional = lower.contains("по желанию") || lower.contains("опциональн") || lower.contains("можно не")
-                || lower.contains("не обязательно") || lower.contains("optional") || lower.contains("discretionary")
-                || lower.contains("nice to have") || lower.contains("за бажанням") || lower.contains("не обов");
+        boolean must = lower.contains("должен") || lower.contains("надо") || lower.contains("обязан")
+                || lower.contains("must") || lower.contains("have to") || lower.contains("required")
+                || lower.contains("повинен") || lower.contains("треба");
+        boolean optional = lower.contains("можно") || lower.contains("опционально") || lower.contains("не обязательно")
+                || lower.contains("optional") || lower.contains("can") || lower.contains("можна")
+                || lower.contains("не обовязково");
         if (must && optional) return 0;
         if (must) return 1;
         if (optional) return -1;
         return 0;
-    }
-
-    private static int count(String text, String... words) {
-        int c = 0;
-        for (String w : words) if (text.contains(w)) c++;
-        return c;
     }
 }
