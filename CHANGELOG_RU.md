@@ -1,3 +1,12 @@
+# 2.58.0 — Полное восстановление ReasoningFallacyPolicy и DecisionBriefPolicy
+
+- `ReasoningFallacyPolicy` восстановлен после частичного wipe: полный набор консервативных multi-marker детекторов (RU/UK/EN) — апелляция к незнанию, бандвагон, post hoc, special pleading, скользкий склон, поспешное обобщение, соломенное чучело, ad hominem, круговая аргументация, авторитет, традиция, tu quoque, ложная дихотомия, red herring, эмоции, ложная эквивалентность, no true scotsman, природа, генетическая ошибка, сдвиг бремени, moving goalposts, ложный компромисс, якорение, ошибка игрока, texas sharpshooter, relative privation, nirvana, континуум + расходящиеся рекомендации.
+- Все сигналы помечены как «возможный сигнал логического риска (требует контекста, не вердикт)». Ограничение MAX_SIGNALS = 8, идемпотентность.
+- `DecisionBriefPolicy` восстановлен из PLACEHOLDER2: sunk cost, survivorship, novelty, consequences, cherry-pick, base-rate neglect, nirvana, motivated reasoning, status-quo, zero-risk, scope neglect, anchoring, planning fallacy, availability, confirmation, opportunity cost, affirming the consequent, denying the antecedent, outcome bias, present bias, omission bias.
+- Сигналы карты решения помечены как «карта решения (возможный сигнал, требует контекста)». Ограничение и идемпотентность.
+- Оба модуля подключены в `DeliberationSignals.detectAll` и покрыты существующими smoke-тестами.
+- Gradle / APP_VERSION остаются 2.36.0 / versionCode 103 согласно CI verify.
+
 # 2.57.0 — Напоминание о базовой частоте + восстановление движка совета
 
 - Восстановлен полный `CouncilExecutionEngine` (в main был placeholder).
