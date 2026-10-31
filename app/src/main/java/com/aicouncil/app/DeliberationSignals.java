@@ -24,6 +24,7 @@ public final class DeliberationSignals {
         PremortemPolicy.detect(a, b, conflicts);
         OutsideViewPolicy.detect(a, b, conflicts);
         SensitivityAnalysisPolicy.detect(a, b, conflicts);
+        TailRiskPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
