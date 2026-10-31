@@ -1,7 +1,7 @@
-# AI Council 2.61.0+ (intelligence continuously improved)
+# AI Council 2.62.0+ (intelligence continuously improved)
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
-Modern shell: ink surfaces, mint accent, floating navigation and edge-to-edge content on Android 11+. Version 2.61.0+ adds conservative local reasoning-risk, decision-map, expected-utility, calibration and pre-mortem / second-order effects signals on top of the four-slot council, bounded material import and deterministic calculator. The signals are hypotheses requiring context, not automatic fallacy, EV, calibration or premortem verdicts.
+Modern shell: ink surfaces, mint accent, floating navigation and edge-to-edge content on Android 11+. Version 2.62.0+ adds conservative local reasoning-risk, decision-map, expected-utility, calibration, pre-mortem / second-order effects and outside-view / reference-class signals on top of the four-slot council, bounded material import and deterministic calculator. The signals are hypotheses requiring context, not automatic fallacy, EV, calibration, premortem or outside-view verdicts.
 
 > Primary documentation is in Russian: [README_RU.md](README_RU.md). This English file is a high-level overview for international users.
