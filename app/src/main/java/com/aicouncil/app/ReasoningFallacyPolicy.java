@@ -5,7 +5,8 @@ import java.util.Locale;
 
 /**
  * Conservative offline reasoning-risk detectors (v2.36+; false compromise 2.44;
- * texas sharpshooter / relative privation / nirvana in 2.45; continuum/sorites + broader UK markers in 2.47).
+ * texas sharpshooter / relative privation / nirvana in 2.45; continuum/sorites + broader UK markers in 2.47;
+ * composition / division / appeal to fear in 2.59).
  * Signals are hypotheses that require context, not definitive fallacy verdicts.
  * Coordinator must rank these highest and must not average them away.
  */
@@ -76,6 +77,12 @@ public final class ReasoningFallacyPolicy {
                 "nirvana fallacy: неидеальный вариант отвергается вместо сравнения с доступными");
         add(conflicts, initial, continuum(a) || continuum(b),
                 "континуум / sorites: отсутствие резкой границы объявлено отсутствием различия");
+        add(conflicts, initial, composition(a) || composition(b),
+                "composition: свойства частей автоматически переносятся на целое без обоснования");
+        add(conflicts, initial, division(a) || division(b),
+                "division: свойства целого автоматически переносятся на части без обоснования");
+        add(conflicts, initial, appealToFear(a) || appealToFear(b),
+                "апелляция к страху: негативный эмоциональный сценарий подменяет проверку вероятности и альтернатив");
 
         // Cross-answer: opposing recommendations must not be averaged
         if (opposingRecommendations(a, b)) {
@@ -295,6 +302,24 @@ public final class ReasoningFallacyPolicy {
                 new String[]{"нет чёткой границы", "no clear boundary", "немає чіткої межі"},
                 new String[]{"нет различия", "no difference", "можно не различать",
                         "немає різниці"});
+    }
+
+    private static boolean composition(String t) {
+        return multi(t,
+                new String[]{"каждая часть", "each part", "кожна частина", "каждый элемент"},
+                new String[]{"целое тоже", "the whole too", "ціле теж", "поэтому целое", "therefore the whole"});
+    }
+
+    private static boolean division(String t) {
+        return multi(t,
+                new String[]{"целое имеет", "the whole has", "ціле має", "система имеет"},
+                new String[]{"каждая часть тоже", "each part too", "кожна частина теж", "поэтому части", "therefore parts"});
+    }
+
+    private static boolean appealToFear(String t) {
+        return multi(t,
+                new String[]{"будет ужасно", "it will be terrible", "буде жахливо", "страшно подумать", "fear that"},
+                new String[]{"поэтому нельзя", "therefore we must not", "тому не можна", "отвергнуть", "reject"});
     }
 
     private static boolean opposingRecommendations(String a, String b) {
