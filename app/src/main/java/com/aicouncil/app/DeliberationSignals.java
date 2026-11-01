@@ -28,6 +28,8 @@ public final class DeliberationSignals {
         OpportunityCostPolicy.detect(a, b, conflicts);
         GoodhartPolicy.detect(a, b, conflicts);
         SunkCostPolicy.detect(a, b, conflicts);
+        ConfirmationBiasPolicy.detect(a, b, conflicts);
+        CausalInferencePolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
