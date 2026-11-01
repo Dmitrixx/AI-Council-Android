@@ -26,6 +26,7 @@ public final class DeliberationSignals {
         SensitivityAnalysisPolicy.detect(a, b, conflicts);
         TailRiskPolicy.detect(a, b, conflicts);
         OpportunityCostPolicy.detect(a, b, conflicts);
+        GoodhartPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
