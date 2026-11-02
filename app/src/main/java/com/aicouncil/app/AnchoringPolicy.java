@@ -66,14 +66,23 @@ public final class AnchoringPolicy {
     }
 
     private static boolean bothShareAnchor(String a, String b) {
+        // Agreement on an ordinary result is not evidence of anchoring.
+        // Require an explicit reference to an initial/arbitrary anchor before comparing values.
+        String combined = a + " " + b;
+        boolean explicitAnchor = has(combined, "якор", "anchor", "начальное значение",
+                "начальная оценка", "первое названное число", "initial value",
+                "starting point", "first number");
+        if (!explicitAnchor || has(combined, "независимо", "разные методы", "independent",
+                "base rate", "базовая частота", "reference class")) return false;
         Matcher ma = NUMBER.matcher(a);
         Matcher mb = NUMBER.matcher(b);
         if (!ma.find() || !mb.find()) return false;
         try {
             double na = Double.parseDouble(ma.group(1).replace(',', '.'));
             double nb = Double.parseDouble(mb.group(1).replace(',', '.'));
-            return Math.abs(na - nb) / Math.max(na, nb) < 0.15 && !has(a + b, "независимо", "разные методы", "independent");
-        } catch (Exception e) {
+            double denominator = Math.max(Math.abs(na), Math.abs(nb));
+            return denominator > 0 && Math.abs(na - nb) / denominator < 0.15;
+        } catch (NumberFormatException e) {
             return false;
         }
     }
