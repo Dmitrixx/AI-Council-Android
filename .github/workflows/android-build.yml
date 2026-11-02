@@ -381,10 +381,4 @@ jobs:
           script: |
             set -eu
             cd "$GITHUB_WORKSPACE/${{ steps.source.outputs.project_dir }}"
-            if [[ -f ./gradlew ]]; then
-              chmod +x ./gradlew
-              ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
-            else
-              echo "Gradle wrapper absent; using the provisioned Gradle installation."
-              gradle --no-daemon --stacktrace connectedDebugAndroidTest
-            fi
+            if [ -f ./gradlew ]; then chmod +x ./gradlew && ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest; else echo "Gradle wrapper absent; using the provisioned Gradle installation." && gradle --no-daemon --stacktrace connectedDebugAndroidTest; fi
