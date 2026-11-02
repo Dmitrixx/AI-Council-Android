@@ -34,6 +34,9 @@ public final class DeliberationSignals {
         ModelCorrelationPolicy.detect(a, b, conflicts);
         AnchoringPolicy.detect(a, b, conflicts);
         StatusQuoPolicy.detect(a, b, conflicts);
+        AvailabilityPolicy.detect(a, b, conflicts);
+        RepresentativenessPolicy.detect(a, b, conflicts);
+        PlanningFallacyPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
