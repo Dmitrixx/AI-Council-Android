@@ -1,7 +1,7 @@
-# AI Council 2.68.0+ (intelligence continuously improved)
+# AI Council 2.36.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
-Modern shell: ink surfaces, mint accent, floating navigation and edge-to-edge content on Android 11+. Version 2.68.0+ adds conservative local tail-risk, sensitivity-analysis, outside-view, reasoning-risk, decision-map, expected-utility, calibration, pre-mortem / second-order effects, outside-view / reference-class, opportunity-cost, Goodhart, sunk-cost, confirmation-bias and causal-inference signals on top of the four-slot council, bounded material import and deterministic calculator. The signals are hypotheses requiring context, not automatic fallacy, EV, calibration, premortem, outside-view, sensitivity or tail-risk verdicts.
+The installed version stays `2.36.0` (versionCode 103). On top of the four-slot council, the local synthesis protocol classifies a task as a decision, forecast, fact check, design, explanation, or general review and tells the experts how to answer. The coordinator must not raise confidence just because the wording agrees, and must not average incompatible claims. Decision questions end with DO / DON'T / CHECK FIRST. Logical-risk, calibration, pre-mortem, outside-view, sensitivity, tail-risk, opportunity-cost, Goodhart, sunk-cost, confirmation-bias and causal signals remain hypotheses that need context, not automatic verdicts.
 
-> Primary documentation is in Russian: [README_RU.md](README_RU.md). This English file is a high-level overview for international users.
+> Primary documentation is in Russian: [README_RU.md](README_RU.md).

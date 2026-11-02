@@ -38,6 +38,20 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ForecastCoherencePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/BayesianUpdatePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DecisionArithmeticPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/LikelihoodRatioPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/BaseRateReminderPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/SynthesisProtocol.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ExpectedUtilityPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/CalibrationPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/PremortemPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/OutsideViewPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/SensitivityAnalysisPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/TailRiskPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/OpportunityCostPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/GoodhartPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/SunkCostPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ConfirmationBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/CausalInferencePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertRolePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/TruncatedAnswerPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/UiThemePolicy.java" \
@@ -96,6 +110,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.SampleEvidencePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ForecastCoherencePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.BayesianUpdatePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.DecisionArithmeticPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.SynthesisProtocolSmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest

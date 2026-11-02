@@ -404,6 +404,7 @@ check('PromptPrivacyPolicy переиспользует общий SecretRedacto
 check('Проверка учитывает сохранённые ключи провайдеров Brave и Tavily', 'collectConfiguredSecretsForPrivacyScan()' in src and 'braveSearchKey' in src and 'tavilySearchKey' in src and 'PromptPrivacyPolicy.redact(original, knownSecrets)' in src)
 check('Автономный smoke test privacy guard добавлен в runner', 'PromptPrivacyPolicy.java' in runner and 'PromptPrivacyPolicySmokeTest' in runner and PRIVACY_TEST.exists())
 check('Версия приложения синхронизирована на 2.36.0', "versionName '2.36.0'" in gradle and 'APP_VERSION = "2.36.0"' in src)
+check('Протокол синтеза классифицирует задачу и не даёт усреднять несовместимые тезисы', (ROOT/'app/src/main/java/com/aicouncil/app/SynthesisProtocol.java').exists() and 'SynthesisProtocol.expertBlock(request.task)' in engine and 'SynthesisProtocol.coordinatorBlock(r.task, localMap)' in engine and 'Несовместимые тезисы не усредняй' in (ROOT/'app/src/main/java/com/aicouncil/app/SynthesisProtocol.java').read_text(encoding='utf-8') and 'SynthesisProtocol.java' in runner and 'SynthesisProtocolSmokeTest' in runner)
 failed=[]
 for name,ok in checks:
     print(('PASS' if ok else 'FAIL')+': '+name)

@@ -77,7 +77,9 @@ public final class SunkCostPolicy {
     private static boolean bothNoSunkCostCheck(String a, String b) {
         boolean aNone = !has(a, "sunk cost", "уже вложен", "уже потрачен", "past investment", "маржинальн", "будущие затраты");
         boolean bNone = !has(b, "sunk cost", "уже вложен", "уже потрачен", "past investment", "маржинальн", "будущие затраты");
-        boolean relevant = has(a + b, "продолжать", "continue", "инвестиц", "проект", "курс", "не бросать", "довести");
-        return aNone && bNone && relevant;
+        String both = a + "\n" + b;
+        boolean continueTalk = has(both, "продолжать", "continue", "не бросать", "довести", "не останавливаться");
+        boolean investmentTalk = has(both, "влож", "потрат", "инвестиц", "spent", "investment", "already invested");
+        return aNone && bNone && continueTalk && investmentTalk;
     }
 }
