@@ -279,8 +279,24 @@ public final class ReasoningFallacyPolicy {
     }
 
     private static boolean anchoring(String t) {
-        return has(t, "первая цифра", "first number", "начальная оценка", "первое названное число", "стало якорем")
-                && has(t, "поэтому около", "therefore around", "останемся рядом", "около него");
+        boolean cue = has(t, "первая цифра", "first number", "начальная оценка", "первое названное число", "стало якорем");
+        boolean stick = affirmed(t, "поэтому около") || affirmed(t, "therefore around")
+                || affirmed(t, "останемся рядом") || affirmed(t, "около него");
+        return cue && stick;
+    }
+
+    /** Phrase match that ignores a hit immediately negated by «не » / «not ». */
+    private static boolean affirmed(String text, String phrase) {
+        int from = 0;
+        while (from < text.length()) {
+            int i = text.indexOf(phrase, from);
+            if (i < 0) return false;
+            int start = Math.max(0, i - 4);
+            String prefix = text.substring(start, i);
+            if (!prefix.endsWith("не ") && !prefix.endsWith("not ")) return true;
+            from = i + Math.max(1, phrase.length());
+        }
+        return false;
     }
 
     private static boolean gambler(String t) {

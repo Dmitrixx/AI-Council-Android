@@ -61,16 +61,24 @@ public final class AnchoringPolicy {
     }
 
     private static boolean bothShareAnchor(String a, String b) {
+        if (!hasAnchorCue(a) || !hasAnchorCue(b)) return false;
         Matcher ma = NUMBER.matcher(a);
         Matcher mb = NUMBER.matcher(b);
         if (!ma.find() || !mb.find()) return false;
         try {
             double na = Double.parseDouble(ma.group(1).replace(',', '.'));
             double nb = Double.parseDouble(mb.group(1).replace(',', '.'));
-            return Math.abs(na - nb) / Math.max(na, nb) < 0.15 && !has(a + b, "независимо", "разные методы", "independent");
+            if (na == 0 || nb == 0) return false;
+            return Math.abs(na - nb) / Math.max(na, nb) < 0.15
+                    && !has(a + b, "независимо", "разные методы", "independent");
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /** Same number alone is agreement, not an anchor. Both sides must name the anchor. */
+    private static boolean hasAnchorCue(String t) {
+        return has(t, "якорь", "anchor", "начальн", "взял за основу", "первое число", "первое названное");
     }
 
     private static boolean missingAnchorSensitivity(String t) {
