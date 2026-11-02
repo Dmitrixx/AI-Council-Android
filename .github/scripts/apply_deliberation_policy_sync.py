@@ -22,12 +22,20 @@ POLICIES = (
     "AmbiguityAversionPolicy.java",
     "DeliberationSignals.java",
 )
+def copy_unless_same(source: Path, target: Path) -> None:
+    # The repository may itself be the Gradle project (project_dir == ".").
+    # In that case source and target resolve to the same path.
+    if source.resolve() == target.resolve():
+        return
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, target)
+
+
 for name in POLICIES:
     source = source_app / name
     if not source.is_file():
         raise SystemExit("Missing repository policy source: " + str(source))
-    target_app.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, target_app / name)
+    copy_unless_same(source, target_app / name)
 
 relative_files = (
     "tools/desktop_smoke/run.sh",
@@ -40,7 +48,6 @@ for relative in relative_files:
     if not source.is_file():
         raise SystemExit("Missing smoke-test source: " + str(source))
     target = project / relative
-    target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, target)
+    copy_unless_same(source, target)
 
 print("Synced %d deliberation policy sources and current smoke tests." % len(POLICIES))
