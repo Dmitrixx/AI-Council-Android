@@ -80,7 +80,7 @@ public final class AnchoringPolicy {
 
     private static boolean missingAnchorSensitivity(String t) {
         boolean estimate = has(t, "оценка", "estimate", "вероятность", "шанс", "прогноз");
-        boolean sensitivity = has(t, "если бы было", "при другом якоре", "чувствительность к", "anchor sensitivity");
+        boolean sensitivity = has(t, "если бы было", "при другом якоре", "чувствительность к", "чувствительности к", "анализ чувствительности", "anchor sensitivity", "sensitivity analysis");
         return estimate && !sensitivity && NUMBER.matcher(t).find();
     }
 }
