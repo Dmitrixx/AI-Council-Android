@@ -278,10 +278,12 @@ boolean mid = middleGround(a) || middleGround(b);
 
     /** Truth-is-in-the-middle language, unless the text explicitly refuses to average a crux. */
     private static boolean middleGround(String t) {
-        if (has(t, "не усредн", "do not average", "не смешивать развил")) return false;
-        return has(t, "истина посередине", "золотая середина", "усредним позиции",
-                "the truth is in the middle", "split the difference", "meet in the middle",
-                "оба понемногу правы", "just average the positions");
+        if (has(t, "не усредн", "do not average", "не смешивать развил", "середина скрыла",
+                "скрыла бы конфликт", "нужно выбрать сторону", "refusing to average")) return false;
+        return has(t, "истина посередине", "золотая середина", "усредним позиции", "усредним",
+                "усреднить", "the truth is in the middle", "split the difference", "meet in the middle",
+                "compromise is the answer", "middle ground is the answer", "оба понемногу правы",
+                "just average the positions");
     }
 
     /** Narrow action poles so a compromise is only "false" when the two answers really oppose. */
