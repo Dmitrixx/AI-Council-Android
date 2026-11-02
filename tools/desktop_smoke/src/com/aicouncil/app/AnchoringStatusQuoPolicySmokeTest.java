@@ -21,6 +21,10 @@ public final class AnchoringStatusQuoPolicySmokeTest {
                 "Оценка около 100 с учётом базовой частоты и чувствительности к якорю.", "", calibrated);
         require(!contains(calibrated, "якорение"), "base-rate adjusted estimate should not trigger anchoring");
 
+        List<String> ordinaryEstimate = new ArrayList<String>();
+        AnchoringPolicy.detect("Оценка составляет 100 единиц по итогам расчёта и измерений.", "", ordinaryEstimate);
+        require(!contains(ordinaryEstimate, "якорение"), "ordinary measured estimate should not be treated as an anchor");
+
         List<String> justified = new ArrayList<String>();
         StatusQuoPolicy.detect(
                 "Оставить как есть после сравнения: затраты на переключение и выгода от изменения оценены.",
