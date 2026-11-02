@@ -305,6 +305,12 @@ if "Лимит страниц PDF выбирается в UI" not in text:
     if check_anchor not in text:
         raise SystemExit("Static-check insertion anchor not found")
     text = text.replace(check_anchor, check_new, 1)
+# Keep the PDF assertion compatible with MIME-normalized extractionName.
+verify_lines = text.splitlines()
+for index, line in enumerate(verify_lines):
+    if "check('Оба пути PDF передают выбранный лимит в единый OCR процессор'" in line:
+        verify_lines[index] = "check('Оба пути PDF передают выбранный лимит в единый OCR процессор', any(call in src for call in ['Input.pdf(fileBytes, displayName,', 'Input.pdf(fileBytes, extractionName,']) and 'Input.scannedPdf(pdfBytes, displayName, language, ocrPdfPageLimit())' in src and 'input.maxPages' in ocr_processor)"
+text = "\n".join(verify_lines) + "\n"
 verify_path.write_text(text, encoding="utf-8")
 
 

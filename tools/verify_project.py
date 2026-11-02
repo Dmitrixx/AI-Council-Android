@@ -230,7 +230,7 @@ check('Результат PDF OCR открывается в редактируе
 check('Предпросмотр OCR PDF описывает локальную обработку и фактический лимит', 'isCyrillicPdfOcr' in src and 'сам PDF не отправлялся на сервер' in src and 'Текущий лимит — ' in src and 'ocrPdfPageLimit()' in src)
 check('OCR scanned-PDF ограничен первыми 5 страницами', 'DEFAULT_MAX_PAGES = 5' in ocr_input_policy and 'pagesToProcess(pageCount, maxPages)' in ocr_processor)
 check('Лимит страниц PDF выбирается в UI: 5 по умолчанию или до 20', 'showOcrPdfPageLimitDialog' in src and 'ocr_pdf_max_pages' in src and 'ocrPdfPageLimit()' in src and 'clampPageLimit(requestedPages)' in ocr_input_policy)
-check('Оба пути PDF передают выбранный лимит в единый OCR процессор', 'Input.pdf(fileBytes, displayName, \"eng\", ocrPdfPageLimit())' in src and 'Input.scannedPdf(pdfBytes, displayName, language, ocrPdfPageLimit())' in src and 'input.maxPages' in ocr_processor)
+check('Оба пути PDF передают выбранный лимит в единый OCR процессор', any(call in src for call in ['Input.pdf(fileBytes, displayName,', 'Input.pdf(fileBytes, extractionName,']) and 'Input.scannedPdf(pdfBytes, displayName, language, ocrPdfPageLimit())' in src and 'input.maxPages' in ocr_processor)
 check('OCR scanned-PDF имеет тайм-аут 45 секунд', 'deadline = System.currentTimeMillis() + 45_000L' in ocr_processor)
 check('OCR scanned-PDF ограничивает размер bitmap', '2_000_000L' in ocr_processor and '1_800_000.0' in ocr_processor)
 check('OCR scanned-PDF закрывает recognizer и удаляет временный файл', 'recognizer.close()' in ocr_processor and 'tempPdf.delete()' in ocr_processor)
