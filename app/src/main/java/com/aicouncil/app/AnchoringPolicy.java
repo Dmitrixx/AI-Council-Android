@@ -53,8 +53,13 @@ public final class AnchoringPolicy {
 
     private static boolean anchoredWithoutAdjustment(String t) {
         boolean hasNumber = NUMBER.matcher(t).find();
-        boolean adjustment = has(t, "base rate", "базовая частота", "reference class", "независимо от",
-                "скорректировал", "adjusted from", "не опираюсь на", "якорь не влияет");
+        boolean baseRateMentioned = has(t, "base rate", "базовая частота", "базовой частоты", "базовую частоту");
+        boolean baseRateDenied = has(t, "без базовой частоты", "без учёта базовой частоты",
+                "без учета базовой частоты", "не учитывает базовую частоту", "without base rate",
+                "base rate was not considered");
+        boolean adjustment = (baseRateMentioned && !baseRateDenied)
+                || has(t, "reference class", "независимо от", "скорректировал", "adjusted from",
+                "не опираюсь на", "якорь не влияет", "учитывая базовую частоту");
         boolean arbitrary = has(t, "примерно", "около", "порядка", "guess", "примерно столько",
                 "взял за основу", "начальное значение");
         return hasNumber && arbitrary && !adjustment;
