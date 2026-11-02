@@ -13,12 +13,14 @@ public final class SynthesisProtocolSmokeTest {
         check(decision.contains("Режим разбора: решение"), "launch question is a decision");
         check(decision.contains("оставить как есть"), "decision lists the status quo");
         check(decision.contains("не усредняй"), "experts are told not to average");
+        check(decision.contains("один корпус"), "agreement of two models is one corpus");
         check(SynthesisProtocol.classify(decisionTask) == SynthesisProtocol.Kind.DECISION, "classify decision");
         String decisionCoord = SynthesisProtocol.coordinatorBlock(decisionTask, "есть конфликт");
         check(decisionCoord.contains("ДЕЛАТЬ") && decisionCoord.contains("СНАЧАЛА ПРОВЕРИТЬ"), "decision ends with an action label");
         check(decisionCoord.contains("Не сглаживай"), "a mapped conflict is not averaged");
         String emptyMap = SynthesisProtocol.coordinatorBlock(decisionTask, "");
         check(emptyMap.contains("Локальная карта пуста"), "agreement alone is not confidence");
+        check(emptyMap.contains("совпадения формулировок"), "coordinator does not treat model wording as a second sample");
 
         String forecastTask = "Дай прогноз: какова вероятность успеха этого запуска через год?";
         check(SynthesisProtocol.classify(forecastTask) == SynthesisProtocol.Kind.FORECAST, "classify forecast");

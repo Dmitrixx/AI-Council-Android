@@ -31,6 +31,7 @@ public final class DeliberationSignals {
         ConfirmationBiasPolicy.detect(a, b, conflicts);
         CausalInferencePolicy.detect(a, b, conflicts);
         ErgodicityPolicy.detect(a, b, conflicts);
+        ModelCorrelationPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */

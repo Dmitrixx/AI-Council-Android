@@ -53,6 +53,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ConfirmationBiasPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CausalInferencePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ErgodicityPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ModelCorrelationPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertRolePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/TruncatedAnswerPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/UiThemePolicy.java" \
@@ -113,6 +114,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.BayesianUpdatePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.DecisionArithmeticPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.SynthesisProtocolSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ErgodicityPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.ModelCorrelationPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest
