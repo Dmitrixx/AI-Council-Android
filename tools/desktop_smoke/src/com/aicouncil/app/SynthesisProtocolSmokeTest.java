@@ -45,6 +45,14 @@ public final class SynthesisProtocolSmokeTest {
         check(general.length() >= 40, "fixture is long enough");
         check(SynthesisProtocol.classify(general) == SynthesisProtocol.Kind.GENERAL, "unmarked task stays general");
         check(SynthesisProtocol.expertBlock(general).contains("дешёвый следующий шаг"), "general mode still asks for a test");
+        check(!decision.contains("Неэргодичный"), "an ordinary launch is not treated as a ruin bet");
+
+        String ruinTask = "Стоит ли вложить весь капитал с кредитным плечом, если ожидаемая доходность в среднем плюс?";
+        check(ruinTask.length() >= 40, "ruin fixture is long enough");
+        String ruin = SynthesisProtocol.expertBlock(ruinTask);
+        check(ruin.contains("Неэргодичный риск"), "levered all-in task warns that the average is not the path");
+        check(ruin.contains("долю банка"), "levered task asks for a bankroll fraction");
+        check(SynthesisProtocol.coordinatorBlock(ruinTask, "").contains("all-in"), "coordinator refuses to average a ruin bet into all-in");
 
         System.out.println("SynthesisProtocolSmokeTest: " + passed + "/" + passed + " passed");
     }

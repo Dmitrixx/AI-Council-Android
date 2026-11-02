@@ -47,6 +47,11 @@ public final class SynthesisProtocol {
                 sb.append("Назови, что изменило бы вывод, и один дешёвый следующий шаг проверки.\n");
                 break;
         }
+        if (ruinShaped(task)) {
+            sb.append("Неэргодичный риск: положительное среднее по параллельным исходам не равно пути одного капитала. ");
+            sb.append("Если один проигрыш обнуляет ставку, назови долю банка или прямо напиши, что предел позиции не задан. ");
+            sb.append("All-in не следует из положительного среднего.\n");
+        }
         sb.append("Несовместимые тезисы не усредняй: выбери сторону, оставь развилку открытой или предложи тест.");
         return sb.toString();
     }
@@ -73,6 +78,9 @@ public final class SynthesisProtocol {
             sb.append("Итоговая вероятность — диапазон. Точечные шансы экспертов не заменяй средним, пока не сверены класс случаев, выигрыш и потеря.\n");
         } else {
             sb.append("В конце: что изменило бы вывод, и самый дешёвый следующий шаг проверки.\n");
+        }
+        if (ruinShaped(task)) {
+            sb.append("Не заменяй путь капитала средним ожиданием и не усредняй экспертов в рекомендацию all-in.\n");
         }
         sb.append("Меньшинство с более сильной количественной опорой важнее большинства с общей формулировкой.");
         return sb.toString();
@@ -107,6 +115,19 @@ public final class SynthesisProtocol {
             if (text.contains(cue)) hits++;
         }
         return hits;
+    }
+
+    /** Levered, all-in or ruin-shaped questions. Ordinary profit "margin" does not qualify. */
+    private static boolean ruinShaped(String task) {
+        String text = task == null ? "" : task.toLowerCase(Locale.ROOT);
+        return text.contains("кредитное плечо") || text.contains("кредитным плечом")
+                || text.contains("с плечом") || text.contains("leverage")
+                || text.contains("all-in") || text.contains("весь капитал")
+                || text.contains("все деньги") || text.contains("всё или ничего")
+                || text.contains("все или ничего") || text.contains("обнулить капитал")
+                || text.contains("разорит") || text.contains("маржин-колл")
+                || text.contains("margin call") || text.contains("кредитне плече")
+                || text.contains("увесь капітал");
     }
 
     private static String label(Kind kind) {
