@@ -18,6 +18,7 @@ POLICIES = (
     "AvailabilityPolicy.java",
     "RepresentativenessPolicy.java",
     "PlanningFallacyPolicy.java",
+    "MaterialImportPolicy.java",
     "HindsightBiasPolicy.java",
     "AmbiguityAversionPolicy.java",
     "DeliberationSignals.java",
@@ -42,6 +43,7 @@ relative_files = (
     "tools/desktop_smoke/src/com/aicouncil/app/AnchoringStatusQuoPolicySmokeTest.java",
     "tools/desktop_smoke/src/com/aicouncil/app/RecentHeuristicsSmokeTest.java",
     "tools/desktop_smoke/src/com/aicouncil/app/HindsightAmbiguitySmokeTest.java",
+    "tools/desktop_smoke/src/com/aicouncil/app/MaterialImportPolicySmokeTest.java",
 )
 for relative in relative_files:
     source = repository / relative

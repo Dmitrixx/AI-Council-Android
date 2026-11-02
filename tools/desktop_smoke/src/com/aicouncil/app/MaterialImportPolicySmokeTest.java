@@ -7,6 +7,11 @@ public final class MaterialImportPolicySmokeTest {
         check(MaterialImportPolicy.isImageFile("photo.jpg", "image/jpeg"), "jpeg photo accepted");
         check(MaterialImportPolicy.isImageFile("scan.PNG", null), "image extension detection is case-insensitive");
         check(!MaterialImportPolicy.isImageFile("program.exe", "application/octet-stream"), "executable is not a photo");
+        check(MaterialImportPolicy.normalizeFileNameForMime("report", "application/vnd.openxmlformats-officedocument.wordprocessingml.document").equals("report.docx"), "extensionless DOCX inferred from MIME");
+        check(MaterialImportPolicy.normalizeFileNameForMime("sheet.bin", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").equals("sheet.xlsx"), "generic XLSX extension replaced from MIME");
+        check(MaterialImportPolicy.normalizeFileNameForMime("document.txt", "application/pdf").equals("document.pdf"), "fallback text filename corrected by PDF MIME");
+        check(MaterialImportPolicy.normalizeFileNameForMime("notes", "text/plain; charset=UTF-8").equals("notes.txt"), "MIME parameters ignored when inferring a text extension");
+        check(!MaterialImportPolicy.isTextMaterial("document.txt", "application/pdf"), "PDF MIME must take precedence over a misleading text extension");
         check(MaterialImportPolicy.isSupportedMaterial("report.pdf", "application/pdf"), "PDF supported");
         check(MaterialImportPolicy.isSupportedMaterial("sheet.xlsx", null), "XLSX supported by extension");
         check(MaterialImportPolicy.isSupportedMaterial("notes.md", "application/octet-stream"), "markdown supported by extension");

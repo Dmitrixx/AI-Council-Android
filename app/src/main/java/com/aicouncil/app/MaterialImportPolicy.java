@@ -26,6 +26,50 @@ public final class MaterialImportPolicy {
         return result.isEmpty() ? "файл" : result;
     }
 
+    /**
+     * Normalize a display name using the provider's MIME type before format-specific extraction.
+     * Some document providers omit file extensions or return a generic fallback such as document.txt.
+     */
+    public static String normalizeFileNameForMime(String name, String mimeType) {
+        String safe = safeDisplayName(name);
+        String inferredExtension = extensionForMime(normalizeMime(mimeType));
+        if (inferredExtension.isEmpty()) return safe;
+        if (extensionOf(safe).equals(inferredExtension)) return safe;
+
+        int dot = safe.lastIndexOf('.');
+        String base = dot > 0 ? safe.substring(0, dot) : safe;
+        base = base.trim();
+        if (base.isEmpty()) base = "document";
+        return base + "." + inferredExtension;
+    }
+
+    private static String extensionForMime(String mime) {
+        switch (mime) {
+            case "application/pdf": return "pdf";
+            case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": return "docx";
+            case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": return "xlsx";
+            case "text/plain": return "txt";
+            case "text/csv": return "csv";
+            case "text/tab-separated-values": return "tsv";
+            case "text/markdown": return "md";
+            case "application/json": return "json";
+            case "application/xml":
+            case "text/xml": return "xml";
+            case "application/javascript": return "js";
+            case "application/x-yaml":
+            case "application/yaml": return "yml";
+            case "application/toml": return "toml";
+            default:
+                if (mime.endsWith("+json")) return "json";
+                if (mime.endsWith("+xml")) return "xml";
+                return "";
+        }
+    }
+
+    public static String normalizeMimeType(String mimeType) {
+        return normalizeMime(mimeType);
+    }
+
     public static boolean isImageFile(String name, String mimeType) {
         String ext = extensionOf(name);
         boolean supportedExtension = ext.equals("jpg") || ext.equals("jpeg") || ext.equals("png")
@@ -66,9 +110,12 @@ public final class MaterialImportPolicy {
     }
 
     public static boolean isTextMaterial(String name, String mimeType) {
-        String ext = extensionOf(name);
-        if (isTextExtension(ext)) return true;
         String mime = normalizeMime(mimeType);
+        if (mime.equals("application/pdf")
+                || mime.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                || mime.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) return false;
+        String ext = extensionOf(normalizeFileNameForMime(name, mime));
+        if (isTextExtension(ext)) return true;
         return mime.startsWith("text/") || mime.equals("application/json") || mime.endsWith("+json")
                 || mime.equals("application/xml") || mime.equals("text/xml") || mime.endsWith("+xml")
                 || mime.equals("application/javascript") || mime.equals("application/x-yaml")
@@ -101,6 +148,9 @@ public final class MaterialImportPolicy {
     }
 
     private static String normalizeMime(String mimeType) {
-        return mimeType == null ? "" : mimeType.toLowerCase(Locale.ROOT).trim();
+        if (mimeType == null) return "";
+        String normalized = mimeType.toLowerCase(Locale.ROOT).trim();
+        int parameter = normalized.indexOf(';');
+        return parameter < 0 ? normalized : normalized.substring(0, parameter).trim();
     }
 }
