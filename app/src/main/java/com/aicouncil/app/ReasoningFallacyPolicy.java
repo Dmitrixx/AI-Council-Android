@@ -301,9 +301,26 @@ boolean mid = middleGround(a) || middleGround(b);
     }
 
     private static boolean anchoring(String t) {
-        return has(t, "первое названное", "начальное число", "якорем", "anchor",
-                "останемся рядом", "around that figure", "близко к этому числу")
-                && !has(t, "независим", "independent estimate", "отдельно оценил");
+        boolean cue = has(t, "первая цифра", "first number", "начальная оценка",
+                "первое названное число", "начальное число", "якорем", "стало якорем");
+        boolean stick = affirmed(t, "поэтому около") || affirmed(t, "therefore around")
+                || affirmed(t, "останемся рядом") || affirmed(t, "около него")
+                || affirmed(t, "around that figure") || affirmed(t, "близко к этому числу");
+        return cue && stick;
+    }
+
+    /** Phrase match that ignores a hit immediately negated by «не » / «not ». */
+    private static boolean affirmed(String text, String phrase) {
+        int from = 0;
+        while (from < text.length()) {
+            int i = text.indexOf(phrase, from);
+            if (i < 0) return false;
+            int start = Math.max(0, i - 4);
+            String prefix = text.substring(start, i);
+            if (!prefix.endsWith("не ") && !prefix.endsWith("not ")) return true;
+            from = i + Math.max(1, phrase.length());
+        }
+        return false;
     }
 
     private static boolean gambler(String t) {

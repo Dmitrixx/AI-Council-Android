@@ -300,7 +300,7 @@ for old, new in replacements:
 check_anchor = """check('OCR scanned-PDF ограничен первыми 5 страницами', 'DEFAULT_MAX_PAGES = 5' in ocr_input_policy and 'pagesToProcess(pageCount, maxPages)' in ocr_processor)"""
 check_new = check_anchor + """
 check('Лимит страниц PDF выбирается в UI: 5 по умолчанию или до 20', 'showOcrPdfPageLimitDialog' in src and 'ocr_pdf_max_pages' in src and 'ocrPdfPageLimit()' in src and 'clampPageLimit(requestedPages)' in ocr_input_policy)
-check('Оба пути PDF передают выбранный лимит в единый OCR процессор', any(call in src for call in ['Input.pdf(fileBytes, displayName, \\"eng\\", ocrPdfPageLimit())', 'Input.pdf(fileBytes, extractionName, \\"eng\\", ocrPdfPageLimit())']) and 'Input.scannedPdf(pdfBytes, displayName, language, ocrPdfPageLimit())' in src and 'input.maxPages' in ocr_processor)"""
+check('Оба пути PDF передают выбранный лимит в единый OCR процессор', any(call in src for call in ['Input.pdf(fileBytes, displayName,', 'Input.pdf(fileBytes, extractionName,']) and 'Input.scannedPdf(pdfBytes, displayName, language, ocrPdfPageLimit())' in src and 'input.maxPages' in ocr_processor)"""
 if "Лимит страниц PDF выбирается в UI" not in text:
     if check_anchor not in text:
         raise SystemExit("Static-check insertion anchor not found")
