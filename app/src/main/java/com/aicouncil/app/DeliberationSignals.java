@@ -37,6 +37,7 @@ public final class DeliberationSignals {
         AvailabilityPolicy.detect(a, b, conflicts);
         RepresentativenessPolicy.detect(a, b, conflicts);
         PlanningFallacyPolicy.detect(a, b, conflicts);
+        HindsightBiasPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
