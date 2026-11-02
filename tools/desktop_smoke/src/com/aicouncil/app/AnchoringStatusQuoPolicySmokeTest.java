@@ -16,6 +16,16 @@ public final class AnchoringStatusQuoPolicySmokeTest {
         require(contains(integrated, "якорение"), "DeliberationSignals must expose numeric anchoring");
         require(contains(integrated, "status quo"), "DeliberationSignals must expose status quo bias");
 
+        List<String> matchingResults = new ArrayList<String>();
+        AnchoringPolicy.detect("Бюджет проекта составляет 100 руб.",
+                "Бюджет проекта составляет 100 рублей.", matchingResults);
+        require(!contains(matchingResults, "якорение"), "matching ordinary values are not shared anchors");
+
+        List<String> explicitAnchor = new ArrayList<String>();
+        AnchoringPolicy.detect("Первое названное число — около 100.",
+                "Начальное значение около 110 принято за основу.", explicitAnchor);
+        require(contains(explicitAnchor, "якорение"), "explicit shared starting anchor should be flagged");
+
         List<String> calibrated = new ArrayList<String>();
         AnchoringPolicy.detect(
                 "Оценка около 100 с учётом базовой частоты и чувствительности к якорю.", "", calibrated);
