@@ -130,7 +130,7 @@ public class NavigationAndCancellationSmokeTest {
     }
 
     @Test
-    public void stopButtonSignalsUserCancellationAndDisablesRepeatTap() throws Exception {
+    public void stopButtonSignalsUserCancellationAndDisablesRepeatTap() throws Throwable {
         activityRule.runOnUiThread(() -> {
             try {
                 Field working = MainActivity.class.getDeclaredField("working");
