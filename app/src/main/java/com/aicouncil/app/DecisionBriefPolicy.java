@@ -5,7 +5,7 @@ import java.util.Locale;
 
 /**
  * Extra offline reasoning-risk signals that the coordinator must not average away.
- * Each note is a hypothesis, not a verdict. Expanded in v2.40–v2.49.
+ * Each note is a hypothesis, not a verdict. Expanded in v2.40–v2.50 (regression-to-mean and selection-bias signals).
  */
 public final class DecisionBriefPolicy {
     private static final int MAX_SIGNALS = 8;
@@ -63,6 +63,10 @@ public final class DecisionBriefPolicy {
                 "несклонность к потерям: избегание потери предпочитается равной или большей выгоде без сравнения ожидаемой полезности");
         add(conflicts, initial, framingEffect(a) || framingEffect(b),
                 "эффект фрейминга: одно и то же относится оценивается по-разному в зависимости от формулировки (выигрыш вс потери)");
+        add(conflicts, initial, regressionToMean(a) || regressionToMean(b),
+                "пренебрежение регрессией к среднему: экстремальное значение принимается за новую норму без учёта возврата");
+        add(conflicts, initial, selectionBias(a) || selectionBias(b),
+                "смещение выборки: вывод о популяции строится только по тем, кто попал в наблюдаемую группу");
     }
 
     private static void add(List<String> out, int initial, boolean condition, String message) {
@@ -228,6 +232,18 @@ public final class DecisionBriefPolicy {
                 "в термінах виграшу")
                 && has(text, "вместо потери", "instead of loss", "замість втрати", "rather than as a loss")
                 && !has(text, "одна и та же цифра", "same number", "одна й та сама цифра", "identical outcome");
+    }
+
+    private static boolean regressionToMean(String text) {
+        return has(text, "после рекорда", "after the peak", "after the high", "після рекорду", "после максимума")
+                && has(text, "значит продолжит расти", "will keep rising", "therefore will continue", "отже продовжить рости")
+                && !has(text, "регрессия к среднему", "regression to the mean", "mean reversion", "регресія до середнього");
+    }
+
+    private static boolean selectionBias(String text) {
+        return has(text, "только те кто ответил", "only those who responded", "выжившие в выборке", "лише ті хто відповів")
+                && has(text, "значит все", "therefore everyone", "so the population", "отже всі")
+                && !has(text, "смещение выборки", "selection bias", "who didn't respond", "хто не відповів");
     }
 
     private static boolean has(String text, String... words) {
