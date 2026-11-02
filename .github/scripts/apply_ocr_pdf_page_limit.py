@@ -133,11 +133,23 @@ if "showOcrPdfPageLimitDialog" not in text:
     if button_anchor not in text:
         raise SystemExit("PDF import UI anchor not found")
     text = text.replace(button_anchor, button_new, 1)
-if "Input.pdf(fileBytes, displayName, \"eng\", ocrPdfPageLimit())" not in text:
-    old = "OcrDocumentProcessor.Input.pdf(fileBytes, displayName, \"eng\")"
-    if old not in text:
+pdf_limit_markers = (
+    'OcrDocumentProcessor.Input.pdf(fileBytes, displayName, "eng", ocrPdfPageLimit())',
+    'OcrDocumentProcessor.Input.pdf(fileBytes, extractionName, "eng", ocrPdfPageLimit())',
+)
+if not any(marker in text for marker in pdf_limit_markers):
+    alternatives = (
+        ('OcrDocumentProcessor.Input.pdf(fileBytes, displayName, "eng")',
+         'OcrDocumentProcessor.Input.pdf(fileBytes, displayName, "eng", ocrPdfPageLimit())'),
+        ('OcrDocumentProcessor.Input.pdf(fileBytes, extractionName, "eng")',
+         'OcrDocumentProcessor.Input.pdf(fileBytes, extractionName, "eng", ocrPdfPageLimit())'),
+    )
+    for old, new in alternatives:
+        if old in text:
+            text = text.replace(old, new, 1)
+            break
+    else:
         raise SystemExit("ordinary PDF import call not found")
-    text = text.replace(old, "OcrDocumentProcessor.Input.pdf(fileBytes, displayName, \"eng\", ocrPdfPageLimit())", 1)
 if "Input.scannedPdf(pdfBytes, displayName, language, ocrPdfPageLimit())" not in text:
     old = "OcrDocumentProcessor.Input.scannedPdf(pdfBytes, displayName, language)"
     if old not in text:
@@ -269,7 +281,7 @@ text = verify_path.read_text(encoding="utf-8")
 replacements = [
     (
         """check('Обычный PDF проходит через гибридный локальный processor, DOCX/XLSX остаются у DocumentTextExtractor', 'OcrDocumentProcessor.Input.pdf(fileBytes, displayName, \\"eng\\")' in src and 'DocumentTextExtractor.extract(getApplicationContext(), fileBytes, displayName)' in src)""",
-        """check('Обычный PDF проходит через гибридный локальный processor с выбранным лимитом, DOCX/XLSX остаются у DocumentTextExtractor', 'OcrDocumentProcessor.Input.pdf(fileBytes, displayName, \\"eng\\", ocrPdfPageLimit())' in src and 'DocumentTextExtractor.extract(getApplicationContext(), fileBytes, displayName)' in src)"""
+        """check('Обычный PDF проходит через гибридный локальный processor с MIME-нормализацией и выбранным лимитом', any(call in src for call in ['OcrDocumentProcessor.Input.pdf(fileBytes, displayName, \\"eng\\", ocrPdfPageLimit())', 'OcrDocumentProcessor.Input.pdf(fileBytes, extractionName, \\"eng\\", ocrPdfPageLimit())']) and any(call in src for call in ['DocumentTextExtractor.extract(getApplicationContext(), fileBytes, displayName)', 'DocumentTextExtractor.extract(getApplicationContext(), fileBytes, extractionName)']))"""
     ),
     (
         """check('Предпросмотр OCR PDF корректно описывает обработку локально', 'isCyrillicPdfOcr' in src and 'сам PDF не отправлялся на сервер' in src and 'Обрабатываются только первые пять страниц' in src)""",
@@ -288,7 +300,7 @@ for old, new in replacements:
 check_anchor = """check('OCR scanned-PDF ограничен первыми 5 страницами', 'DEFAULT_MAX_PAGES = 5' in ocr_input_policy and 'pagesToProcess(pageCount, maxPages)' in ocr_processor)"""
 check_new = check_anchor + """
 check('Лимит страниц PDF выбирается в UI: 5 по умолчанию или до 20', 'showOcrPdfPageLimitDialog' in src and 'ocr_pdf_max_pages' in src and 'ocrPdfPageLimit()' in src and 'clampPageLimit(requestedPages)' in ocr_input_policy)
-check('Оба пути PDF передают выбранный лимит в единый OCR процессор', 'Input.pdf(fileBytes, displayName, \\"eng\\", ocrPdfPageLimit())' in src and 'Input.scannedPdf(pdfBytes, displayName, language, ocrPdfPageLimit())' in src and 'input.maxPages' in ocr_processor)"""
+check('Оба пути PDF передают выбранный лимит в единый OCR процессор', any(call in src for call in ['Input.pdf(fileBytes, displayName, \\"eng\\", ocrPdfPageLimit())', 'Input.pdf(fileBytes, extractionName, \\"eng\\", ocrPdfPageLimit())']) and 'Input.scannedPdf(pdfBytes, displayName, language, ocrPdfPageLimit())' in src and 'input.maxPages' in ocr_processor)"""
 if "Лимит страниц PDF выбирается в UI" not in text:
     if check_anchor not in text:
         raise SystemExit("Static-check insertion anchor not found")
