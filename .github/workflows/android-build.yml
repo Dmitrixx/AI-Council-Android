@@ -381,6 +381,10 @@ jobs:
           script: |
             set -eu
             cd "$GITHUB_WORKSPACE/${{ steps.source.outputs.project_dir }}"
-            test -f ./gradlew || { echo "Gradle wrapper not found in selected project directory." >&2; exit 1; }
-            chmod +x ./gradlew
-            ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
+            if [[ -f ./gradlew ]]; then
+              chmod +x ./gradlew
+              ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
+            else
+              echo "Gradle wrapper absent; using the provisioned Gradle installation."
+              gradle --no-daemon --stacktrace connectedDebugAndroidTest
+            fi
