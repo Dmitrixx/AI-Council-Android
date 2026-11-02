@@ -103,6 +103,10 @@ boolean mid = middleGround(a) || middleGround(b);
                 "нирвана: хороший вариант отвергается только потому, что он не идеален");
         add(conflicts, initial, continuum(a) || continuum(b),
                 "континуум / сорит: отсутствие чёткой границы используется для отрицания различия");
+        add(conflicts, initial, singleCause(a) || singleCause(b),
+                "ошибка единственной причины: сложный исход сводится к одной причине без учёта других факторов");
+        add(conflicts, initial, whataboutism(a) || whataboutism(b),
+                "whataboutism: вместо разбора тезиса предлагается обсудить другой, якобы более важный вопрос");
     }
 
     private static void add(List<String> out, int initial, boolean condition, String message) {
@@ -337,6 +341,20 @@ boolean mid = middleGround(a) || middleGround(b);
                 "пороговый критерий", "різниця все одно важлива");
     }
 
+
+
+    private static boolean singleCause(String t) {
+        return has(t, "единственная причина", "только одна причина", "sole cause", "the only cause",
+                "всё из-за одного фактора", "один-единственный фактор")
+                && !has(t, "несколько факторов", "multiple factors", "многофактор", "multifactorial",
+                "contributing causes", "другие причины");
+    }
+
+    private static boolean whataboutism(String t) {
+        return has(t, "а что насчёт", "а как же", "what about", "whataboutism", "а у вас")
+                && has(t, "вместо ответа", "не будем обсуждать", "это неважно", "instead of addressing",
+                "does not answer", "не отвечает на вопрос");
+    }
 
     private static boolean appealToFear(String t) {
         return has(t, "иначе катастрофа", "иначе всё рухнет", "if we don't, disaster", "or else catastrophe",
