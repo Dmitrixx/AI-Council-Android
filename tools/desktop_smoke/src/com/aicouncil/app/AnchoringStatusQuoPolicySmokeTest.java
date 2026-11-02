@@ -23,7 +23,7 @@ public final class AnchoringStatusQuoPolicySmokeTest {
 
         List<String> justified = new ArrayList<String>();
         StatusQuoPolicy.detect(
-                "Оставить как есть после сравнения затрат на переключение и выгоды от изменения.",
+                "Оставить как есть после сравнения: затраты на переключение и выгода от изменения оценены.",
                 "Проверить альтернативу и стоимость смены.", justified);
         require(!contains(justified, "status quo"), "explicit switching-cost comparison should suppress status quo signal");
         System.out.println("Anchoring/status-quo policy smoke tests passed.");
