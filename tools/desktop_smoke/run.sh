@@ -56,6 +56,9 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ModelCorrelationPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/AnchoringPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/StatusQuoPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/AvailabilityPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/RepresentativenessPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/PlanningFallacyPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ExpertRolePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/TruncatedAnswerPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/UiThemePolicy.java" \
@@ -118,6 +121,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.SynthesisProtocolSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ErgodicityPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ModelCorrelationPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.AnchoringStatusQuoPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.RecentHeuristicsSmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest
