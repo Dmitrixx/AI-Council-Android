@@ -395,27 +395,9 @@ jobs:
           emulator-boot-timeout: 600
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          script: |
-            set +e
-            cd "$GITHUB_WORKSPACE/${{ steps.source.outputs.project_dir }}"
-            if [ -f ./gradlew ]; then
-              chmod +x ./gradlew
-              ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
-            else
-              echo "Gradle wrapper absent; using the provisioned Gradle installation."
-              gradle --no-daemon --stacktrace connectedDebugAndroidTest
-            fi
-            test_status=$?
-            mkdir -p "$RUNNER_TEMP/android-ui-diagnostics"
-            adb logcat -d -v threadtime > "$RUNNER_TEMP/android-ui-diagnostics/logcat.txt" 2>&1 || true
-            for report_dir in app/build/outputs/androidTest-results app/build/reports/androidTests; do
-              if [ -d "$report_dir" ]; then
-                cp -R "$report_dir" "$RUNNER_TEMP/android-ui-diagnostics/$(basename "$report_dir")"
-              fi
-            done
-            find "$RUNNER_TEMP/android-ui-diagnostics" -type f -maxdepth 6 -print
-            find "$RUNNER_TEMP/android-ui-diagnostics" -type f -name '*.xml' -exec sh -c 'echo "===== $1 ====="; cat "$1"' _ {} \;
-            exit "$test_status"
+          script: >-
+            cd "$GITHUB_WORKSPACE/${{ steps.source.outputs.project_dir }}" &&
+            bash -c 'set +e; if [ -f ./gradlew ]; then chmod +x ./gradlew; ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest; else gradle --no-daemon --stacktrace connectedDebugAndroidTest; fi; test_status=$?; mkdir -p "$RUNNER_TEMP/android-ui-diagnostics"; adb logcat -d -v threadtime > "$RUNNER_TEMP/android-ui-diagnostics/logcat.txt" 2>&1 || true; for report_dir in app/build/outputs/androidTest-results app/build/reports/androidTests; do if [ -d "$report_dir" ]; then cp -R "$report_dir" "$RUNNER_TEMP/android-ui-diagnostics/$(basename "$report_dir")"; fi; done; find "$RUNNER_TEMP/android-ui-diagnostics" -type f -maxdepth 6 -print; find "$RUNNER_TEMP/android-ui-diagnostics" -type f -name "*.xml" -exec cat {} \;; exit "$test_status"'
 
       - name: Upload Android UI diagnostics
         if: always()
