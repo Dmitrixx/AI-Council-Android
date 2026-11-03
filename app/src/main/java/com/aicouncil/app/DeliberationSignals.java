@@ -48,6 +48,7 @@ public final class DeliberationSignals {
         FramingEffectPolicy.detect(a, b, conflicts);
         GamblersFallacyPolicy.detect(a, b, conflicts);
         HaloEffectPolicy.detect(a, b, conflicts);
+        ProbeBeforeCommitPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
