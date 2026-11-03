@@ -125,6 +125,9 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.DecisionArithmeticPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.SynthesisProtocolSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ErgodicityPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ModelCorrelationPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.HindsightAmbiguitySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.RecentHeuristicsSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.AnchoringStatusQuoPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.LossAversionPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.PrincipalAgentPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.FalseDilemmaPolicySmokeTest

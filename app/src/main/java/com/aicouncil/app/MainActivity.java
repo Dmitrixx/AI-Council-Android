@@ -1448,7 +1448,8 @@ public class MainActivity extends Activity {
             try {
                 String displayName = displayNameForUri(uri);
                 String mimeType = getContentResolver().getType(uri);
-                if (!isSupportedImportFile(displayName, mimeType)) {
+                String extractionName = MaterialImportPolicy.normalizeFileNameForMime(displayName, mimeType);
+                if (!isSupportedImportFile(extractionName, mimeType)) {
                     throw new java.io.IOException("Поддерживаются текстовые форматы, PDF, DOCX и XLSX. Выбранный тип: "
                         + (mimeType == null ? "не определён" : mimeType) + ".");
                 }
@@ -1465,8 +1466,8 @@ public class MainActivity extends Activity {
                     }
                     fileBytes = bytes.toByteArray();
                 }
-                String ext = extensionOf(displayName);
-                boolean plainText = isSupportedTextFile(displayName, mimeType);
+                String ext = extensionOf(extractionName);
+                boolean plainText = isSupportedTextFile(extractionName, mimeType);
                 String content;
                 if (plainText) {
                     if (fileBytes.length > MAX_TEXT_IMPORT_BYTES) {
@@ -1474,11 +1475,11 @@ public class MainActivity extends Activity {
                     }
                     content = decodeImportedText(fileBytes, ext);
                 } else if ("pdf".equals(ext)) {
-                    content = ocrDocumentProcessor.process(OcrDocumentProcessor.Input.pdf(fileBytes, displayName, "eng", ocrPdfPageLimit()),
+                    content = ocrDocumentProcessor.process(OcrDocumentProcessor.Input.pdf(fileBytes, extractionName, "eng", ocrPdfPageLimit()),
                         () -> Thread.currentThread().isInterrupted(),
                         message -> runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) setStatus(message, BLUE); })).previewText();
                 } else {
-                    content = DocumentTextExtractor.extract(getApplicationContext(), fileBytes, displayName);
+                    content = DocumentTextExtractor.extract(getApplicationContext(), fileBytes, extractionName);
                 }
                 if (content == null || content.trim().isEmpty()) {
                     throw new java.io.IOException("В выбранном файле не удалось найти текст для анализа.");
@@ -1654,20 +1655,21 @@ public class MainActivity extends Activity {
             }
             fileBytes = bytes.toByteArray();
         }
-        String ext = extensionOf(displayName);
-        if (MaterialImportPolicy.isTextMaterial(displayName, mimeType)) {
+        String extractionName = MaterialImportPolicy.normalizeFileNameForMime(displayName, mimeType);
+        String ext = extensionOf(extractionName);
+        if (MaterialImportPolicy.isTextMaterial(extractionName, mimeType)) {
             if (fileBytes.length > MAX_TEXT_IMPORT_BYTES) {
                 throw new java.io.IOException("Текстовый файл превышает 256 КБ.");
             }
             return decodeImportedText(fileBytes, ext);
         }
         if ("pdf".equals(ext) || "application/pdf".equals(mimeType)) {
-            return ocrDocumentProcessor.process(OcrDocumentProcessor.Input.pdf(fileBytes, displayName, "eng", ocrPdfPageLimit()),
+            return ocrDocumentProcessor.process(OcrDocumentProcessor.Input.pdf(fileBytes, extractionName, "eng", ocrPdfPageLimit()),
                     () -> ocrCancelRequested || Thread.currentThread().isInterrupted(),
                     message -> runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) setStatus(message, BLUE); }))
                     .previewText();
         }
-        return DocumentTextExtractor.extract(getApplicationContext(), fileBytes, displayName);
+        return DocumentTextExtractor.extract(getApplicationContext(), fileBytes, extractionName);
     }
 
     private void handleCyrillicPdfImport(android.net.Uri uri, String language) {

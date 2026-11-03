@@ -21,6 +21,10 @@ def replace_once(relative, old, new, marker):
 # Configure an AndroidJUnitRunner and Espresso dependencies for real-device/emulator tests.
 build_file = root / "app/build.gradle"
 build = build_file.read_text(encoding="utf-8")
+# Normalize a legacy malformed coordinate even when the instrumentation block already exists.
+if "androidx.test.rules:1.6.1" in build:
+    build = build.replace("androidx.test.rules:1.6.1", "androidx.test:rules:1.6.1")
+    build_file.write_text(build, encoding="utf-8")
 replace_once(
     "app/build.gradle",
     "    defaultConfig {\n        applicationId 'com.aicouncil.app'",
@@ -126,8 +130,8 @@ public class NavigationAndCancellationSmokeTest {
     }
 
     @Test
-    public void stopButtonSignalsUserCancellationAndDisablesRepeatTap() throws Exception {
-        activityRule.runOnUiThread(() -> {
+    public void stopButtonSignalsUserCancellationAndDisablesRepeatTap() throws Throwable {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             try {
                 Field working = MainActivity.class.getDeclaredField("working");
                 working.setAccessible(true);
