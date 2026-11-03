@@ -5,6 +5,7 @@ import android.widget.Button;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,7 +53,7 @@ public class NavigationAndCancellationSmokeTest {
 
     @Test
     public void stopButtonSignalsUserCancellationAndDisablesRepeatTap() throws Throwable {
-        activityRule.runOnUiThread(() -> {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             try {
                 Field working = MainActivity.class.getDeclaredField("working");
                 working.setAccessible(true);
