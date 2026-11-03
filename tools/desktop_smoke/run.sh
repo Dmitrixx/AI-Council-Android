@@ -74,6 +74,12 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/LossAversionPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/PrincipalAgentPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FalseDilemmaPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/SurvivorshipBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/RegressionToMeanPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/AuthorityBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/FramingEffectPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/GamblersFallacyPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/HaloEffectPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DeliberationSignals.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ClaimGraph.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FallbackProviderPolicy.java" \
@@ -126,6 +132,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.SynthesisProtocolSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ErgodicityPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ModelCorrelationPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.HindsightAmbiguitySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.RecentBiasesSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.RecentHeuristicsSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.AnchoringStatusQuoPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.LossAversionPolicySmokeTest
