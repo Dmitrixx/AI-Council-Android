@@ -43,6 +43,7 @@ public final class DeliberationSignals {
         PrincipalAgentPolicy.detect(a, b, conflicts);
         FalseDilemmaPolicy.detect(a, b, conflicts);
         SurvivorshipBiasPolicy.detect(a, b, conflicts);
+        RegressionToMeanPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
