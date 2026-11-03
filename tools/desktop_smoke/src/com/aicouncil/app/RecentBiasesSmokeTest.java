@@ -16,7 +16,7 @@ public final class RecentBiasesSmokeTest {
 
         List<String> survivorshipControlled = new ArrayList<String>();
         SurvivorshipBiasPolicy.detect(
-                "Истории успеха показывают результат, но учтены невидимые провалы и доля отсева.",
+                "Истории успеха доказывают, что стратегия работает, следовательно, рекомендую повторить; при этом учтены невидимые провалы и доля отсева.",
                 "", survivorshipControlled);
         check(!has(survivorshipControlled, "survivorship bias"),
                 "failure and dropout data must suppress survivorship-bias signal");
@@ -29,7 +29,7 @@ public final class RecentBiasesSmokeTest {
 
         List<String> regressionControlled = new ArrayList<String>();
         RegressionToMeanPolicy.detect(
-                "Рекорд был временным эффектом шума измерения; ожидается регрессия к среднему.",
+                "Рекорд — устойчивая черта команды и всегда будет сохраняться, но учтены шум измерения и регрессия к среднему.",
                 "", regressionControlled);
         check(!has(regressionControlled, "regression to the mean"),
                 "measurement noise and regression-to-mean acknowledgement must suppress the signal");
@@ -42,7 +42,7 @@ public final class RecentBiasesSmokeTest {
 
         List<String> authorityControlled = new ArrayList<String>();
         AuthorityBiasPolicy.detect(
-                "Известный специалист рекомендует проект, но доказательства, механизм и базовая частота отдельно проверены.",
+                "Известный специалист рекомендует проект, следовательно, решение опирается на доказательства, механизм и базовую частоту, проверенные отдельно.",
                 "", authorityControlled);
         check(!has(authorityControlled, "authority bias"),
                 "independent evidence and mechanism must suppress authority-bias signal");
@@ -56,7 +56,7 @@ public final class RecentBiasesSmokeTest {
 
         List<String> framingControlled = new ArrayList<String>();
         FramingEffectPolicy.detect(
-                "При такой формулировке вы получите выгоду; альтернативный фрейм также проверен.",
+                "При такой формулировке вы получите выгоду; альтернативный фрейм также проверен, поэтому рекомендую решение.",
                 "При такой формулировке вы получите выгоду; альтернативный фрейм также проверен.",
                 framingControlled);
         check(!has(framingControlled, "framing effect"),
@@ -70,7 +70,7 @@ public final class RecentBiasesSmokeTest {
 
         List<String> gamblerControlled = new ArrayList<String>();
         GamblersFallacyPolicy.detect(
-                "Предыдущая серия не меняет вероятность: события независимы, каждый исход рассматривается отдельно.",
+                "После серии одинаковых исходов подряд теперь должен выпасть другой исход; события независимы и каждый исход рассматривается отдельно.",
                 "", gamblerControlled);
         check(!has(gamblerControlled, "gambler's fallacy"),
                 "explicit independence must suppress gambler's-fallacy signal");
