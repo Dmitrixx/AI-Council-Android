@@ -45,6 +45,7 @@ public final class DeliberationSignals {
         SurvivorshipBiasPolicy.detect(a, b, conflicts);
         RegressionToMeanPolicy.detect(a, b, conflicts);
         AuthorityBiasPolicy.detect(a, b, conflicts);
+        FramingEffectPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
