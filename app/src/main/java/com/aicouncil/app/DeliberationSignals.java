@@ -40,6 +40,8 @@ public final class DeliberationSignals {
         HindsightBiasPolicy.detect(a, b, conflicts);
         AmbiguityAversionPolicy.detect(a, b, conflicts);
         LossAversionPolicy.detect(a, b, conflicts);
+        PrincipalAgentPolicy.detect(a, b, conflicts);
+        FalseDilemmaPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */

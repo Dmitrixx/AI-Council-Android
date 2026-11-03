@@ -72,6 +72,8 @@ printf '%s\n' \
 "$ROOT/app/src/main/java/com/aicouncil/app/HindsightBiasPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/AmbiguityAversionPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/LossAversionPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/PrincipalAgentPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/FalseDilemmaPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DeliberationSignals.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ClaimGraph.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FallbackProviderPolicy.java" \
@@ -124,6 +126,8 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.SynthesisProtocolSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ErgodicityPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ModelCorrelationPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.LossAversionPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.PrincipalAgentPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.FalseDilemmaPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest

@@ -280,6 +280,10 @@ public final class CouncilExecutionEngine {
             if (!graphBC.isEmpty()) localMap = localMap.isEmpty() ? graphBC : localMap + "\n\n" + graphBC;
         }
         if (!aFailed && !cFailed) {
+            String intelAC = DeliberationIntelligence.formatForCoordinator(
+                    DeliberationIntelligence.analyze(r.task, a, c));
+            if (!intelAC.isEmpty()) localMap = localMap.isEmpty() ? "ЛОКАЛЬНАЯ КАРТА ИИ №1 ↔ ИИ №3:\n" + intelAC
+                    : localMap + "\n\nЛОКАЛЬНАЯ КАРТА ИИ №1 ↔ ИИ №3:\n" + intelAC;
             String mapAC = StructuredClaimPolicy.formatConflictsForCoordinator(claimsA, claimsC);
             if (!mapAC.isEmpty()) localMap = localMap.isEmpty() ? "КАРТА ИИ №1 ↔ ИИ №3:\n" + mapAC
                     : localMap + "\n\nКАРТА ИИ №1 ↔ ИИ №3:\n" + mapAC;
