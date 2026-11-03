@@ -58,6 +58,7 @@ relative_files = (
     "tools/desktop_smoke/src/com/aicouncil/app/LossAversionPolicySmokeTest.java",
     "tools/desktop_smoke/src/com/aicouncil/app/PrincipalAgentPolicySmokeTest.java",
     "tools/desktop_smoke/src/com/aicouncil/app/FalseDilemmaPolicySmokeTest.java",
+    "tools/desktop_smoke/src/com/aicouncil/app/RecentBiasesSmokeTest.java",
 )
 for relative in relative_files:
     source = repository / relative
