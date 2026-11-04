@@ -51,6 +51,9 @@ public final class DeliberationSignals {
         ProbeBeforeCommitPolicy.detect(a, b, conflicts);
         PresentBiasPolicy.detect(a, b, conflicts);
         OutcomeBiasPolicy.detect(a, b, conflicts);
+        OmissionBiasPolicy.detect(a, b, conflicts);
+        ScopeInsensitivityPolicy.detect(a, b, conflicts);
+        AffectHeuristicPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
