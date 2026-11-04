@@ -97,7 +97,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ocr/OcrInputPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ocr/OcrDocumentProcessor.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/OcrModelManager.java" \
-  "$ROOT/app/src/main/java/com/app/ProviderModelsClient.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ProviderModelsClient.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/WebSearchClient.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/WebPageFetchClient.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/WebSearchService.java" >> "$TMP_DIR/sources.txt"
