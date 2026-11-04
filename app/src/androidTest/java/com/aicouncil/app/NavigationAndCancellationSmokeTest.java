@@ -89,7 +89,8 @@ public class NavigationAndCancellationSmokeTest {
     }
 
     private static View findByContentDescription(View view, String description) {
-        if (description.contentEquals(view.getContentDescription())) {
+        if (view.getContentDescription() != null
+                && description.contentEquals(view.getContentDescription())) {
             return view;
         }
         if (view instanceof ViewGroup) {
