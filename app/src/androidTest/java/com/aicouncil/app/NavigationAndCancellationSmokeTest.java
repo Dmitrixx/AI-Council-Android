@@ -1,7 +1,9 @@
 package com.aicouncil.app;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
@@ -13,17 +15,16 @@ import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+/**
+ * UI smoke tests use the real Activity view tree and click listeners directly.
+ * This avoids Espresso's dependency on Window focus, which is unreliable on
+ * resource-constrained headless GitHub Actions emulators.
+ */
 @RunWith(AndroidJUnit4.class)
 public class NavigationAndCancellationSmokeTest {
     @Rule
@@ -31,47 +32,88 @@ public class NavigationAndCancellationSmokeTest {
             new ActivityTestRule<>(MainActivity.class);
 
     @Test
-    public void opensAllThreeMainTabsAndUpdatesAccessibleSelection() {
-        onView(withContentDescription(anyOf(
-                is("Открыть раздел: История"),
-                is("Выбран раздел: История")))).perform(click());
-        onView(withText("История задач")).check(matches(isDisplayed()));
-        onView(withContentDescription("Выбран раздел: История")).check(matches(isDisplayed()));
+    public void opensAllThreeMainTabsAndUpdatesAccessibleSelection() throws Throwable {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            View decor = activityRule.getActivity().getWindow().getDecorView();
 
-        onView(withContentDescription(anyOf(
-                is("Открыть раздел: Подключения"),
-                is("Выбран раздел: Подключения")))).perform(click());
-        onView(withText("Подключения ИИ")).check(matches(isDisplayed()));
-        onView(withContentDescription("Выбран раздел: Подключения")).check(matches(isDisplayed()));
-
-        onView(withContentDescription(anyOf(
-                is("Открыть раздел: Штаб"),
-                is("Выбран раздел: Штаб")))).perform(click());
-        onView(withText("Ваш ИИ-штаб")).check(matches(isDisplayed()));
-        onView(withContentDescription("Выбран раздел: Штаб")).check(matches(isDisplayed()));
+            clickNavigationItem(decor, "История", "История задач");
+            clickNavigationItem(decor, "Подключения", "Подключения ИИ");
+            clickNavigationItem(decor, "Штаб", "Ваш ИИ-штаб");
+        });
     }
 
     @Test
     public void stopButtonSignalsUserCancellationAndDisablesRepeatTap() throws Throwable {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            MainActivity activity = activityRule.getActivity();
             try {
                 Field working = MainActivity.class.getDeclaredField("working");
                 working.setAccessible(true);
-                working.setBoolean(activityRule.getActivity(), true);
+                working.setBoolean(activity, true);
 
                 Field stopButtonField = MainActivity.class.getDeclaredField("stopButton");
                 stopButtonField.setAccessible(true);
-                Button stop = (Button) stopButtonField.get(activityRule.getActivity());
+                Button stop = (Button) stopButtonField.get(activity);
                 stop.setVisibility(View.VISIBLE);
                 stop.setEnabled(true);
                 stop.setAlpha(1f);
+
+                assertTrue("Stop button click listener did not run", stop.performClick());
+                assertFalse("Stop button must be disabled after cancellation", stop.isEnabled());
+
+                Field statusField = MainActivity.class.getDeclaredField("status");
+                statusField.setAccessible(true);
+                TextView status = (TextView) statusField.get(activity);
+                assertEquals("■  Остановка запрошена…", status.getText().toString());
             } catch (ReflectiveOperationException e) {
                 throw new AssertionError("Cannot prepare cancellation smoke test", e);
             }
         });
+    }
 
-        onView(withText("Остановить")).check(matches(isDisplayed())).perform(click());
-        onView(withText("■  Остановка запрошена…")).check(matches(isDisplayed()));
-        onView(withText("Остановить")).check(matches(not(isEnabled())));
+    private static void clickNavigationItem(View root, String tab, String expectedTitle) {
+        View item = findByContentDescription(root, "Открыть раздел: " + tab);
+        if (item == null) {
+            item = findByContentDescription(root, "Выбран раздел: " + tab);
+        }
+        assertNotNull("Navigation item not found: " + tab, item);
+        assertTrue("Navigation click listener did not run: " + tab, item.performClick());
+
+        View selected = findByContentDescription(root, "Выбран раздел: " + tab);
+        assertNotNull("Selected accessibility state missing: " + tab, selected);
+        assertTrue("Selected navigation item is not marked selected: " + tab, selected.isSelected());
+
+        TextView title = findText(root, expectedTitle);
+        assertNotNull("Screen title not found: " + expectedTitle, title);
+        assertTrue("Target screen is not visible: " + expectedTitle, title.isShown());
+    }
+
+    private static View findByContentDescription(View view, String description) {
+        if (description.contentEquals(view.getContentDescription())) {
+            return view;
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View found = findByContentDescription(group.getChildAt(i), description);
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
+    private static TextView findText(View view, String expected) {
+        if (view instanceof TextView
+                && expected.contentEquals(((TextView) view).getText())) {
+            return (TextView) view;
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                TextView found = findText(group.getChildAt(i), expected);
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 }
