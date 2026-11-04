@@ -87,6 +87,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ScopeInsensitivityPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/AffectHeuristicPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ConjunctionFallacyPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/NarrativeFallacyPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DeliberationSignals.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ClaimGraph.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FallbackProviderPolicy.java" \
@@ -96,7 +97,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ocr/OcrInputPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ocr/OcrDocumentProcessor.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/OcrModelManager.java" \
-  "$ROOT/app/src/main/java/com/aicouncil/app/ProviderModelsClient.java" \
+  "$ROOT/app/src/main/java/com/app/ProviderModelsClient.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/WebSearchClient.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/WebPageFetchClient.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/WebSearchService.java" >> "$TMP_DIR/sources.txt"
@@ -148,6 +149,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.OmissionBiasPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ScopeInsensitivityPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.AffectHeuristicPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ConjunctionFallacyPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.NarrativeFallacyPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest
