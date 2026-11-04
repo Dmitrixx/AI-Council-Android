@@ -233,13 +233,16 @@ public final class ReasoningFallacyPolicy {
 
     private static boolean strawMan(String t) {
         return has(t, "misrepresents my position", "misrepresent", "straw man", "соломенн",
-                "искажает мою позицию", "упрощает позицию")
-                && has(t, "затем опровергает", "then refutes", "и опровергает");
+                "искажает мою позицию", "искажает позицию", "упрощает позицию", "упрощённая версия аргумента")
+                && has(t, "затем опровергает", "then refutes", "и опровергает",
+                "instead of addressing", "instead of", "легко опровергнуть", "но это абсурд", "obviously false");
     }
 
     private static boolean adHominem(String t) {
-        return has(t, "ты глуп", "you are stupid", "автор нечестный", "the author is dishonest")
-                && has(t, "значит аргумент ложный", "so the argument is false", "therefore the claim is wrong");
+        return has(t, "ты глуп", "you are stupid", "you are an idiot", "idiot", "идиот",
+                "автор нечестный", "the author is dishonest", "character attack", "личный интерес автора", "его мотивы")
+                && has(t, "значит аргумент ложный", "so the argument is false", "so your argument is wrong",
+                "поэтому аргумент", "поэтому твой аргумент", "therefore the claim is wrong");
     }
 
     private static boolean postHoc(String t) {
@@ -252,8 +255,10 @@ public final class ReasoningFallacyPolicy {
     }
 
     private static boolean circular(String t) {
-        return has(t, "потому что это верно", "because it is true", "бо це правда")
-                && has(t, "а это верно потому что", "and it is true because");
+        boolean repeatedConclusion = has(t, "это верно, потому что это верно",
+                "это так, потому что это так", "true because it is true");
+        return repeatedConclusion || (has(t, "потому что это верно", "because it is true", "бо це правда")
+                && has(t, "а это верно потому что", "and it is true because"));
     }
 
     private static boolean hastyGeneralization(String t) {
