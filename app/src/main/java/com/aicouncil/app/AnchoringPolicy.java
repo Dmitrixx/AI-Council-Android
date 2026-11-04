@@ -53,15 +53,24 @@ public final class AnchoringPolicy {
 
     private static boolean anchoredWithoutAdjustment(String t) {
         boolean hasNumber = NUMBER.matcher(t).find();
-        boolean adjustment = has(t, "base rate", "базовая частота", "reference class", "независимо от",
-                "скорректировал", "adjusted from", "не опираюсь на", "якорь не влияет");
+        boolean baseRateMentioned = has(t, "base rate", "базовая частота", "базовой частоты", "базовую частоту");
+        boolean baseRateDenied = has(t, "без базовой частоты", "без учёта базовой частоты",
+                "без учета базовой частоты", "не учитывает базовую частоту", "without base rate",
+                "base rate was not considered");
+        boolean adjustment = (baseRateMentioned && !baseRateDenied)
+                || has(t, "reference class", "независимо от", "скорректировал", "adjusted from",
+                "не опираюсь на", "якорь не влияет", "учитывая базовую частоту");
         boolean arbitrary = has(t, "примерно", "около", "порядка", "guess", "примерно столько",
                 "взял за основу", "начальное значение");
         return hasNumber && arbitrary && !adjustment;
     }
 
     private static boolean bothShareAnchor(String a, String b) {
+        // Same numbers alone are not a shared anchor: both experts must identify the anchor.
         if (!hasAnchorCue(a) || !hasAnchorCue(b)) return false;
+        String combined = a + " " + b;
+        if (has(combined, "независимо", "разные методы", "independent",
+                "base rate", "базовая частота", "reference class")) return false;
         Matcher ma = NUMBER.matcher(a);
         Matcher mb = NUMBER.matcher(b);
         if (!ma.find() || !mb.find()) return false;
@@ -69,21 +78,24 @@ public final class AnchoringPolicy {
             double na = Double.parseDouble(ma.group(1).replace(',', '.'));
             double nb = Double.parseDouble(mb.group(1).replace(',', '.'));
             if (na == 0 || nb == 0) return false;
-            return Math.abs(na - nb) / Math.max(na, nb) < 0.15
-                    && !has(a + b, "независимо", "разные методы", "independent");
-        } catch (Exception e) {
+            double denominator = Math.max(Math.abs(na), Math.abs(nb));
+            return Math.abs(na - nb) / denominator < 0.15;
+        } catch (NumberFormatException e) {
             return false;
         }
     }
 
-    /** Same number alone is agreement, not an anchor. Both sides must name the anchor. */
     private static boolean hasAnchorCue(String t) {
-        return has(t, "якорь", "anchor", "начальн", "взял за основу", "первое число", "первое названное");
+        return has(t, "якор", "anchor", "начальн", "взял за основу",
+                "первое число", "первое названное", "initial value",
+                "starting point", "first number");
     }
 
     private static boolean missingAnchorSensitivity(String t) {
         boolean estimate = has(t, "оценка", "estimate", "вероятность", "шанс", "прогноз");
-        boolean sensitivity = has(t, "если бы было", "при другом якоре", "чувствительность к", "anchor sensitivity");
-        return estimate && !sensitivity && NUMBER.matcher(t).find();
+        boolean anchorContext = has(t, "якор", "anchor", "начальное число", "initial number", "первое число");
+        boolean sensitivity = has(t, "если бы было", "при другом якоре", "чувствительность к",
+                "чувствительности к", "анализ чувствительности", "anchor sensitivity", "sensitivity analysis");
+        return estimate && anchorContext && !sensitivity && NUMBER.matcher(t).find();
     }
 }

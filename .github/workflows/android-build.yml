@@ -26,6 +26,7 @@ on:
       - "app/**"
       - "tools/**"
       - ".github/scripts/**"
+      - ".github/workflows/android-build.yml"
       - "README.md"
       - "README_RU.md"
       - "CHANGELOG_RU.md"
@@ -34,7 +35,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: android-apk-${{ github.ref }}
+  group: android-apk-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -161,14 +162,14 @@ jobs:
               activity.write_text(content, encoding="utf-8")
 
           VERSIONS = [
-              "2.35.0", "2.34.0", "2.33.0", "2.32.0", "2.31.0", "2.30.0", "2.29.0", "2.28.0", "2.27.0", "2.26.0", "2.25.0", "2.24.0", "2.23.0", "2.22.0", "2.21.0", "2.20.0", "2.19.0", "2.18.0", "2.17.0", "2.16.0", "2.15.0", "2.14.0",
+              "2.36.0", "2.35.0", "2.34.0", "2.33.0", "2.32.0", "2.31.0", "2.30.0", "2.29.0", "2.28.0", "2.27.0", "2.26.0", "2.25.0", "2.24.0", "2.23.0", "2.22.0", "2.21.0", "2.20.0", "2.19.0", "2.18.0", "2.17.0", "2.16.0", "2.15.0", "2.14.0",
               "2.13.0", "2.12.0", "2.11.0", "2.9.0", "2.4.1", "2.4.0",
               "2.3.4", "2.3.3", "2.3.2", "2.3.1", "2.3.0",
               "2.2.15", "2.2.14", "2.2.13", "2.2.12", "2.2.11", "2.2.10", "2.2.9", "2.2.8", "2.2.7", "2.2.6", "2.2.5",
               "2.2.4", "2.2.3", "2.2.2", "2.2.1", "2.2.0", "2.1.0",
           ]
-          TARGET = "2.36.0"
-          CODE = 103
+          TARGET = "2.39.0"
+          CODE = 106
 
           content = activity.read_text(encoding="utf-8")
           if ('APP_VERSION = "%s"' % TARGET) not in content:
@@ -208,6 +209,23 @@ jobs:
         run: |
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/.github/scripts/apply_android_ui_smoke_tests.py" "${{ steps.source.outputs.project_dir }}"
+
+      - name: Sync reasoning policies and smoke tests into prepared source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/.github/scripts/apply_deliberation_policy_sync.py" "${{ steps.source.outputs.project_dir }}"
+
+      - name: Verify Android test dependency coordinates
+        working-directory: ${{ steps.source.outputs.project_dir }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -Fq "androidx.test.rules:" app/build.gradle; then
+            echo "::error::Malformed AndroidX test rules group remains in app/build.gradle."
+            exit 1
+          fi
+          grep -F "androidTestImplementation 'androidx.test:rules:1.6.1'" app/build.gradle
 
       - name: Package corrected source for reproducibility
         working-directory: ${{ steps.source.outputs.project_dir }}
@@ -304,13 +322,13 @@ jobs:
           set -euo pipefail
           apk_src="${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$apk_src"
-          asset="$RUNNER_TEMP/AI-Council-2.36.0-debug.apk"
+          asset="$RUNNER_TEMP/AI-Council-2.39.0-debug.apk"
           checksum="$asset.sha256"
           cp "$apk_src" "$asset"
           (cd "$RUNNER_TEMP" && sha256sum "$(basename "$asset")" > "$(basename "$checksum")")
           notes="$RUNNER_TEMP/release-notes.md"
           cat > "$notes" <<'EOF'
-          # AI Council 2.36.0
+          # AI Council 2.39.0
 
           Conservative local reasoning-risk signals were added for common argument patterns. Signals are explicitly marked as hypotheses that require context, not definitive fallacy verdicts. The release includes the four-slot council, bounded batch document/photo import, multilingual local OCR and deterministic arithmetic checks.
 
@@ -319,10 +337,10 @@ jobs:
           Photos are currently passed to models as locally recognized text; raw image payloads for vision models are not yet integrated.
           EOF
           sed -i 's/^          //' "$notes"
-          if gh release view v2.36.0 >/dev/null 2>&1; then
-            gh release upload v2.36.0 "$asset" "$checksum" --clobber
+          if gh release view v2.39.0 >/dev/null 2>&1; then
+            gh release upload v2.39.0 "$asset" "$checksum" --clobber
           else
-            gh release create v2.36.0 --title "AI Council 2.36.0" --notes-file "$notes" "$asset" "$checksum"
+            gh release create v2.39.0 --title "AI Council 2.39.0" --notes-file "$notes" "$asset" "$checksum"
           fi
 
   ui-tests:
@@ -333,18 +351,25 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+
+      - name: Download prepared Android source
+        uses: actions/download-artifact@v7
+        with:
+          name: ai-council-source-snapshot-${{ github.run_number }}
+          path: .build-artifact
+
       - name: Locate Android source
         id: source
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -f settings.gradle || -f settings.gradle.kts ]]; then echo "project_dir=." >> "$GITHUB_OUTPUT"
-          else
-            archive="$(find . -maxdepth 1 -type f -name 'AI-Council-Android-*.zip' -print -quit)"
-            mkdir -p .build-source; unzip -q "$archive" -d .build-source
-            settings="$(find .build-source -maxdepth 4 -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)"
-            echo "project_dir=$(dirname "$settings")" >> "$GITHUB_OUTPUT"
-          fi
+          archive="$(find .build-artifact -type f -name 'AI-Council-Android-source.zip' -print -quit)"
+          if [[ -z "$archive" ]]; then echo "::error::Prepared Android source artifact is missing."; exit 1; fi
+          mkdir -p .build-source
+          unzip -q "$archive" -d .build-source
+          settings="$(find .build-source -maxdepth 4 -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)"
+          if [[ -z "$settings" ]]; then echo "::error::Gradle settings file not found in prepared source."; exit 1; fi
+          echo "project_dir=$(dirname "$settings")" >> "$GITHUB_OUTPUT"
       - name: Set up JDK 21
         uses: actions/setup-java@v6
         with:
@@ -366,16 +391,56 @@ jobs:
           target: default
           arch: x86_64
           profile: pixel_2
-          ram-size: 2048
+          ram-size: 4096
+          cores: 4
+          heap-size: 512
           emulator-boot-timeout: 600
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           script: |
-            set -eu
+            set -euo pipefail
             cd "$GITHUB_WORKSPACE/${{ steps.source.outputs.project_dir }}"
-            if [ ! -f ./gradlew ]; then
-              echo "Gradle wrapper not found in selected project directory." >&2
+            adb wait-for-device
+            for attempt in $(seq 1 60); do
+              boot_completed="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
+              if [ "$boot_completed" = "1" ]; then break; fi
+              sleep 2
+            done
+            if [ "$boot_completed" != "1" ]; then
+              echo "::error::Android emulator did not finish booting."
               exit 1
             fi
-            chmod +x ./gradlew
-            ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
+            adb shell settings put global stay_on_while_plugged_in 3 || true
+            adb shell settings put system screen_off_timeout 1800000 || true
+            adb shell input keyevent 224 || true
+            adb shell wm dismiss-keyguard || true
+            adb shell input keyevent 82 || true
+            sleep 5
+            adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp' || true
+            set +e
+            if [ -f ./gradlew ]; then
+              chmod +x ./gradlew
+              ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
+            else
+              gradle --no-daemon --stacktrace connectedDebugAndroidTest
+            fi
+            test_status=$?
+            mkdir -p "$RUNNER_TEMP/android-ui-diagnostics"
+            adb logcat -d -v threadtime > "$RUNNER_TEMP/android-ui-diagnostics/logcat.txt" 2>&1 || true
+            for report_dir in app/build/outputs/androidTest-results app/build/reports/androidTests; do
+              if [ -d "$report_dir" ]; then
+                cp -R "$report_dir" "$RUNNER_TEMP/android-ui-diagnostics/$(basename "$report_dir")"
+              fi
+            done
+            find "$RUNNER_TEMP/android-ui-diagnostics" -type f -maxdepth 6 -print
+            find "$RUNNER_TEMP/android-ui-diagnostics" -type f -name '*.xml' -exec cat {} \\;
+            exit "$test_status"
+
+      - name: Upload Android UI diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-ui-diagnostics-${{ github.run_number }}
+          path: ${{ runner.temp }}/android-ui-diagnostics/
+          if-no-files-found: warn
+          retention-days: 7

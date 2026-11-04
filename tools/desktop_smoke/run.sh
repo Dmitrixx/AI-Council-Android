@@ -176,3 +176,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.ocr.OcrDocumentProcessorSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.OcrModelManagerSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ProviderModelsClientSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.WebSearchServiceSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.HindsightAmbiguitySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.RecentBiasesSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.RecentHeuristicsSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.AnchoringStatusQuoPolicySmokeTest
