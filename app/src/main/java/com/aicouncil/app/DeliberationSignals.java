@@ -58,6 +58,7 @@ public final class DeliberationSignals {
         NarrativeFallacyPolicy.detect(a, b, conflicts);
         SecondOrderThinkingPolicy.detect(a, b, conflicts);
         EcologicalFallacyPolicy.detect(a, b, conflicts);
+        SelectionBiasPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
