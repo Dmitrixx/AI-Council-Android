@@ -61,6 +61,7 @@ public final class DeliberationSignals {
         SelectionBiasPolicy.detect(a, b, conflicts);
         AppealToIgnorancePolicy.detect(a, b, conflicts);
         BaseRateNeglectPolicy.detect(a, b, conflicts);
+        SimpsonParadoxPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
