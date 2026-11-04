@@ -54,8 +54,9 @@ public final class PlanningFallacyPolicy {
                 "стоимость", "бюджет", "затраты", "estimate", "will take", "days", "weeks", "budget");
         boolean optimistic = has(t, "всего", "всего лишь", "быстро", "недорого", "легко", "просто",
                 "only", "quickly", "easily", "cheap");
-        boolean history = has(t, "похожие проекты", "в прошлом", "исторически", "base rate",
-                "типичный перерасход", "outside view", "reference class", "similar projects");
+        boolean history = has(t, "похожие проект", "похожих проект", "история похож", "в прошлом",
+                "исторически", "base rate", "типичный перерасход", "outside view", "reference class",
+                "similar projects", "historical data", "past projects");
         return estimate && optimistic && !history;
     }
 
