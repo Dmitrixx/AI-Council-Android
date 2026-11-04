@@ -60,6 +60,7 @@ public final class DeliberationSignals {
         EcologicalFallacyPolicy.detect(a, b, conflicts);
         SelectionBiasPolicy.detect(a, b, conflicts);
         AppealToIgnorancePolicy.detect(a, b, conflicts);
+        BaseRateNeglectPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
