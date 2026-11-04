@@ -402,7 +402,7 @@ jobs:
             cd "$GITHUB_WORKSPACE/${{ steps.source.outputs.project_dir }}"
             adb wait-for-device
             for attempt in $(seq 1 60); do
-              boot_completed="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\\r')"
+              boot_completed="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
               if [ "$boot_completed" = "1" ]; then break; fi
               sleep 2
             done
