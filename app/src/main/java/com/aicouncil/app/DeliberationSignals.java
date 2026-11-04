@@ -55,6 +55,7 @@ public final class DeliberationSignals {
         ScopeInsensitivityPolicy.detect(a, b, conflicts);
         AffectHeuristicPolicy.detect(a, b, conflicts);
         ConjunctionFallacyPolicy.detect(a, b, conflicts);
+        NarrativeFallacyPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
