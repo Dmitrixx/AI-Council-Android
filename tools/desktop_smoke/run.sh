@@ -81,6 +81,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/GamblersFallacyPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/HaloEffectPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ProbeBeforeCommitPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/PresentBiasPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DeliberationSignals.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ClaimGraph.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FallbackProviderPolicy.java" \
@@ -136,6 +137,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.LossAversionPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.PrincipalAgentPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.FalseDilemmaPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ProbeBeforeCommitPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.PresentBiasPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest
