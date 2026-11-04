@@ -89,6 +89,9 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ConjunctionFallacyPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/NarrativeFallacyPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/SecondOrderThinkingPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/EcologicalFallacyPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/SelectionBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/AppealToIgnorancePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DeliberationSignals.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ClaimGraph.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FallbackProviderPolicy.java" \
