@@ -243,9 +243,12 @@ public final class ReasoningFallacyPolicy {
     }
 
     private static boolean postHoc(String t) {
-        return has(t, "после этого", "after this", "після цього")
-                && has(t, "значит причина", "therefore the cause", "отже причина")
-                && !has(t, "контроль", "control", "другие факторы", "other factors");
+        return has(t, "после этого", "after this", "після цього", "після того")
+                && has(t, "значит причина", "значит из-за", "поэтому причина",
+                "therefore the cause", "therefore due to", "caused by", "caused it",
+                "отже причина", "значить через", "тому причина")
+                && !has(t, "контроль", "control", "контролир", "другие факторы", "other factors",
+                "не знаем почему", "do not know why", "не знаємо чому");
     }
 
     private static boolean circular(String t) {
