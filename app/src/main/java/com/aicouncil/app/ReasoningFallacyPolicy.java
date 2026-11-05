@@ -234,29 +234,33 @@ public final class ReasoningFallacyPolicy {
     private static boolean strawMan(String t) {
         return has(t, "misrepresents my position", "misrepresent", "straw man", "соломенн",
                 "искажает мою позицию", "упрощает позицию")
-                && has(t, "затем опровергает", "then refutes", "и опровергает");
+                && has(t, "затем опровергает", "then refutes", "и опровергает",
+                "instead of addressing", "вместо того чтобы отвечать");
     }
 
     private static boolean adHominem(String t) {
-        return has(t, "ты глуп", "you are stupid", "автор нечестный", "the author is dishonest")
-                && has(t, "значит аргумент ложный", "so the argument is false", "therefore the claim is wrong");
+        return has(t, "ты глуп", "you are stupid", "you are an idiot", "автор нечестный", "the author is dishonest")
+                && has(t, "значит аргумент ложный", "so the argument is false", "therefore the claim is wrong",
+                "so your argument is wrong", "argument is wrong");
     }
 
     private static boolean postHoc(String t) {
         return has(t, "после этого", "after this", "після цього")
-                && has(t, "значит причина", "therefore the cause", "отже причина")
-                && !has(t, "контроль", "control", "другие факторы", "other factors");
+                && has(t, "значит причина", "therefore the cause", "отже причина",
+                "из-за этого", "вызвало результат", "caused the result")
+                && !has(t, "контроль", "control", "другие факторы", "other factors", "do not know why");
     }
 
     private static boolean circular(String t) {
-        return has(t, "потому что это верно", "because it is true", "бо це правда")
-                && has(t, "а это верно потому что", "and it is true because");
+        return has(t, "верно, потому что это верно", "true because it is true", "правда, бо це правда")
+                || (has(t, "потому что это верно", "because it is true", "бо це правда")
+                && has(t, "а это верно потому что", "and it is true because"));
     }
 
     private static boolean hastyGeneralization(String t) {
-        return has(t, "один случай", "one case", "пара примеров", "a couple of examples")
-                && has(t, "значит все", "therefore all", "отже всі")
-                && !has(t, "выборка", "sample", "статистика", "statistics");
+        return (has(t, "один случай", "одному случаю", "по одному случаю", "one case", "пара примеров", "a couple of examples")
+                && has(t, "значит все", "все люди всегда", "therefore all", "отже всі"))
+                && !has(t, "выборка", "sample", "статистика", "statistics", "should not be generalized");
     }
 
     private static boolean correlationCausation(String t) {
@@ -267,26 +271,41 @@ public final class ReasoningFallacyPolicy {
 
     private static boolean middleGround(String t) {
         return has(t, "истина посередине", "truth is in the middle", "істина посередині")
-                && has(t, "поэтому компромисс", "so compromise", "тому компроміс");
+                && has(t, "поэтому компромисс", "so compromise", "тому компроміс", "усредним");
     }
 
     private static boolean opposingAction(String a, String b) {
-        return (has(a, "делать") && has(b, "не делать")) || (has(a, "do") && has(b, "don't")) || (has(a, "робити") && has(b, "не робити"));
+        boolean forbidAllow = (has(a, "запрет") && has(b, "разреш")) || (has(b, "запрет") && has(a, "разреш"));
+        boolean doDont = (has(a, "делать") && has(b, "не делать")) || (has(b, "делать") && has(a, "не делать"))
+                || (has(a, "do") && has(b, "don't")) || (has(a, "робити") && has(b, "не робити"));
+        return forbidAllow || doDont;
     }
 
     private static boolean anchoring(String t) {
-        return has(t, "первая цифра", "first number", "начальная оценка")
+        boolean classic = has(t, "первая цифра", "first number", "начальная оценка")
                 && has(t, "поэтому оставим", "so we stick with", "тому залишимо");
+        boolean named = has(t, "первое названное число", "стало якорем")
+                && has(t, "останемся рядом")
+                && !has(t, "не останемся", "отброшено");
+        return classic || named;
     }
 
     private static boolean gambler(String t) {
-        return has(t, "уже долго не выпадало", "has not come up for a long time", "вже довго не випадало")
+        boolean classic = has(t, "уже долго не выпадало", "has not come up for a long time", "вже довго не випадало")
                 && has(t, "значит скоро выпадет", "so it is due", "отже скоро випаде");
+        boolean streak = has(t, "раза подряд", "раз подряд")
+                && has(t, "должно выпасть", "вероятность выросла")
+                && !has(t, "не меняет шанс", "испытания независимы");
+        return classic || streak;
     }
 
     private static boolean texasSharpshooter(String t) {
-        return has(t, "после факта выделили кластер", "cluster selected after the fact", "після факту виділили кластер")
+        boolean classic = has(t, "после факта выделили кластер", "cluster selected after the fact", "після факту виділили кластер")
                 && has(t, "значит паттерн был заранее", "so the pattern was planned", "отже патерн був заздалегідь");
+        boolean painted = has(t, "выбрали кластер", "нарисовали круг")
+                && has(t, "паттерн значим")
+                && !has(t, "заранее зафиксирована", "не выделили после");
+        return classic || painted;
     }
 
     private static boolean relativePrivation(String t) {

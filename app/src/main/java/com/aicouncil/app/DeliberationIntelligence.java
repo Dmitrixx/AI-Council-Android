@@ -271,6 +271,14 @@ public final class DeliberationIntelligence {
         sb.append("Порядок шагов не переставляй. Необходимое условие не называй достаточным. Носителя решения и бремя доказательства сохрани как есть. Причину и следствие не меняй местами. ");
         sb.append("Если посчитана ожидаемая ценность или вероятности не сходятся, не заменяй их средним двух историй: сначала сверь шанс, выигрыш и потерю. ");
         sb.append("Предпочитай ответы с более высокой evidence density; при разрыве ≥20 явно укажи предпочтение.\n");
+        int hypotheses = 0;
+        for (String conflict : brief.conflicts) {
+            if (conflict.contains("возможный сигнал")) hypotheses++;
+        }
+        if (hypotheses >= 2) {
+            sb.append("ПОТОЛОК УВЕРЕННОСТИ: локальных гипотез искажения — ").append(hypotheses)
+                    .append(". Не поднимай уверенность выше осторожной, пока верхний конфликт не снят новым наблюдением, а не повтором формулировки.\n");
+        }
         return sb.toString().trim();
     }
 
@@ -1027,6 +1035,9 @@ public final class DeliberationIntelligence {
         if (conflict.startsWith("масштаб")) return 11;
         if (conflict.startsWith("число")) return 12;
         if (conflict.startsWith("доказательства")) return 13;
+        // Hypothesis-only bias signals must stay above bare numbers, or the
+        // coordinator resolves a digit clash and averages the reasoning error away.
+        if (conflict.contains("возможный сигнал")) return 6;
         return 14;
     }
 }

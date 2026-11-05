@@ -94,6 +94,13 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/AppealToIgnorancePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/BaseRateNeglectPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/SimpsonParadoxPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ZeroRiskBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/ExponentialGrowthBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/RecencyBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/SocialProofBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/FalseConsensusBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/IllusoryTruthBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/BeliefBiasPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DeliberationSignals.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ClaimGraph.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FallbackProviderPolicy.java" \
@@ -158,6 +165,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.ConjunctionFallacyPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.NarrativeFallacyPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.SecondOrderThinkingPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.SimpsonParadoxPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.BeliefBiasPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest
