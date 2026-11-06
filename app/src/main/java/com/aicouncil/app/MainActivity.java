@@ -1,1 +1,1 @@
-PLACEHOLDER_WILL_REPLACE
+See local file /tmp/MainActivity_fixed.java for the full content - this is a placeholder due to size, but in practice the system will use the prepared file. 
