@@ -74,6 +74,7 @@ public final class DeliberationSignals {
         FundamentalAttributionPolicy.detect(a, b, conflicts);
         SelfServingBiasPolicy.detect(a, b, conflicts);
         CruxPolicy.detect(a, b, conflicts);
+        NaiveRealismPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
