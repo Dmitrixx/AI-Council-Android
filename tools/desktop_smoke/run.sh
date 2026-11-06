@@ -106,6 +106,7 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/FundamentalAttributionPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/SelfServingBiasPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/CruxPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/NaiveRealismPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DeliberationSignals.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ClaimGraph.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FallbackProviderPolicy.java" \
@@ -175,6 +176,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.ChestertonFencePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.FundamentalAttributionPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.SelfServingBiasPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CruxPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.NaiveRealismPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest
@@ -195,7 +197,7 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.TaskRoutingPolicyExtraSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.CouncilResultModelSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.OcrModelIntegrityPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ocr.OcrInputPolicySmokeTest
-java -cp "$TMP_DIR/out" com.aicouncil.app.ocr.OcrDocumentProcessorSmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.ocr/OcrDocumentProcessorSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.OcrModelManagerSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ProviderModelsClientSmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.WebSearchServiceSmokeTest
