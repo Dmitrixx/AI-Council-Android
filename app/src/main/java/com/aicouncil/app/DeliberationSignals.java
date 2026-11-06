@@ -71,6 +71,7 @@ public final class DeliberationSignals {
         BeliefBiasPolicy.detect(a, b, conflicts);
         ChestertonFencePolicy.detect(a, b, conflicts);
         OverconfidenceBiasPolicy.detect(a, b, conflicts);
+        FundamentalAttributionPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
