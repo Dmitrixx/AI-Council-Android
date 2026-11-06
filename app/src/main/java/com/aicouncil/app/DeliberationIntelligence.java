@@ -279,6 +279,12 @@ public final class DeliberationIntelligence {
             sb.append("ПОТОЛОК УВЕРЕННОСТИ: локальных гипотез искажения — ").append(hypotheses)
                     .append(". Не поднимай уверенность выше осторожной, пока верхний конфликт не снят новым наблюдением, а не повтором формулировки.\n");
         }
+        for (String conflict : brief.conflicts) {
+            if (conflict.contains("chesterton fence")) {
+                sb.append("Снос без исходной функции не закрывай: сначала назови, зачем правило или процесс появились.\n");
+                break;
+            }
+        }
         return sb.toString().trim();
     }
 
