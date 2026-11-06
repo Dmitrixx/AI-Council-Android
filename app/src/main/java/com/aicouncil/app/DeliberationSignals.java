@@ -77,6 +77,7 @@ public final class DeliberationSignals {
         NaiveRealismPolicy.detect(a, b, conflicts);
         OptimismBiasPolicy.detect(a, b, conflicts);
         DunningKrugerPolicy.detect(a, b, conflicts);
+        ProjectionBiasPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
