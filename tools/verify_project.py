@@ -62,9 +62,9 @@ try:
     theme_policy=THEME_POLICY.read_text(encoding='utf-8'); error_formatter=PROVIDER_ERROR_FORMATTER.read_text(encoding='utf-8'); styles=STYLES.read_text(encoding='utf-8'); night_styles=NIGHT_STYLES.read_text(encoding='utf-8'); light_splash=LIGHT_SPLASH.read_text(encoding='utf-8')
 except Exception as e:
     print('FAIL: Не удалось прочитать проект:', e); sys.exit(2)
-check('Версия Android-приложения — 2.49.0 / code 116 / API 36', "versionCode 116" in gradle and "versionName '2.49.0'" in gradle and 'compileSdk 36' in gradle and 'targetSdk 36' in gradle)
+check('Версия Android-приложения — 2.53.0 / code 120 / API 36', "versionCode 120" in gradle and "versionName '2.53.0'" in gradle and 'compileSdk 36' in gradle and 'targetSdk 36' in gradle)
 check('Android Gradle Plugin 9.4.0 и Java-only модуль без Kotlin compiler task', "version '9.4.0'" in (ROOT/'build.gradle').read_text(encoding='utf-8') and 'enableKotlin = false' in gradle)
-check('Версия Java — 2.49.0', 'APP_VERSION = "2.49.0"' in src)
+check('Версия Java — 2.53.0', 'APP_VERSION = "2.53.0"' in src)
 check('Облачные chat-запросы используют OkHttp и SSE stream=true вне Activity', CHAT_CLIENT.exists() and 'OkHttpClient' in CHAT_CLIENT.read_text(encoding='utf-8') and 'body.put("stream", true)' in src and 'HttpURLConnection' not in CHAT_CLIENT.read_text(encoding='utf-8'))
 check('Получение списка моделей вынесено из Activity в ограниченный OkHttp-клиент', PROVIDER_MODELS_CLIENT.exists() and 'providerModelsClient.fetch(base, apiKey, localOnlyRequested' in src and 'HttpURLConnection' not in src)
 check('Оркестрация поиска, ранжирование и HTML извлечение вынесены из Activity', 'private String searchBrave' not in src and 'private String rankSearchResults' not in src and 'public String search(' in search_service and 'android.' not in search_service and 'webSearchService.search(rawQuery, contextMode, braveKey, tavilyKey' in src)
@@ -89,7 +89,7 @@ check('Ближняя выгода без горизонта и ставки д�
 
 check('Стриминг имеет per-expert колонки до завершения генерации', 'initializeStreamingCards(mode, true)' in src and 'onApiToken(expertSlot, token)' in src and 'detail.setText(buffer.length() == 0 ? "Ожидает потокового ответа…" : buffer.toString())' in src)
 check('Снос правила без исходной функции остаётся гипотезой забора Честертона', (ROOT/'app/src/main/java/com/aicouncil/app/ChestertonFencePolicy.java').exists() and 'ChestertonFencePolicy.detect(a, b, conflicts)' in (ROOT/'app/src/main/java/com/aicouncil/app/DeliberationSignals.java').read_text(encoding='utf-8') and 'возможный сигнал' in (ROOT/'app/src/main/java/com/aicouncil/app/ChestertonFencePolicy.java').read_text(encoding='utf-8') and 'ChestertonFencePolicySmokeTest' in runner and 'зачем они появились' in (ROOT/'app/src/main/java/com/aicouncil/app/SynthesisProtocol.java').read_text(encoding='utf-8') and 'гипотеза Честертона' in (ROOT/'app/src/main/java/com/aicouncil/app/SynthesisProtocol.java').read_text(encoding='utf-8'))
-check('Документация отражает текущую версию и сохраняет предыдущий журнал', readme.startswith('# AI Council 2.49.0') and '# 2.47.0' in changelog and '# 2.46.0' in changelog)
+check('Документация отражает текущую версию и сохраняет предыдущий журнал', readme.startswith('# AI Council 2.53.0') and '# 2.47.0' in changelog and '# 2.46.0' in changelog)
 check('Git игнорирует Android build output и локальные ключи подписи', all(x in gitignore for x in ['**/build/', 'local.properties', '*.jks', '*.keystore', '.env']))
 check('Настройка темы сохраняет system/light/dark и безопасно нормализует неизвестные значения', all(x in theme_policy for x in ['SYSTEM = "system"', 'LIGHT = "light"', 'DARK = "dark"', 'normalizeMode', 'useLightTheme']))
 check('Выбор темы доступен в настройках и сохраняется локально', 'Цветовая тема AI Council' in src and 'putString("appTheme", selectedMode)' in src and 'modeIndex(activeTheme)' in src)
@@ -407,7 +407,8 @@ check('Пользователь выбирает маскировать, отп�
 check('PromptPrivacyPolicy переиспользует общий SecretRedactor без сетевых вызовов', 'SecretRedactor.redact(value, "")' in privacy_policy and 'HttpURLConnection' not in privacy_policy)
 check('Проверка учитывает сохранённые ключи провайдеров Brave и Tavily', 'collectConfiguredSecretsForPrivacyScan()' in src and 'braveSearchKey' in src and 'tavilySearchKey' in src and 'PromptPrivacyPolicy.redact(original, knownSecrets)' in src)
 check('Автономный smoke test privacy guard добавлен в runner', 'PromptPrivacyPolicy.java' in runner and 'PromptPrivacyPolicySmokeTest' in runner and PRIVACY_TEST.exists())
-check('Версия приложения синхронизирована на 2.49.0', "versionName '2.49.0'" in gradle and 'APP_VERSION = "2.49.0"' in src)
+check('Версия приложения синхронизирована на 2.53.0', "versionName '2.53.0'" in gradle and 'APP_VERSION = "2.53.0"' in src)
+check('Разногласие без переключателя остаётся гипотезой crux и не закрывает метку ДЕЛАТЬ', (ROOT/'app/src/main/java/com/aicouncil/app/CruxPolicy.java').exists() and 'CruxPolicy.detect(a, b, conflicts)' in (ROOT/'app/src/main/java/com/aicouncil/app/DeliberationSignals.java').read_text(encoding='utf-8') and 'возможный сигнал' in (ROOT/'app/src/main/java/com/aicouncil/app/CruxPolicy.java').read_text(encoding='utf-8') and 'CruxPolicy.java' in runner and 'CruxPolicySmokeTest' in runner and 'переключателя (crux)' in (ROOT/'app/src/main/java/com/aicouncil/app/SynthesisProtocol.java').read_text(encoding='utf-8'))
 check('Протокол синтеза классифицирует задачу и не даёт усреднять несовместимые тезисы', (ROOT/'app/src/main/java/com/aicouncil/app/SynthesisProtocol.java').exists() and 'SynthesisProtocol.expertBlock(request.task)' in engine and 'SynthesisProtocol.coordinatorBlock(r.task, localMap)' in engine and 'Несовместимые тезисы не усредняй' in (ROOT/'app/src/main/java/com/aicouncil/app/SynthesisProtocol.java').read_text(encoding='utf-8') and 'SynthesisProtocol.java' in runner and 'SynthesisProtocolSmokeTest' in runner)
 failed=[]
 for name,ok in checks:

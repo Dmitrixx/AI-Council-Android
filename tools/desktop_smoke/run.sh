@@ -104,6 +104,8 @@ printf '%s\n' \
   "$ROOT/app/src/main/java/com/aicouncil/app/ChestertonFencePolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/OverconfidenceBiasPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FundamentalAttributionPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/SelfServingBiasPolicy.java" \
+  "$ROOT/app/src/main/java/com/aicouncil/app/CruxPolicy.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/DeliberationSignals.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/ClaimGraph.java" \
   "$ROOT/app/src/main/java/com/aicouncil/app/FallbackProviderPolicy.java" \
@@ -171,6 +173,8 @@ java -cp "$TMP_DIR/out" com.aicouncil.app.SimpsonParadoxPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.BeliefBiasPolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.ChestertonFencePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.FundamentalAttributionPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.SelfServingBiasPolicySmokeTest
+java -cp "$TMP_DIR/out" com.aicouncil.app.CruxPolicySmokeTest
 
 java -cp "$TMP_DIR/out" com.aicouncil.app.ExpertRolePolicySmokeTest
 java -cp "$TMP_DIR/out" com.aicouncil.app.TruncatedAnswerPolicySmokeTest
