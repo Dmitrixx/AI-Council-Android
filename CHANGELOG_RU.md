@@ -1,3 +1,9 @@
+# 2.68.0 — Illusion of control
+
+- Добавлен `IllusionOfControlPolicy`. Переоценка способности контролировать исход («я контролирую», «если я сделаю — точно сработает», «всё зависит от меня», «I can make it happen») без учёта случайности, внешних факторов или base rates — гипотеза, не доказательство (illusion of control). Отличается от overconfidence, optimism bias и planning fallacy.
+- Отдельный сигнал, если оба эксперта переоценивают личный контроль над исходом, игнорируя случайность и внешние ограничения.
+- Модуль подключён в `DeliberationSignals.detectAll`. Сигналы — гипотезы, требующие контекста. Gradle / APP_VERSION теперь `2.68.0` / versionCode `135`.
+
 # 2.67.0 — Bandwagon / groupthink bias
 
 - Добавлен `BandwagonBiasPolicy`. Вывод на основе «все согласны», «большинство так думает», «популярное мнение», «консенсус ясен» без независимой оценки доказательств или анализа диссента — гипотеза, не доказательство (bandwagon bias / groupthink). Отличается от social proof и authority bias.
