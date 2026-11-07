@@ -87,6 +87,7 @@ public final class DeliberationSignals {
         FocusingIllusionPolicy.detect(a, b, conflicts);
         PeakEndRulePolicy.detect(a, b, conflicts);
         ActionBiasPolicy.detect(a, b, conflicts);
+        NormalcyBiasPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
