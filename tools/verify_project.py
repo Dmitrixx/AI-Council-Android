@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 GRADLE = ROOT / "app" / "build.gradle"
 SIGNALS = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "DeliberationSignals.java"
 
-EXPECTED_VERSION = "2.60.0"
-EXPECTED_CODE = 127
+EXPECTED_VERSION = "2.61.0"
+EXPECTED_CODE = 128
 
 REQUIRED_POLICIES = [
     "AutomationBiasPolicy",
@@ -26,6 +26,8 @@ REQUIRED_POLICIES = [
     "NaiveRealismPolicy",
     "CruxPolicy",
     "EndowmentEffectPolicy",
+    "MysideBiasPolicy",
+    "FalsePrecisionPolicy",
     "LossAversionPolicy",
     "StatusQuoPolicy",
     "SunkCostPolicy",
@@ -60,10 +62,18 @@ def main() -> int:
             if f"{policy}.detect" not in signals:
                 errors.append(f"{policy} not wired into DeliberationSignals.detectAll")
 
-    # Presence of the new policy source file
-    policy_path = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "EndowmentEffectPolicy.java"
-    if not policy_path.is_file():
-        errors.append(f"missing {policy_path.name}")
+    for name in ("MysideBiasPolicy.java", "FalsePrecisionPolicy.java", "EndowmentEffectPolicy.java"):
+        policy_path = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / name
+        if not policy_path.is_file():
+            errors.append(f"missing {policy_path.name}")
+
+    intel_path = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "DeliberationIntelligence.java"
+    if not intel_path.is_file():
+        errors.append("missing DeliberationIntelligence.java")
+    else:
+        intel = intel_path.read_text(encoding="utf-8")
+        if "possible signal" not in intel or "isHypothesisSignal" not in intel:
+            errors.append("confidence ceiling ignores English possible signal markers")
 
     if errors:
         print("verify_project.py FAILED:")

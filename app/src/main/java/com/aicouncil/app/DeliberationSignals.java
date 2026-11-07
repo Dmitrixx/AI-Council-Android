@@ -81,6 +81,8 @@ public final class DeliberationSignals {
         JustWorldBiasPolicy.detect(a, b, conflicts);
         AutomationBiasPolicy.detect(a, b, conflicts);
         EndowmentEffectPolicy.detect(a, b, conflicts);
+        MysideBiasPolicy.detect(a, b, conflicts);
+        FalsePrecisionPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
