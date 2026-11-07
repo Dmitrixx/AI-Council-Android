@@ -1,10 +1,16 @@
-# AI Council 2.66.0
+# AI Council 2.67.0
 
-В локальной карте 2.66.0 вывод, что резких изменений или катастроф не будет («всё будет как обычно», «такого не было», «things will stay normal»), без базовых рисков, tail-risk анализа или исторических прецедентов вне недавнего окна, остаётся гипотезой (normalcy bias), а не доказательством. В локальной карте 2.65.0 вывод, что лучше действовать, чем ничего не делать («надо что-то сделать», «нельзя просто ждать», «better to do something than nothing»), без сравнения ожидаемой ценности бездействия или ожидания, остаётся гипотезой (action bias), а не доказательством. ... (предыдущие заметки сохранены в истории коммитов).
+В локальной карте 2.67.0 вывод на основе «все согласны», «большинство так думает», «популярное мнение» или «консенсус ясен» без независимой оценки доказательств и анализа диссента остаётся гипотезой (bandwagon bias / groupthink), а не доказательством. В локальной карте 2.66.0 вывод, что резких изменений или катастроф не будет («всё будет как обычно», «такого не было», «things will stay normal»), без базовых рисков, tail-risk анализа или исторических прецедентов вне недавнего окна, остаётся гипотезой (normalcy bias), а не доказательством. ... (предыдущие заметки сохранены в истории коммитов).
 
-Современная оболочка AI Council: чернильные поверхности, мятный акцент, плавающая навигация и контент от края до края на Android 11+. Версия 2.79.0+ дополняет четыре слота совета, структурированные утверждения, пакетный импорт документов/файлов/фото, локальный OCR и арифметический калькулятор консервативными локальными сигналами возможных логических ошибок, калибровки, премортема, outside view, анализа чувствительности, tail risk, opportunity cost, Goodhart (metric gaming), sunk cost, эргодичности (разорение при положительном среднем), корреляции моделей, якорения, status quo bias, эвристики доступности, эвристики репрезентативности, planning fallacy, hindsight bias, неприятие неопределённости, неприятие потерь (loss aversion), интереса советчика (principal–agent), ложной дилеммы, narrative fallacy, second-order thinking, ecological fallacy, selection bias, appeal to ignorance, base rate neglect, Simpson paradox, zero-risk bias, exponential growth bias, recency bias, social proof bias, false consensus bias, illusory truth bias, belief bias, забор Честертона, overconfidence, fundamental attribution, self-serving bias, crux, naive realism, optimism bias, dunning-kruger, projection bias, just-world bias, automation bias, endowment effect, myside bias, false precision, IKEA effect, focusing illusion, peak-end rule, action bias, normalcy bias и других рисков рассуждений. Сигналы — гипотезы, требующие контекста, а не автоматические вердикты.
+Современная оболочка AI Council: чернильные поверхности, мятный акцент, плавающая навигация и контент от края до края на Android 11+. Версия 2.79.0+ дополняет четыре слота совета, структурированные утверждения, пакетный импорт документов/файлов/фото, локальный OCR и арифметический калькулятор консервативными локальными сигналами возможных логических ошибок, калибровки, премортема, outside view, анализа чувствительности, tail risk, opportunity cost, Goodhart (metric gaming), sunk cost, эргодичности (разорение при положительном среднем), корреляции моделей, якорения, status quo bias, эвристики доступности, эвристики репрезентативности, planning fallacy, hindsight bias, неприятие неопределённости, неприятие потерь (loss aversion), интереса советчика (principal–agent), ложной дилеммы, narrative fallacy, second-order thinking, ecological fallacy, selection bias, appeal to ignorance, base rate neglect, Simpson paradox, zero-risk bias, exponential growth bias, recency bias, social proof bias, false consensus bias, illusory truth bias, belief bias, забор Честертона, overconfidence, fundamental attribution, self-serving bias, crux, naive realism, optimism bias, dunning-kruger, projection bias, just-world bias, automation bias, endowment effect, myside bias, false precision, IKEA effect, focusing illusion, peak-end rule, action bias, normalcy bias, bandwagon bias и других рисков рассуждений. Сигналы — гипотезы, требующие контекста, а не автоматические вердикты.
 
 AI Council — Android-приложение для работы с несколькими ИИ-провайдерами: независимые ответы, аудит, глубокий анализ, локальные серверы, поиск источников, импорт документов и экспорт отчётов.
+
+## 2.67.0 — Bandwagon / groupthink bias
+
+- Добавлен `BandwagonBiasPolicy`: локально замечает вывод на основе «все согласны», «большинство так думает», «popular opinion» без независимой оценки доказательств или steelmanning диссента.
+- Отдельный сигнал, если оба эксперта опираются на консенсус/большинство без независимой проверки.
+- Сигнал участвует в карте разногласий. Это гипотеза, требующая контекста, а не вердикт. Gradle / APP_VERSION теперь `2.67.0` / versionCode `134`.
 
 ## 2.66.0 — Normalcy bias
 
@@ -12,10 +18,4 @@ AI Council — Android-приложение для работы с нескол�
 - Отдельный сигнал, если оба эксперта недооценивают риск резких изменений, полагаясь только на недавнюю «нормальность».
 - Сигнал участвует в карте разногласий. Это гипотеза, требующая контекста, а не вердикт. Gradle / APP_VERSION теперь `2.66.0` / versionCode `133`.
 
-## 2.65.0 — Action bias
-
-- Добавлен `ActionBiasPolicy`: локально замечает вывод, что лучше действовать, чем ничего не делать («надо что-то сделать», «нельзя просто сидеть и ждать», «we must do something»), без сравнения ожидаемой ценности бездействия.
-- Отдельный сигнал, если оба эксперта предпочитают действие без явного сравнения с ценностью ожидания.
-- Сигнал участвует в карте разногласий. Это гипотеза, требующая контекста, а не вердикт. Gradle / APP_VERSION теперь `2.65.0` / versionCode `132`.
-
-Остальная документация предыдущих версий сохранена в истории файла; актуальная версия сборки — 2.66.0 / 133.
+Остальная документация предыдущих версий сохранена в истории файла; актуальная версия сборки — 2.67.0 / 134.
