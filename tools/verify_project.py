@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 GRADLE = ROOT / "app" / "build.gradle"
 SIGNALS = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "DeliberationSignals.java"
 
-EXPECTED_VERSION = "2.64.0"
-EXPECTED_CODE = 131
+EXPECTED_VERSION = "2.65.0"
+EXPECTED_CODE = 132
 
 REQUIRED_POLICIES = [
     "AutomationBiasPolicy",
@@ -31,6 +31,7 @@ REQUIRED_POLICIES = [
     "IKEAEffectPolicy",
     "FocusingIllusionPolicy",
     "PeakEndRulePolicy",
+    "ActionBiasPolicy",
     "LossAversionPolicy",
     "StatusQuoPolicy",
     "SunkCostPolicy",
@@ -65,7 +66,7 @@ def main() -> int:
             if f"{policy}.detect" not in signals:
                 errors.append(f"{policy} not wired into DeliberationSignals.detectAll")
 
-    for name in ("MysideBiasPolicy.java", "FalsePrecisionPolicy.java", "EndowmentEffectPolicy.java", "IKEAEffectPolicy.java", "FocusingIllusionPolicy.java", "PeakEndRulePolicy.java"):
+    for name in ("MysideBiasPolicy.java", "FalsePrecisionPolicy.java", "EndowmentEffectPolicy.java", "IKEAEffectPolicy.java", "FocusingIllusionPolicy.java", "PeakEndRulePolicy.java", "ActionBiasPolicy.java"):
         policy_path = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / name
         if not policy_path.is_file():
             errors.append(f"missing {policy_path.name}")
