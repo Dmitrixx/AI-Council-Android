@@ -99,6 +99,7 @@ public final class DeliberationSignals {
         AssumptionLedgerPolicy.detect(a, b, conflicts);
         SemmelweisReflexPolicy.detect(a, b, conflicts);
         ReactancePolicy.detect(a, b, conflicts);
+        SlipperySlopePolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
