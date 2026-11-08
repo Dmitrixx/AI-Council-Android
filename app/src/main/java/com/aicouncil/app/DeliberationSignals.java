@@ -97,6 +97,7 @@ public final class DeliberationSignals {
         UnderdeterminationPolicy.detect(a, b, conflicts);
         MotteAndBaileyPolicy.detect(a, b, conflicts);
         AssumptionLedgerPolicy.detect(a, b, conflicts);
+        SemmelweisReflexPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
