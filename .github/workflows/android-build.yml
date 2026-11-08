@@ -117,7 +117,10 @@ jobs:
                   content = content.replace(old, new, 1)
                   file.write_text(content, encoding="utf-8")
               elif already_fixed not in content:
-                  raise SystemExit("Unexpected source shape in " + path)
+                  if path.endswith("MainActivity.java") and "class MainActivity" in content and "extends Activity" in content:
+                      print("MainActivity already a full activity; skip legacy chip patch")
+                  else:
+                      raise SystemExit("Unexpected source shape in " + path)
 
           replace_once(
               "app/src/main/java/com/aicouncil/app/ChatCompletionsClient.java",
@@ -304,25 +307,20 @@ jobs:
           set -euo pipefail
           apk_src="${{ steps.source.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$apk_src"
-          asset="$RUNNER_TEMP/AI-Council-2.36.0-debug.apk"
+          gradle="${{ steps.source.outputs.project_dir }}/app/build.gradle"
+          version="$(sed -n "s/.*versionName '\\([^']*\\)'.*/\\1/p" "$gradle" | head -1)"
+          test -n "$version"
+          asset="$RUNNER_TEMP/AI-Council-${version}-debug.apk"
           checksum="$asset.sha256"
           cp "$apk_src" "$asset"
           (cd "$RUNNER_TEMP" && sha256sum "$(basename "$asset")" > "$(basename "$checksum")")
           notes="$RUNNER_TEMP/release-notes.md"
-          cat > "$notes" <<'EOF'
-          # AI Council 2.36.0
-
-          Conservative local reasoning-risk signals were added for common argument patterns. Signals are explicitly marked as hypotheses that require context, not definitive fallacy verdicts. The release includes the four-slot council, bounded batch document/photo import, multilingual local OCR and deterministic arithmetic checks.
-
-          Локальные сигналы логических рисков помечаются как гипотезы и требуют проверки контекста, а не являются автоматическим приговором аргументу. В релиз также входят четыре слота совета, пакетный импорт документов/фото, многоязычный локальный OCR и детерминированная арифметическая проверка.
-
-          Photos are currently passed to models as locally recognized text; raw image payloads for vision models are not yet integrated.
-          EOF
-          sed -i 's/^          //' "$notes"
-          if gh release view v2.36.0 >/dev/null 2>&1; then
-            gh release upload v2.36.0 "$asset" "$checksum" --clobber
+          VERSION="$version" NOTES="$notes" python3 -c 'import os; from pathlib import Path; v=os.environ["VERSION"]; Path(os.environ["NOTES"]).write_text("# AI Council %s\n\nDebug APK from main. Local reasoning-risk signals are hypotheses that need context, not automatic verdicts.\n\nОтладочная сборка. Локальные сигналы рассуждений — гипотезы, а не вердикт. Четыре слота совета, пакетный импорт и локальный OCR сохранены.\n" % v, encoding="utf-8")'
+          tag="v${version}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$asset" "$checksum" --clobber
           else
-            gh release create v2.36.0 --title "AI Council 2.36.0" --notes-file "$notes" "$asset" "$checksum"
+            gh release create "$tag" --title "AI Council ${version}" --notes-file "$notes" "$asset" "$checksum"
           fi
 
   ui-tests:

@@ -91,6 +91,8 @@ public final class DeliberationSignals {
         BandwagonBiasPolicy.detect(a, b, conflicts);
         IllusionOfControlPolicy.detect(a, b, conflicts);
         ReactiveDevaluationPolicy.detect(a, b, conflicts);
+        ReversibilityPolicy.detect(a, b, conflicts);
+        StrawManPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */

@@ -280,10 +280,15 @@ replacements = [
         """check('PDF OCR использует выбор языка, выбранный лимит и локальную модель', 'requestCyrillicPdfImport' in src and 'process(OcrDocumentProcessor.Input.scannedPdf(pdfBytes, displayName, language, ocrPdfPageLimit())' in src and 'tess.init(modelManager.getTesseractDirectory().getAbsolutePath(), language, TessBaseAPI.OEM_LSTM_ONLY)' in ocr_processor)"""
     )
 ]
+activity_now = (ROOT / "app/src/main/java/com/aicouncil/app/MainActivity.java").read_text(encoding="utf-8")
+page_limit_shipped = "ocrPdfPageLimit()" in activity_now and "showOcrPdfPageLimitDialog" in activity_now
 for old, new in replacements:
     if old in text:
         text = text.replace(old, new, 1)
     elif new not in text:
+        if page_limit_shipped:
+            print("skip legacy verify anchor; PDF page limit already in MainActivity")
+            continue
         raise SystemExit("Static-check source anchor not found: " + old[:90])
 check_anchor = """check('OCR scanned-PDF ограничен первыми 5 страницами', 'DEFAULT_MAX_PAGES = 5' in ocr_input_policy and 'pagesToProcess(pageCount, maxPages)' in ocr_processor)"""
 check_new = check_anchor + """
@@ -291,8 +296,12 @@ check('Лимит страниц PDF выбирается в UI: 5 по умол
 check('Оба пути PDF передают выбранный лимит в единый OCR процессор', 'Input.pdf(fileBytes, displayName, \\"eng\\", ocrPdfPageLimit())' in src and 'Input.scannedPdf(pdfBytes, displayName, language, ocrPdfPageLimit())' in src and 'input.maxPages' in ocr_processor)"""
 if "Лимит страниц PDF выбирается в UI" not in text:
     if check_anchor not in text:
-        raise SystemExit("Static-check insertion anchor not found")
-    text = text.replace(check_anchor, check_new, 1)
+        if page_limit_shipped:
+            print("skip legacy verify insertion; PDF page limit already shipped")
+        else:
+            raise SystemExit("Static-check insertion anchor not found")
+    else:
+        text = text.replace(check_anchor, check_new, 1)
 verify_path.write_text(text, encoding="utf-8")
 
 

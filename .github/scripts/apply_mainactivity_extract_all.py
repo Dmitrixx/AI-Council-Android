@@ -7,7 +7,7 @@ import urllib.request
 
 KNOWN_GOOD_URL = (
     "https://raw.githubusercontent.com/Dmitrixx/AI-Council-Android/"
-    "125a66e17593c64c86d5e2b13028558c18b5d8dc/"
+    "14d24fe0a24d1e82a81889187de45f1bd2e3ad63/"
     "app/src/main/java/com/aicouncil/app/MainActivity.java"
 )
 MIN_EXPECTED_BYTES = 100000
