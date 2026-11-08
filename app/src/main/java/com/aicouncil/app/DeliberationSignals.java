@@ -103,6 +103,7 @@ public final class DeliberationSignals {
         AdHominemPolicy.detect(a, b, conflicts);
         WhataboutismPolicy.detect(a, b, conflicts);
         MovingTheGoalpostsPolicy.detect(a, b, conflicts);
+        CircularReasoningPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
