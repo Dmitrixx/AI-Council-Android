@@ -95,6 +95,7 @@ public final class DeliberationSignals {
         StrawManPolicy.detect(a, b, conflicts);
         ZeroSumBiasPolicy.detect(a, b, conflicts);
         UnderdeterminationPolicy.detect(a, b, conflicts);
+        MotteAndBaileyPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
