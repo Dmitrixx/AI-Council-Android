@@ -105,6 +105,7 @@ public final class DeliberationSignals {
         MovingTheGoalpostsPolicy.detect(a, b, conflicts);
         CircularReasoningPolicy.detect(a, b, conflicts);
         PostHocPolicy.detect(a, b, conflicts);
+        ConfusionOfTheInversePolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */

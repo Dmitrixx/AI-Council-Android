@@ -213,6 +213,7 @@ public final class DeliberationIntelligence {
         detectQuantifierClash(a, b, conflicts);
         detectMetricKind(a, b, conflicts);
         DeliberationSignals.detectAll(a, b, conflicts);
+        ConfusionOfTheInversePolicy.detectAgainstTask(task, a, b, conflicts);
         detectSequenceClash(a, b, conflicts);
         detectLogicStrength(a, b, conflicts);
         detectDecisionOwner(a, b, conflicts);
@@ -284,6 +285,12 @@ public final class DeliberationIntelligence {
         for (String conflict : brief.conflicts) {
             if (conflict.contains("chesterton fence")) {
                 sb.append("Снос без исходной функции не закрывай: сначала назови, зачем правило или процесс появились.\n");
+                break;
+            }
+        }
+        for (String conflict : brief.conflicts) {
+            if (conflict.contains("confusion of the inverse")) {
+                sb.append("Не копируй точность теста, sensitivity или вероятность совпадения в вероятность гипотезы: нужны базовая частота и доля ложноположительных.\n");
                 break;
             }
         }

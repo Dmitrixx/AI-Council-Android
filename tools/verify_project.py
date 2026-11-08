@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 GRADLE = ROOT / "app" / "build.gradle"
 SIGNALS = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "DeliberationSignals.java"
 
-EXPECTED_VERSION = "2.83.0"
-EXPECTED_CODE = 150
+EXPECTED_VERSION = "2.84.0"
+EXPECTED_CODE = 151
 
 REQUIRED_POLICIES = [
     "AutomationBiasPolicy",
@@ -50,6 +50,7 @@ REQUIRED_POLICIES = [
     "MovingTheGoalpostsPolicy",
     "CircularReasoningPolicy",
     "PostHocPolicy",
+    "ConfusionOfTheInversePolicy",
     "LossAversionPolicy",
     "StatusQuoPolicy",
     "SunkCostPolicy",
@@ -84,7 +85,7 @@ def main() -> int:
             if f"{policy}.detect" not in signals:
                 errors.append(f"{policy} not wired into DeliberationSignals.detectAll")
 
-    for name in ("MysideBiasPolicy.java", "FalsePrecisionPolicy.java", "EndowmentEffectPolicy.java", "IKEAEffectPolicy.java", "FocusingIllusionPolicy.java", "PeakEndRulePolicy.java", "ActionBiasPolicy.java", "NormalcyBiasPolicy.java", "BandwagonBiasPolicy.java", "IllusionOfControlPolicy.java", "ReactiveDevaluationPolicy.java", "ReversibilityPolicy.java", "StrawManPolicy.java", "ZeroSumBiasPolicy.java", "UnderdeterminationPolicy.java", "MotteAndBaileyPolicy.java", "AssumptionLedgerPolicy.java", "SemmelweisReflexPolicy.java", "ReactancePolicy.java", "SlipperySlopePolicy.java", "AdHominemPolicy.java", "WhataboutismPolicy.java", "MovingTheGoalpostsPolicy.java", "CircularReasoningPolicy.java", "PostHocPolicy.java"):
+    for name in ("MysideBiasPolicy.java", "FalsePrecisionPolicy.java", "EndowmentEffectPolicy.java", "IKEAEffectPolicy.java", "FocusingIllusionPolicy.java", "PeakEndRulePolicy.java", "ActionBiasPolicy.java", "NormalcyBiasPolicy.java", "BandwagonBiasPolicy.java", "IllusionOfControlPolicy.java", "ReactiveDevaluationPolicy.java", "ReversibilityPolicy.java", "StrawManPolicy.java", "ZeroSumBiasPolicy.java", "UnderdeterminationPolicy.java", "MotteAndBaileyPolicy.java", "AssumptionLedgerPolicy.java", "SemmelweisReflexPolicy.java", "ReactancePolicy.java", "SlipperySlopePolicy.java", "AdHominemPolicy.java", "WhataboutismPolicy.java", "MovingTheGoalpostsPolicy.java", "CircularReasoningPolicy.java", "PostHocPolicy.java", "ConfusionOfTheInversePolicy.java"):
         policy_path = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / name
         if not policy_path.is_file():
             errors.append(f"missing {policy_path.name}")
@@ -96,6 +97,14 @@ def main() -> int:
         intel = intel_path.read_text(encoding="utf-8")
         if "possible signal" not in intel or "isHypothesisSignal" not in intel:
             errors.append("confidence ceiling ignores English possible signal markers")
+
+    activity = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "MainActivity.java"
+    if not activity.is_file():
+        errors.append("missing MainActivity.java")
+    else:
+        activity_text = activity.read_text(encoding="utf-8")
+        if f'APP_VERSION = "{EXPECTED_VERSION}"' not in activity_text:
+            errors.append(f"MainActivity APP_VERSION is not {EXPECTED_VERSION}")
 
     if errors:
         print("verify_project.py FAILED:")
