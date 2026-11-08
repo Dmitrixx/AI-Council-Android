@@ -1019,6 +1019,7 @@ public final class DeliberationIntelligence {
     private static int cruxRank(String conflict) {
         // Logical-risk and decision-map signals are hypotheses, but they must stay visible.
         // They outrank choice/number clashes so the coordinator cannot average them away.
+        if (conflict.startsWith("журнал допущений")) return 1;
         if (conflict.startsWith("логический риск") || conflict.startsWith("карта решения")) return -1;
         if (conflict.startsWith("вероятности") || conflict.startsWith("ожидаемая ценность")) return 0;
         if (conflict.startsWith("полярность") || conflict.startsWith("исключительность")) return 0;
