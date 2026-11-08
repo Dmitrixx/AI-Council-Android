@@ -94,6 +94,7 @@ public final class DeliberationSignals {
         ReversibilityPolicy.detect(a, b, conflicts);
         StrawManPolicy.detect(a, b, conflicts);
         ZeroSumBiasPolicy.detect(a, b, conflicts);
+        UnderdeterminationPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
