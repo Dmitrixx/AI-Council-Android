@@ -8,6 +8,8 @@ mkdir -p "$OUT"
 LIST="$OUT/sources.txt"
 find "$ROOT/app/src/main/java" "$ROOT/tools/desktop_smoke/src" -name '*.java' \
   ! -name 'MainActivity.java' \
+  ! -name 'CouncilCrypto.java' \
+  ! -name 'CouncilShell.java' \
   ! -name 'ChipFlowLayout.java' \
   ! -name 'LocalDataStore.java' \
   ! -name 'ChatCompletionsClient.java' \
