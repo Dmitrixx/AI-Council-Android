@@ -300,6 +300,12 @@ public final class DeliberationIntelligence {
                 break;
             }
         }
+        for (String conflict : brief.conflicts) {
+            if (conflict.contains("appeal to consequences")) {
+                sb.append("Желаемые или страшные последствия не доказательство: отдели факт от ставки и не закрывай вывод апелляцией к последствиям.\n");
+                break;
+            }
+        }
         return sb.toString().trim();
     }
 
