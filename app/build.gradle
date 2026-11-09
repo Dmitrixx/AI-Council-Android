@@ -12,8 +12,8 @@ android {
         applicationId 'com.aicouncil.app'
         minSdk 23
         targetSdk 36
-        versionCode 158
-        versionName '2.91.0'
+        versionCode 159
+        versionName '2.92.0'
     }
 
     compileOptions {
