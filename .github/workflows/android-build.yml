@@ -109,6 +109,7 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           def replace_once(path, old, new, already_fixed):
               file = Path(path)
@@ -163,35 +164,21 @@ jobs:
               content = content.replace(later, '        modeDescription.setPadding(0,dp(3),0,dp(10)); taskCard.addView(modeDescription);', 1)
               activity.write_text(content, encoding="utf-8")
 
-          VERSIONS = [
-              "2.35.0", "2.34.0", "2.33.0", "2.32.0", "2.31.0", "2.30.0", "2.29.0", "2.28.0", "2.27.0", "2.26.0", "2.25.0", "2.24.0", "2.23.0", "2.22.0", "2.21.0", "2.20.0", "2.19.0", "2.18.0", "2.17.0", "2.16.0", "2.15.0", "2.14.0",
-              "2.13.0", "2.12.0", "2.11.0", "2.9.0", "2.4.1", "2.4.0",
-              "2.3.4", "2.3.3", "2.3.2", "2.3.1", "2.3.0",
-              "2.2.15", "2.2.14", "2.2.13", "2.2.12", "2.2.11", "2.2.10", "2.2.9", "2.2.8", "2.2.7", "2.2.6", "2.2.5",
-              "2.2.4", "2.2.3", "2.2.2", "2.2.1", "2.2.0", "2.1.0",
-          ]
-          TARGET = "2.36.0"
-          CODE = 103
-
-          content = activity.read_text(encoding="utf-8")
-          if ('APP_VERSION = "%s"' % TARGET) not in content:
-              for old_v in VERSIONS:
-                  if 'APP_VERSION = "%s"' % old_v in content:
-                      content = content.replace('APP_VERSION = "%s"' % old_v, 'APP_VERSION = "%s"' % TARGET, 1)
-                      activity.write_text(content, encoding="utf-8")
-                      break
-
+          # Prefer version from app/build.gradle (source of truth).
           gradle = Path("app/build.gradle")
           gt = gradle.read_text(encoding="utf-8")
-          if "versionName '%s'" % TARGET not in gt:
-              import re
-              current = re.search(r"versionName\s+'([^']+)'", gt)
-              name = current.group(1) if current else ""
-              # Never downgrade a release that is already newer than this pin.
-              if name in VERSIONS or name == "":
-                  gt2 = re.sub(r"versionCode\s+\d+", "versionCode %d" % CODE, gt, count=1)
-                  gt2 = re.sub(r"versionName\s+'[^']+'", "versionName '%s'" % TARGET, gt2, count=1)
-                  gradle.write_text(gt2, encoding="utf-8")
+          m_name = re.search(r"versionName\s+'([^']+)'", gt)
+          m_code = re.search(r"versionCode\s+(\d+)", gt)
+          TARGET = m_name.group(1) if m_name else "2.87.0"
+          CODE = int(m_code.group(1)) if m_code else 154
+
+          content = activity.read_text(encoding="utf-8")
+          m_app = re.search(r'APP_VERSION = "([^"]+)"', content)
+          current_app = m_app.group(1) if m_app else ""
+          if current_app != TARGET:
+              content = re.sub(r'APP_VERSION = "[^"]+"', 'APP_VERSION = "%s"' % TARGET, content, count=1)
+              activity.write_text(content, encoding="utf-8")
+              print("Aligned MainActivity APP_VERSION to", TARGET)
           PY
 
       - name: Add user-configurable PDF OCR page limit (5 / 20)
