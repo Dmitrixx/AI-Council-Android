@@ -108,6 +108,7 @@ public final class DeliberationSignals {
         ConfusionOfTheInversePolicy.detect(a, b, conflicts);
         MiddleGroundFallacyPolicy.detect(a, b, conflicts);
         AppealToConsequencesPolicy.detect(a, b, conflicts);
+        NoTrueScotsmanPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
