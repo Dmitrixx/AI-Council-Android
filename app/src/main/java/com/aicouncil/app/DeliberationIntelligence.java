@@ -165,16 +165,19 @@ public final class DeliberationIntelligence {
         List<String> qs = subquestions(task);
         boolean numeric = ForecastCoherencePolicy.wantsNumericContract(task);
         if ((qs.isEmpty() || task.length() < 40) && !numeric) return "";
+        String body;
         if (qs.isEmpty() || task.length() < 40) {
-            return "\n\nЧИСЛОВОЙ КОНТРАКТ: если оцениваешь шанс или срок, запиши явно «вероятность успеха N%», «выигрыш X» и «потеря Y», плюс reference class похожих случаев. Не подменяй это одной уверенностью.";
+            body = "\n\nЧИСЛОВОЙ КОНТРАКТ: если оцениваешь шанс или срок, запиши явно «вероятность успеха N%», «выигрыш X» и «потеря Y», плюс reference class похожих случаев. Не подменяй это одной уверенностью.";
+        } else {
+            StringBuilder sb = new StringBuilder("\n\nОБЩИЕ ПОДВОПРОСЫ (для согласованного разбора):\n");
+            for (String q : qs) sb.append("- ").append(q).append("\n");
+            if (slot == 1) sb.append("\nИспользуй другой метод / другую ветвь рассуждения относительно первого эксперта.");
+            if (numeric) {
+                sb.append("\nЧИСЛОВОЙ КОНТРАКТ: запиши «вероятность успеха N%», «выигрыш X» и «потеря Y», плюс reference class. Не подменяй это одной уверенностью.");
+            }
+            body = sb.toString();
         }
-        StringBuilder sb = new StringBuilder("\n\nОБЩИЕ ПОДВОПРОСЫ (для согласованного разбора):\n");
-        for (String q : qs) sb.append("- ").append(q).append("\n");
-        if (slot == 1) sb.append("\nИспользуй другой метод / другую ветвь рассуждения относительно первого эксперта.");
-        if (numeric) {
-            sb.append("\nЧИСЛОВОЙ КОНТРАКТ: запиши «вероятность успеха N%», «выигрыш X» и «потеря Y», плюс reference class. Не подменяй это одной уверенностью.");
-        }
-        return sb.toString();
+        return body + "\nКРИТЕРИЙ ОПРОВЕРЖЕНИЯ: назови одно наблюдение, которое изменило бы вывод. Без него рекомендация остаётся гипотезой.";
     }
 
     public static Brief analyze(String task, String answerA, String answerB) {
@@ -303,6 +306,12 @@ public final class DeliberationIntelligence {
         for (String conflict : brief.conflicts) {
             if (conflict.contains("appeal to consequences")) {
                 sb.append("Желаемые или страшные последствия не доказательство: отдели факт от ставки и не закрывай вывод апелляцией к последствиям.\n");
+                break;
+            }
+        }
+        for (String conflict : brief.conflicts) {
+            if (conflict.contains("disconfirmation")) {
+                sb.append("Не закрывай вердикт без наблюдения, которое его опровергло бы. Неопровержимое утверждение не становится фактом.\n");
                 break;
             }
         }

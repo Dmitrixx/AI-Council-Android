@@ -1,9 +1,9 @@
-# AI Council 2.93.0
+# AI Council 2.94.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.
 
-The installed version is `2.93.0` (versionCode 160). The local brain now flags genetic fallacy: dismissing or accepting an argument solely because of its origin or source rather than its merits stays a hypothesis, not independent evidence. Naming the fallacy does not raise the signal. The on-screen version matches Gradle. Local brain notes through 2.92.0 still flag nirvana fallacy.
+The installed version is `2.94.0` (versionCode 161). The local brain now requires a disconfirmation: a confident recommendation that names no observation which would change the conclusion stays a hypothesis, not a closed verdict. Declaring a claim unfalsifiable does not make it evidence. Naming the criterion does not raise the signal. Experts on decision tasks are asked for one breaking observation before they commit. The on-screen version matches Gradle. Local brain notes through 2.93.0 still flag genetic fallacy.
 
-Logical-risk signals, including genetic fallacy, remain hypotheses that need context, not automatic verdicts.
+Logical-risk signals, including a missing disconfirmation, remain hypotheses that need context, not automatic verdicts.
 
 > Primary documentation is in Russian: [README_RU.md](README_RU.md).

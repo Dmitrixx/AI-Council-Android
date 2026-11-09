@@ -115,6 +115,7 @@ public final class DeliberationSignals {
         AppealToEmotionPolicy.detect(a, b, conflicts);
         NirvanaFallacyPolicy.detect(a, b, conflicts);
         GeneticFallacyPolicy.detect(a, b, conflicts);
+        DisconfirmationPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
