@@ -109,6 +109,7 @@ public final class DeliberationSignals {
         MiddleGroundFallacyPolicy.detect(a, b, conflicts);
         AppealToConsequencesPolicy.detect(a, b, conflicts);
         NoTrueScotsmanPolicy.detect(a, b, conflicts);
+        HastyGeneralizationPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
