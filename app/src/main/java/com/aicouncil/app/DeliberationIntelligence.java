@@ -294,6 +294,12 @@ public final class DeliberationIntelligence {
                 break;
             }
         }
+        for (String conflict : brief.conflicts) {
+            if (conflict.contains("middle ground")) {
+                sb.append("Середину двух позиций не объявляй истиной: компромисс не наблюдение и не снимает конфликт чисел или рекомендаций.\n");
+                break;
+            }
+        }
         return sb.toString().trim();
     }
 
