@@ -114,6 +114,7 @@ public final class DeliberationSignals {
         TexasSharpshooterPolicy.detect(a, b, conflicts);
         AppealToEmotionPolicy.detect(a, b, conflicts);
         NirvanaFallacyPolicy.detect(a, b, conflicts);
+        GeneticFallacyPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
