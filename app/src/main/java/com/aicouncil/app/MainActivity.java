@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
     private boolean lightTheme = false;
     private Spinner themeSpinner;
     private static final String KEY_ALIAS = "AICouncilKeyV4";
-    private static final String APP_VERSION = "2.94.0";
+    private static final String APP_VERSION = "2.95.0";
     private static final int REQUEST_SAVE_TEXT = 1401;
     // ... (truncated for this call; in real use full content would be passed)
     // Full content is in /tmp/MainActivity.java and should be used
