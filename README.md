@@ -1,3 +1,7 @@
+# AI Council 3.2.0
+
+A local red-herring and tu-quoque check now flags irrelevant diversions and dismissals based on hypocrisy. Naming those errors is not itself an error. The coordinator cannot close a verdict on a distraction or on “you too”, and experts on a structured task are told that changing the subject or pointing at hypocrisy does not refute the claim. Version on screen matches Gradle: `3.2.0` / versionCode `169`.
+
 # AI Council 3.1.0
 
 A local appeal-to-tradition check now flags conclusions that something is good, correct, or preferable merely because it is traditional or "the way it has always been done". Naming that error is not itself an error. The coordinator cannot close a verdict on tradition alone, and experts on a structured task are told that tradition is not an argument. Version on screen matches Gradle: `3.1.0` / versionCode `168`.
