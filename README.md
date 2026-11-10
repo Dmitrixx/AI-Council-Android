@@ -1,3 +1,7 @@
+# AI Council 3.3.0
+
+A local red herring check now flags answers that distract from the main issue by introducing an unrelated topic. A local tu quoque check flags dismissing an argument solely because the speaker is hypocritical. Naming those errors is not itself an error. The coordinator cannot close a verdict on distraction or hypocrisy alone, and experts on a structured task are told that a red herring or tu quoque is not a refutation. Version on screen matches Gradle: `3.3.0` / versionCode `170`.
+
 # AI Council 3.2.0
 
 A local appeal-to-pity check now flags conclusions that something is true, good, or preferable merely because it evokes pity or sympathy. Naming that error is not itself an error. The coordinator cannot close a verdict on pity alone, and experts on a structured task are told that pity is not an argument. Version on screen matches Gradle: `3.2.0` / versionCode `169`.
