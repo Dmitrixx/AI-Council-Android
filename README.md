@@ -1,3 +1,7 @@
+# AI Council 3.1.0
+
+A local appeal-to-tradition check now flags conclusions that something is good, correct, or preferable merely because it is traditional or "the way it has always been done". Naming that error is not itself an error. The coordinator cannot close a verdict on tradition alone, and experts on a structured task are told that tradition is not an argument. Version on screen matches Gradle: `3.1.0` / versionCode `168`.
+
 # AI Council 3.0.0
 
 A local appeal-to-nature check now flags conclusions that something is good, safe, or preferable merely because it is "natural". Naming that error is not itself an error. The coordinator cannot close a verdict on naturalness alone, and experts on a structured task are told that natural does not imply good or safe. Version on screen matches Gradle: `3.0.0` / versionCode `167`.
