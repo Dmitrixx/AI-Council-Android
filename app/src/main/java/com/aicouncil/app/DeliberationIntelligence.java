@@ -315,6 +315,12 @@ public final class DeliberationIntelligence {
                 break;
             }
         }
+        for (String conflict : brief.conflicts) {
+            if (conflict.contains("special pleading")) {
+                sb.append("Исключение из правила без названного релевантного различия не закрывай: двойной стандарт — гипотеза, не основание.\n");
+                break;
+            }
+        }
         return sb.toString().trim();
     }
 
