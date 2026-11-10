@@ -177,7 +177,8 @@ public final class DeliberationIntelligence {
             }
             body = sb.toString();
         }
-        return body + "\nКРИТЕРИЙ ОПРОВЕРЖЕНИЯ: назови одно наблюдение, которое изменило бы вывод. Без него рекомендация остаётся гипотезой.";
+        return body + "\nКРИТЕРИЙ ОПРОВЕРЖЕНИЯ: назови одно наблюдение, которое изменило бы вывод. Без него рекомендация остаётся гипотезой."
+                + "\nФОРМАЛЬНАЯ ЛОГИКА: modus ponens и modus tollens допустимы. Не выводи причину из одного следствия и не отменяй следствие только потому, что одно достаточное условие не сработало.";
     }
 
     public static Brief analyze(String task, String answerA, String answerB) {
@@ -318,6 +319,18 @@ public final class DeliberationIntelligence {
         for (String conflict : brief.conflicts) {
             if (conflict.contains("special pleading")) {
                 sb.append("Исключение из правила без названного релевантного различия не закрывай: двойной стандарт — гипотеза, не основание.\n");
+                break;
+            }
+        }
+        for (String conflict : brief.conflicts) {
+            if (conflict.contains("false equivalence")) {
+                sb.append("Не закрывай вердикт на ложной эквивалентности: несходные случаи не усредняй, пока не названо релевантное различие.\n");
+                break;
+            }
+        }
+        for (String conflict : brief.conflicts) {
+            if (conflict.contains("propositional fallacy")) {
+                sb.append("Не выводи причину из одного следствия и не отменяй следствие из-за одного несработавшего достаточного условия. Modus tollens оставь в силе.\n");
                 break;
             }
         }
