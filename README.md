@@ -1,3 +1,7 @@
+# AI Council 3.2.0
+
+A local appeal-to-pity check now flags conclusions that something is true, good, or preferable merely because it evokes pity or sympathy. Naming that error is not itself an error. The coordinator cannot close a verdict on pity alone, and experts on a structured task are told that pity is not an argument. Version on screen matches Gradle: `3.2.0` / versionCode `169`.
+
 # AI Council 3.1.0
 
 A local appeal-to-tradition check now flags conclusions that something is good, correct, or preferable merely because it is traditional or "the way it has always been done". Naming that error is not itself an error. The coordinator cannot close a verdict on tradition alone, and experts on a structured task are told that tradition is not an argument. Version on screen matches Gradle: `3.1.0` / versionCode `168`.
