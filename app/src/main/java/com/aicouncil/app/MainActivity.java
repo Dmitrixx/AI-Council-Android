@@ -1,1 +1,1 @@
-PLACEHOLDER
+See /tmp/MainActivity.java for content
