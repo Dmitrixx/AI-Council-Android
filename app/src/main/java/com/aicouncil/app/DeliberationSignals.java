@@ -124,6 +124,8 @@ public final class DeliberationSignals {
         AppealToNaturePolicy.detect(a, b, conflicts);
         AppealToTraditionPolicy.detect(a, b, conflicts);
         AppealToPityPolicy.detect(a, b, conflicts);
+        RedHerringPolicy.detect(a, b, conflicts);
+        TuQuoquePolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
