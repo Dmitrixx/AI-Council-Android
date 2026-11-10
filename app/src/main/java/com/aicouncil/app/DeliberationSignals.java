@@ -123,6 +123,7 @@ public final class DeliberationSignals {
         EquivocationPolicy.detect(a, b, conflicts);
         AppealToNaturePolicy.detect(a, b, conflicts);
         AppealToTraditionPolicy.detect(a, b, conflicts);
+        AppealToPityPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
