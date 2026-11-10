@@ -120,6 +120,7 @@ public final class DeliberationSignals {
         SpecialPleadingPolicy.detect(a, b, conflicts);
         FalseEquivalencePolicy.detect(a, b, conflicts);
         PropositionalFallacyPolicy.detect(a, b, conflicts);
+        EquivocationPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */

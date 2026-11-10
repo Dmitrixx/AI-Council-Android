@@ -1,3 +1,7 @@
+# AI Council 2.99.0
+
+A local equivocation check now flags conclusions drawn from a name, a label, or a word's "original" meaning. Naming that error is not itself an error. The coordinator cannot close a verdict on the label, and experts on a structured task are told that a name is not an argument. Version on screen matches Gradle: `2.99.0` / versionCode `166`.
+
 # AI Council 2.98.0
 
 **Multi-provider AI council for Android** — independent answers, audits, deep analysis, local servers, source search, document import and report export.

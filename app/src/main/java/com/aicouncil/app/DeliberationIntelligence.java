@@ -178,7 +178,8 @@ public final class DeliberationIntelligence {
             body = sb.toString();
         }
         return body + "\nКРИТЕРИЙ ОПРОВЕРЖЕНИЯ: назови одно наблюдение, которое изменило бы вывод. Без него рекомендация остаётся гипотезой."
-                + "\nФОРМАЛЬНАЯ ЛОГИКА: modus ponens и modus tollens допустимы. Не выводи причину из одного следствия и не отменяй следствие только потому, что одно достаточное условие не сработало.";
+                + "\nФОРМАЛЬНАЯ ЛОГИКА: modus ponens и modus tollens допустимы. Не выводи причину из одного следствия и не отменяй следствие только потому, что одно достаточное условие не сработало."
+                + "\nИМЯ НЕ ДОВОД: название, ярлык и исконное значение слова не доказывают тезис. Не подменяй смысл термина по ходу аргумента.";
     }
 
     public static Brief analyze(String task, String answerA, String answerB) {
@@ -331,6 +332,12 @@ public final class DeliberationIntelligence {
         for (String conflict : brief.conflicts) {
             if (conflict.contains("propositional fallacy")) {
                 sb.append("Не выводи причину из одного следствия и не отменяй следствие из-за одного несработавшего достаточного условия. Modus tollens оставь в силе.\n");
+                break;
+            }
+        }
+        for (String conflict : brief.conflicts) {
+            if (conflict.contains("equivocation")) {
+                sb.append("Не закрывай вердикт на названии: ярлык и этимология не наблюдение, пока свойство не названо отдельно от слова.\n");
                 break;
             }
         }
