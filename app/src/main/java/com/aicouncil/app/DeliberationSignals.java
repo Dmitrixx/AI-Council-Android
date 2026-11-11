@@ -131,6 +131,7 @@ public final class DeliberationSignals {
         StreetlightPolicy.detect(a, b, conflicts);
         AppealToFearPolicy.detect(a, b, conflicts);
         PersonalIncredulityPolicy.detect(a, b, conflicts);
+        CompositionDivisionPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */

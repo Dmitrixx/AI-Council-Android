@@ -1,3 +1,7 @@
+# AI Council 3.8.0
+
+A local composition/division check now flags conclusions that attribute a property of the parts to the whole (or the whole to the parts) merely because it holds for one without independent justification for emergence or reduction. Naming that error is not itself an error. The coordinator cannot close a verdict on composition or division alone, and experts on a structured task are told that properties need not transfer between levels. Version on screen matches Gradle: `3.8.0` / versionCode `175`.
+
 # AI Council 3.7.0
 
 A local argument-from-personal-incredulity check now flags conclusions that something is false or impossible merely because the speaker cannot imagine or understand how it could be true. Naming that error is not itself an error. The coordinator cannot close a verdict on personal incredulity alone, and experts on a structured task are told that inability to comprehend is not evidence. Version on screen matches Gradle: `3.7.0` / versionCode `174`.
