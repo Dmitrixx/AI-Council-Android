@@ -1,3 +1,7 @@
+# AI Council 3.9.0
+
+A local weak-analogy check now flags conclusions that something is true or similar merely because of a superficial analogy without independent justification for the relevant similarity. Naming that error is not itself an error. The coordinator cannot close a verdict on a weak analogy alone, and experts on a structured task are told that an analogy is not proof. Version on screen matches Gradle: `3.9.0` / versionCode `176`.
+
 # AI Council 3.8.0
 
 A local composition/division check now flags conclusions that attribute a property of the parts to the whole (or the whole to the parts) merely because it holds for one without independent justification for emergence or reduction. Naming that error is not itself an error. The coordinator cannot close a verdict on composition or division alone, and experts on a structured task are told that properties need not transfer between levels. Version on screen matches Gradle: `3.8.0` / versionCode `175`.
