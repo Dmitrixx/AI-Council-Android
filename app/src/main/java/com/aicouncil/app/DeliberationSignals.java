@@ -133,6 +133,7 @@ public final class DeliberationSignals {
         PersonalIncredulityPolicy.detect(a, b, conflicts);
         CompositionDivisionPolicy.detect(a, b, conflicts);
         WeakAnalogyPolicy.detect(a, b, conflicts);
+        AppealToForcePolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
