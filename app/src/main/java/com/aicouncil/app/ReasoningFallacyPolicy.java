@@ -101,6 +101,8 @@ public final class ReasoningFallacyPolicy {
                 "нагруженный вопрос: вопрос уже содержит спорное допущение, которое предлагается принять без проверки");
         add(conflicts, initial, falseCause(a) || falseCause(b),
                 "ложная причина: одна причина утверждается как достаточная без исключения альтернатив и без механизма");
+        add(conflicts, initial, isOught(a) || isOught(b),
+                "is-ought: из описания «так есть» выводится «так должно», или из «так должно» выводится «так есть», без отдельной посылки");
     }
 
     private static void add(List<String> out, int initial, boolean condition, String message) {
@@ -348,6 +350,17 @@ public final class ReasoningFallacyPolicy {
                 "чому ви досі", "when did you stop")
                 && has(t, "это же очевидно", "everyone knows", "ясно же", "очевидно", "очевидно ж")
                 && !has(t, "это допущение", "this assumption", "нужно проверить", "needs checking", "це припущення");
+    }
+
+    private static boolean isOught(String t) {
+        return has(t, "раз так есть, значит так и должно", "так устроено, значит так и надо",
+                "это факт, поэтому это правильно", "из того что есть следует что должно",
+                "because it is the case it ought to be", "it is, therefore it should be",
+                "what is must be what ought to be", "раз так должно быть, значит так и есть",
+                "it ought to be, therefore it is", "is implies ought", "ought implies is")
+                && !has(t, "из есть не следует должно", "факт не делает норму",
+                "ought does not follow from is", "is does not imply ought",
+                "гильотина юма", "hume's guillotine", "is-ought");
     }
 
     private static boolean falseCause(String t) {

@@ -1,3 +1,7 @@
+# AI Council 3.12.0
+
+The council screen and the local deliberation brain are restored. A previous edit had replaced `MainActivity` and `DeliberationIntelligence` with short placeholders, so the installed UI and the coordinator map could not run. Both files are the full sources again. A local is-ought check now flags a verdict that treats a bare fact as a duty, or a wish as a fact. Naming Hume's guillotine is not itself an error. The coordinator cannot close on that jump alone. On a structured task, experts are told that force, pity, novelty, tradition, naturalness, a loaded question, a weak analogy and personal incredulity are not proof, and that «is» does not yield «ought». Version on screen matches Gradle: `3.12.0` / versionCode `179`.
+
 # AI Council 3.11.0
 
 A local loaded-question / complex-question check now flags conclusions that rest on a question which already presupposes an unproven or contested claim. Naming that error is not itself an error. The coordinator cannot close a verdict on a loaded question alone, and experts on a structured task are told that a presupposition is not proof. Version on screen matches Gradle: `3.11.0` / versionCode `178`.
