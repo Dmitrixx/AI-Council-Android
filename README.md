@@ -1,3 +1,7 @@
+# AI Council 3.10.0
+
+A local appeal-to-force check now flags conclusions that something is true or must be accepted merely because of a threat of force, punishment or coercion. Naming that error is not itself an error. The coordinator cannot close a verdict on an appeal to force alone, and experts on a structured task are told that force is not an argument. Version on screen matches Gradle: `3.10.0` / versionCode `177`.
+
 # AI Council 3.9.0
 
 A local weak-analogy check now flags conclusions that something is true or similar merely because of a superficial analogy without independent justification for the relevant similarity. Naming that error is not itself an error. The coordinator cannot close a verdict on a weak analogy alone, and experts on a structured task are told that an analogy is not proof. Version on screen matches Gradle: `3.9.0` / versionCode `176`.
