@@ -341,6 +341,7 @@ public final class DeliberationIntelligence {
                 break;
             }
         }
+        CoordinatorCue.append(sb, brief.conflicts);
         return sb.toString().trim();
     }
 

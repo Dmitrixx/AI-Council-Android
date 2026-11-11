@@ -1,0 +1,72 @@
+package com.aicouncil.app;
+
+import java.util.List;
+
+/**
+ * Turns a fired local hypothesis into one short instruction for the coordinator.
+ * The note says how to read the map. It is not a verdict and not a fact.
+ * Capped so a noisy answer cannot drown the task.
+ */
+public final class CoordinatorCue {
+    private static final int MAX_NOTES = 4;
+
+    /** Longer and more decision-shaped cues come first so the cap keeps them. */
+    private static final String[][] CUES = new String[][] {
+        {"seen and unseen", "Видимый эффект не весь счёт: назови невидимую цену или прямо напиши, что она неизвестна, и не закрывай выбор только увиденным."},
+        {"streetlight", "Лёгкая метрика не заменяет важное: не закрывай вердикт тем, что удобно посчитать, пока не сказано, что осталось неизмеренным."},
+        {"appeal to novelty", "Новизна или ярлык «инновация» не доказательство качества: не закрывай вердикт тем, что это новое."},
+        {"appeal to pity", "Жалость не делает тезис истинным: отдели вред людям от того, верен ли вывод."},
+        {"red herring", "Увод в сторону не закрывает исходный вопрос: вернись к тому, что спрашивали."},
+        {"tu quoque", "«Ты сам такой» не опровергает тезис: лицемерие говорящего оставь отдельно от аргумента."},
+        {"appeal to tradition", "«Так всегда было» не доказательство: традиция — гипотеза, не основание закрыть выбор."},
+        {"appeal to nature", "«Естественное» не значит правильное: натуральность не закрывает вердикт."},
+        {"burden of proof", "Пустое «докажи обратное» не перекладывает бремя: у того, кто утверждает, остаётся позитивное основание."},
+        {"hasty generalization", "Один или несколько случаев не класс: не закрывай вывод о целом по спешной выборке."},
+        {"cherry-picking", "Удобная подборка не выборка: не закрывай вердикт, пока неудобные наблюдения не названы или не объяснены."},
+        {"texas sharpshooter", "Мишень, нарисованная после выстрела, не подтверждение: не закрывай вердикт подогнанной целью."},
+        {"nirvana fallacy", "Неидеальное не значит бесполезное: сравнивай с доступными вариантами, не с недостижимым идеалом."},
+        {"genetic fallacy", "Происхождение идеи не её истинность: не закрывай вердикт тем, откуда тезис пришёл."},
+        {"no true scotsman", "Переопределение «настоящего» члена группы не спасает правило: назови критерий до исключения."},
+        {"slippery slope", "Цепочка без механизма не доказательство: назови звено, которое реально следует, или оставь склон гипотезой."},
+        {"ad hominem", "Свойство говорящего не опровергает тезис: отдели человека от аргумента."},
+        {"straw man", "Опровергнутая карикатура не есть позиция: вернись к тезису, который реально сказали."},
+        {"circular reasoning", "Повтор вывода в посылке не доказательство: нужно независимое основание."},
+        {"post hoc", "«После» не значит «потому что»: не закрывай причину одной последовательностью."},
+        {"whataboutism", "Другой грех не отменяет этот вопрос: не подменяй предмет спора чужим примером."},
+        {"moving the goalposts", "Смена критерия после результата не проверка: зафиксируй, какой тест был задан сначала."},
+        {"sunk cost", "Уже потраченное не причина продолжать: сравнивай только будущие издержки и выгоды."},
+        {"goodhart", "Метрика, ставшая целью, перестаёт мерить цель: не закрывай выбор ростом показателя самого по себе."},
+        {"zero-sum bias", "Чужой выигрыш не обязан быть твоим проигрышем: проверь взаимную выгоду, прежде чем закрывать отказ."},
+        {"automation bias", "Ответ системы не наблюдение: не закрывай вердикт тем, что так сказала модель, без независимой опоры."}
+    };
+
+    private CoordinatorCue() {}
+
+    public static void append(StringBuilder sb, List<String> conflicts) {
+        if (sb == null || conflicts == null || conflicts.isEmpty()) return;
+        int added = 0;
+        for (String[] cue : CUES) {
+            if (added >= MAX_NOTES) return;
+            if (!mentioned(conflicts, cue[0])) continue;
+            sb.append(cue[1]).append('\n');
+            added++;
+        }
+    }
+
+    public static int noteCount(List<String> conflicts) {
+        if (conflicts == null || conflicts.isEmpty()) return 0;
+        int added = 0;
+        for (String[] cue : CUES) {
+            if (added >= MAX_NOTES) return added;
+            if (mentioned(conflicts, cue[0])) added++;
+        }
+        return added;
+    }
+
+    private static boolean mentioned(List<String> conflicts, String key) {
+        for (String conflict : conflicts) {
+            if (conflict != null && conflict.contains(key)) return true;
+        }
+        return false;
+    }
+}
