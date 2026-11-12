@@ -143,6 +143,7 @@ public final class DeliberationSignals {
         PoisoningTheWellPolicy.detect(a, b, conflicts);
         WoozleEffectPolicy.detect(a, b, conflicts);
         MoralLicensingPolicy.detect(a, b, conflicts);
+        DataDredgingPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
