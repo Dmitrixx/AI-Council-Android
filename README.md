@@ -1,3 +1,7 @@
+# AI Council 3.24.0
+
+A local illusion-of-explanatory-depth check now flags a verdict that treats a fluent high-level description or the feeling of understanding a complex mechanism as sufficient evidence that the details are known, without independent verification of causal steps, intermediate variables or failure modes. Naming that error is not itself an error. The coordinator cannot close on the feeling of understanding alone, and experts on a structured task are told that a high-level sketch does not confirm the underlying mechanism. Version on screen matches Gradle: `3.24.0` / versionCode `191`.
+
 # AI Council 3.23.0
 
 A local frequency-illusion / Baader-Meinhof check now flags a verdict that treats a recently noticed item, word or pattern as suddenly more common or important without independent base-rate or sampling evidence. Naming that error is not itself an error. The coordinator cannot close on recent exposure alone, and experts on a structured task are told that noticing something lately does not update its true frequency. Version on screen matches Gradle: `3.23.0` / versionCode `190`.
