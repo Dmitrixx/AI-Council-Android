@@ -1,3 +1,7 @@
+# AI Council 3.13.0
+
+A local relative-privation / «not as bad as» check now flags conclusions that a problem is acceptable or minor merely because a worse problem exists. Naming that error is not itself an error. The coordinator cannot close a verdict on «there are worse problems» alone, and experts on a structured task are reminded that a worse problem does not cancel the current cost and risk. Version on screen matches Gradle: `3.13.0` / versionCode `180`.
+
 # AI Council 3.12.0
 
 The council screen and the local deliberation brain are restored. A previous edit had replaced `MainActivity` and `DeliberationIntelligence` with short placeholders, so the installed UI and the coordinator map could not run. Both files are the full sources again. A local is-ought check now flags a verdict that treats a bare fact as a duty, or a wish as a fact. Naming Hume's guillotine is not itself an error. The coordinator cannot close on that jump alone. On a structured task, experts are told that force, pity, novelty, tradition, naturalness, a loaded question, a weak analogy and personal incredulity are not proof, and that «is» does not yield «ought». Version on screen matches Gradle: `3.12.0` / versionCode `179`.
