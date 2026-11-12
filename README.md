@@ -1,3 +1,7 @@
+# AI Council 3.17.0
+
+A local woozle / citation-laundering check now flags a verdict that treats a chain of citations, or a pile of papers repeating one claim, as independent confirmation. Naming that error is not itself an error. The coordinator cannot close on the number of citations, and experts on a structured task are told to name the primary source or say it was not traced. The screen version matches Gradle again: `3.17.0` / versionCode `184` (the previous screen still showed `3.15.0`).
+
 # AI Council 3.16.0
 
 A local poisoning-the-well check now flags a verdict that dismisses evidence because the source was preemptively attacked for motive, affiliation or character. Naming that error is not itself an error. The coordinator cannot close on a tainted label alone, and experts on a structured task are told that a bad motive is not a refutation. Version on screen matches Gradle: `3.16.0` / versionCode `183`.

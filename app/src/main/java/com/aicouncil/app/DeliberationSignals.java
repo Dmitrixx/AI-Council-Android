@@ -141,6 +141,7 @@ public final class DeliberationSignals {
         GishGallopPolicy.detect(a, b, conflicts);
         IdentifiableVictimPolicy.detect(a, b, conflicts);
         PoisoningTheWellPolicy.detect(a, b, conflicts);
+        WoozleEffectPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
