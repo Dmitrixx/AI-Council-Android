@@ -139,6 +139,7 @@ public final class DeliberationSignals {
         RelativePrivationPolicy.detect(a, b, conflicts);
         FallacyFallacyPolicy.detect(a, b, conflicts);
         GishGallopPolicy.detect(a, b, conflicts);
+        IdentifiableVictimPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */

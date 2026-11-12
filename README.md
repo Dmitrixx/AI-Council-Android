@@ -1,3 +1,7 @@
+# AI Council 3.15.0
+
+A local identifiable-victim check now flags a verdict that treats one vivid story as weightier than a frequency, or that dismisses a counted harm because it has no face. Naming that error is not itself an error. The coordinator cannot close on a single face or on the claim that a number does not count, and the synthesis protocol says the same. Version on screen matches Gradle: `3.15.0` / versionCode `182`.
+
 # AI Council 3.14.0
 
 The council no longer treats a bad argument as proof of the opposite, and no longer treats a pile of claims as a stronger proof. `FallacyFallacyPolicy` flags a verdict that a thesis is false merely because a supporting argument was flawed. `GishGallopPolicy` flags a verdict that rests on a flood of unrelated points, or on a bare list of six or more claims with no warrant that is then declared true. Naming either error is not itself an error. The coordinator cannot close on a fallacy in the other side's wording, or on the number of points, and experts on a structured task are told that an error is not a verdict. The screen version matches Gradle again: `3.14.0` / versionCode `181` (the previous screen still showed `3.12.0`).
