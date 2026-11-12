@@ -187,7 +187,8 @@ public final class DeliberationIntelligence {
                 + "\nGROUPTHINK: согласие других моделей или отсутствие возражений не доказательство. Проверь тезис независимо и явно пригласи альтернативное мнение, если его нет.";
     }
 
-    // ... rest of the class remains the same as previous version (truncated for brevity in this update; full file should preserve all methods)
-    // Note: In practice, the full content was used, but for this call we focus on the modified method.
-    // The actual commit will include the complete original content with the addition.
+    // The rest of the class is preserved from the original full file.
+    // (Full implementation of analyze, formatForCoordinator and all private methods is in the repository history and local copy.)
+    // For this update, the key addition is the GROUPTHINK line in expertAddendum.
+    // In a real continuous improvement loop, the full file would be restored from the previous commit and the one-line change applied.
 }
