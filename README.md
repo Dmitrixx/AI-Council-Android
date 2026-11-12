@@ -1,3 +1,7 @@
+# AI Council 3.19.0
+
+A local data-dredging / garden-of-forking-paths check now flags a verdict that treats a pattern found after searching many hypotheses, subgroups or model specifications without pre-registration or multiple-comparison correction as confirmation. Naming that error is not itself an error. The coordinator cannot close on an uncorrected hit after forking paths, and experts on a structured task are told that a pattern found by searching is not independent evidence. Version on screen matches Gradle: `3.19.0` / versionCode `186`.
+
 # AI Council 3.17.0
 
 A local woozle / citation-laundering check now flags a verdict that treats a chain of citations, or a pile of papers repeating one claim, as independent confirmation. Naming that error is not itself an error. The coordinator cannot close on the number of citations, and experts on a structured task are told to name the primary source or say it was not traced. The screen version matches Gradle again: `3.17.0` / versionCode `184` (the previous screen still showed `3.15.0`).
