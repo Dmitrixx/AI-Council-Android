@@ -1,0 +1,36 @@
+name: restore-council-core
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/restore-council-core.yml"
+      - ".github/scripts/patch_restored_core.py"
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore the screen, the map, and the close-quality gate
+        run: python3 .github/scripts/patch_restored_core.py
+      - name: Commit restored sources
+        run: |
+          set -eu
+          git config user.name "Dmitrixx"
+          git config user.email "kharkovintrade@gmail.com"
+          git add app/src/main/java/com/aicouncil/app/MainActivity.java \
+                  app/src/main/java/com/aicouncil/app/DeliberationIntelligence.java \
+                  app/src/main/java/com/aicouncil/app/DeliberationSignals.java \
+                  app/src/main/java/com/aicouncil/app/CoordinatorCue.java \
+                  app/src/main/java/com/aicouncil/app/SynthesisProtocol.java \
+                  app/build.gradle tools/verify_project.py README.md README_RU.md
+          test "$(wc -c < app/src/main/java/com/aicouncil/app/MainActivity.java)" -gt 100000
+          test "$(wc -c < app/src/main/java/com/aicouncil/app/DeliberationIntelligence.java)" -gt 30000
+          if git diff --cached --quiet; then
+            echo "already restored"
+            exit 0
+          fi
+          git commit -m "fix: restore the council screen and refuse a close without a kill-criterion (3.25.0)"
+          git push
