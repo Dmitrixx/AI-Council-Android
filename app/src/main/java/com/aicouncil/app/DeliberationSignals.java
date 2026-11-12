@@ -144,6 +144,7 @@ public final class DeliberationSignals {
         WoozleEffectPolicy.detect(a, b, conflicts);
         MoralLicensingPolicy.detect(a, b, conflicts);
         DataDredgingPolicy.detect(a, b, conflicts);
+        CausalOversimplificationPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
