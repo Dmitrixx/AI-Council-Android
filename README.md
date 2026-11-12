@@ -1,3 +1,7 @@
+# AI Council 3.22.0
+
+A local groupthink / conformity check now flags a verdict that treats group agreement, lack of dissent, or "everyone thinks so" as sufficient reason to close, without independent evidence or explicit invitation for minority views. Naming that error is not itself an error. The coordinator cannot close on consensus alone, and experts on a structured task are told that agreement among models is not independent confirmation. Version on screen matches Gradle: `3.22.0` / versionCode `189`.
+
 # AI Council 3.21.0
 
 A local impact-bias / affective-forecasting check now flags a verdict that treats a predicted strong emotional reaction (joy, regret, fear of missing out) as sufficient reason to choose or avoid an option, without independent justification that the feeling will actually occur at that intensity or duration. Naming that error is not itself an error. The coordinator cannot close on anticipated emotion alone, and experts on a structured task are told that predicted feelings are often overestimated in both intensity and duration. Version on screen matches Gradle: `3.21.0` / versionCode `188`.
