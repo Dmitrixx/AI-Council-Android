@@ -1,3 +1,7 @@
+# AI Council 3.23.0
+
+A local frequency-illusion / Baader-Meinhof check now flags a verdict that treats a recently noticed item, word or pattern as suddenly more common or important without independent base-rate or sampling evidence. Naming that error is not itself an error. The coordinator cannot close on recent exposure alone, and experts on a structured task are told that noticing something lately does not update its true frequency. Version on screen matches Gradle: `3.23.0` / versionCode `190`.
+
 # AI Council 3.22.0
 
 A local groupthink / conformity check now flags a verdict that treats group agreement, lack of dissent, or "everyone thinks so" as sufficient reason to close, without independent evidence or explicit invitation for minority views. Naming that error is not itself an error. The coordinator cannot close on consensus alone, and experts on a structured task are told that agreement among models is not independent confirmation. Version on screen matches Gradle: `3.22.0` / versionCode `189`.
