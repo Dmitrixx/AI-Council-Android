@@ -1,3 +1,7 @@
+# AI Council 3.31.0
+
+A local clustering-illusion check now flags a verdict that treats a cluster, streak or apparent pattern in sparse or random-looking data as meaningful evidence without independent statistical validation, base-rate comparison, or an explicit note that chance is plausible. Naming that gap is not itself an error. The coordinator cannot close on the pattern alone. Version on screen matches Gradle: `3.31.0` / versionCode `198`.
+
 # AI Council 3.30.0
 
 A local surrogate-endpoint / proxy-metric check now flags a verdict that treats a convenient intermediate or surrogate measure as the real outcome without independent justification that the proxy tracks the true target. Naming that gap is not itself an error. The coordinator cannot close on the proxy alone. Version on screen matches Gradle: `3.30.0` / versionCode `197`.
