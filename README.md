@@ -1,3 +1,7 @@
+# AI Council 3.30.0
+
+A local surrogate-endpoint / proxy-metric check now flags a verdict that treats a convenient intermediate or surrogate measure as the real outcome without independent justification that the proxy tracks the true target. Naming that gap is not itself an error. The coordinator cannot close on the proxy alone. Version on screen matches Gradle: `3.30.0` / versionCode `197`.
+
 # AI Council 3.29.0
 
 A local availability-cascade / information-cascade check now flags a verdict that treats widespread repetition, many agreeing sources, or "everyone says so" / "it's everywhere" as sufficient independent confirmation without an explicit check of source independence, original observations, or base rate. Naming that error is not itself an error. The coordinator cannot close on cascade agreement alone. Version on screen matches Gradle: `3.29.0` / versionCode `196`.
