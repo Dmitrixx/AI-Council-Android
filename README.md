@@ -1,3 +1,7 @@
+# AI Council 3.29.0
+
+A local availability-cascade / information-cascade check now flags a verdict that treats widespread repetition, many agreeing sources, or "everyone says so" / "it's everywhere" as sufficient independent confirmation without an explicit check of source independence, original observations, or base rate. Naming that error is not itself an error. The coordinator cannot close on cascade agreement alone. Version on screen matches Gradle: `3.29.0` / versionCode `196`.
+
 # AI Council 3.28.0
 
 A local practical-significance check now flags a verdict that treats statistical significance or a small p-value as enough to choose, without an effect size, a practical threshold, or an explicit "magnitude unknown". Naming that error is not itself an error. The coordinator cannot close on a p-value alone. The curse-of-knowledge check is on the same map: "obvious" and "everyone knows" are not shared ground until the premise is stated. Version on screen matches Gradle: `3.28.0` / versionCode `195`.
