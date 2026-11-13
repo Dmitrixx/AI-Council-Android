@@ -1,3 +1,7 @@
+# AI Council 3.28.0
+
+A local practical-significance check now flags a verdict that treats statistical significance or a small p-value as enough to choose, without an effect size, a practical threshold, or an explicit "magnitude unknown". Naming that error is not itself an error. The coordinator cannot close on a p-value alone. The curse-of-knowledge check is on the same map: "obvious" and "everyone knows" are not shared ground until the premise is stated. Version on screen matches Gradle: `3.28.0` / versionCode `195`.
+
 # AI Council 3.26.0
 
 The council screen and the local deliberation map are the full sources again, not placeholders. A verdict that says "because" and closes without an intermediate step, a conditional, or a failure mode is now a local hypothesis (`MissingMechanismPolicy`). Naming that gap is not itself an error. The kill-criterion check is wired into the same map, so the coordinator cannot close on a recommendation that names nothing which would overturn it. Version on screen matches Gradle: `3.26.0` / versionCode `193`.
