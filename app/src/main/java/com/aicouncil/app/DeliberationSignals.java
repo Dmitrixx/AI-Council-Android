@@ -149,6 +149,8 @@ public final class DeliberationSignals {
         GroupthinkPolicy.detect(a, b, conflicts);
         FrequencyIllusionPolicy.detect(a, b, conflicts);
         IllusionOfExplanatoryDepthPolicy.detect(a, b, conflicts);
+        KillCriterionPolicy.detect(a, b, conflicts);
+        MissingMechanismPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */

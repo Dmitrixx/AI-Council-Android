@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 GRADLE = ROOT / "app" / "build.gradle"
 SIGNALS = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "DeliberationSignals.java"
 
-EXPECTED_VERSION = "3.23.0"
-EXPECTED_CODE = 190
+EXPECTED_VERSION = "3.26.0"
+EXPECTED_CODE = 193
 
 REQUIRED_POLICIES = [
     "AutomationBiasPolicy",
@@ -101,6 +101,7 @@ REQUIRED_POLICIES = [
     "ExpectedUtilityPolicy",
     "FrequencyIllusionPolicy",
     "GroupthinkPolicy",
+    "IllusionOfExplanatoryDepthPolicy",
 ]
 
 def main() -> int:

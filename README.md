@@ -1,3 +1,7 @@
+# AI Council 3.26.0
+
+The council screen and the local deliberation map are the full sources again, not placeholders. A verdict that says "because" and closes without an intermediate step, a conditional, or a failure mode is now a local hypothesis (`MissingMechanismPolicy`). Naming that gap is not itself an error. The kill-criterion check is wired into the same map, so the coordinator cannot close on a recommendation that names nothing which would overturn it. Version on screen matches Gradle: `3.26.0` / versionCode `193`.
+
 # AI Council 3.24.0
 
 A local illusion-of-explanatory-depth check now flags a verdict that treats a fluent high-level description or the feeling of understanding a complex mechanism as sufficient evidence that the details are known, without independent verification of causal steps, intermediate variables or failure modes. Naming that error is not itself an error. The coordinator cannot close on the feeling of understanding alone, and experts on a structured task are told that a high-level sketch does not confirm the underlying mechanism. Version on screen matches Gradle: `3.24.0` / versionCode `191`.
