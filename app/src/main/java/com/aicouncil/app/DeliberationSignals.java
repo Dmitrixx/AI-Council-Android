@@ -155,6 +155,7 @@ public final class DeliberationSignals {
         PracticalSignificancePolicy.detect(a, b, conflicts);
         AvailabilityCascadePolicy.detect(a, b, conflicts);
         SurrogateEndpointPolicy.detect(a, b, conflicts);
+        ClusteringIllusionPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
