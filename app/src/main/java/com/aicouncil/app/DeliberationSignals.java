@@ -153,6 +153,7 @@ public final class DeliberationSignals {
         MissingMechanismPolicy.detect(a, b, conflicts);
         CurseOfKnowledgePolicy.detect(a, b, conflicts);
         PracticalSignificancePolicy.detect(a, b, conflicts);
+        AvailabilityCascadePolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
