@@ -1,0 +1,28 @@
+name: bump-app-version
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/bump-app-version.yml'
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump MainActivity APP_VERSION if needed
+        run: |
+          set -e
+          FILE=app/src/main/java/com/aicouncil/app/MainActivity.java
+          if grep -q 'APP_VERSION = "3.34.0"' "$FILE"; then
+            sed -i 's/APP_VERSION = "3.34.0"/APP_VERSION = "3.35.0"/' "$FILE"
+            git config user.name "Dmitrixx"
+            git config user.email "kharkovintrade@gmail.com"
+            git add "$FILE"
+            git commit -m "MainActivity: APP_VERSION 3.35.0"
+            git push
+          else
+            echo "APP_VERSION already updated or different"
+            grep -n 'APP_VERSION' "$FILE" | head -5
+          fi
