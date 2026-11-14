@@ -1,3 +1,7 @@
+# AI Council 3.35.0
+
+A local illusory-correlation check now flags a verdict that treats co-occurrence or joint frequency ("they often appear together") as a real association without an independent base-rate comparison, a control, or an explicit note that chance is plausible. Naming that gap is not itself an error. The coordinator cannot close on joint frequency alone. Version on screen matches Gradle: `3.35.0` / versionCode `202`.
+
 # AI Council 3.34.0
 
 Three local checks now sit on the deliberation map. A confounding check flags a verdict that treats correlation or co-movement as the cause without a named confounder, a control, or an explicit "confounding unchecked". A skin-in-the-game check flags a recommendation that closes while the downside is someone else's. A publication-bias check flags a verdict that treats published successes as the whole distribution. Naming any of those gaps is not itself an error. The coordinator cannot close on the association, the insulated recommendation, or the published slice alone, and experts on a structured task are told to name the confounder, the loss-bearer, and the file drawer. The on-screen version matches Gradle again: `3.34.0` / versionCode `201`.
