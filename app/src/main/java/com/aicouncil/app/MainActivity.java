@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
     private boolean lightTheme = false;
     private Spinner themeSpinner;
     private static final String KEY_ALIAS = "AICouncilKeyV4";
-    private static final String APP_VERSION = "3.43.0";
+    private static final String APP_VERSION = "3.44.0";
     // Core UI and coordination logic is modularized across policy classes and DeliberationIntelligence.
     // Version synced with app/build.gradle and README.
 }

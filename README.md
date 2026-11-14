@@ -1,3 +1,7 @@
+# AI Council 3.44.0
+
+A local probability-neglect check now flags a verdict that treats outcome severity, horror, catastrophe or large upside as decisive while never stating likelihood, base rate of that outcome, or expected value. Naming that gap is not itself an error. The coordinator cannot close on magnitude alone. Version on screen matches Gradle: `3.44.0` / versionCode `211` .
+
 # AI Council 3.43.0
 
 A local sample-size neglect / law of small numbers check now flags a verdict that treats a small number of observations, a short streak, or a tiny sample as representative or decisive without noting sampling variance, regression to the mean, the need for a larger base rate, or that small samples fluctuate more. Naming that gap is not itself an error. The coordinator cannot close on the small sample alone. Version on screen matches Gradle: `3.43.0` / versionCode `210` .
