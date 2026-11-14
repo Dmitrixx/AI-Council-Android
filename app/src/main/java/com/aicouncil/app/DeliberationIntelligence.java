@@ -191,7 +191,8 @@ public final class DeliberationIntelligence {
                 + "\nПРАКТИЧЕСКАЯ ЗНАЧИМОСТЬ: p-значение и «статистически значимо» не размер эффекта. Не закрывай выбор без величины, порога или явного «величина неизвестна»."
                 + "\nСМЕШЕНИЕ: совместное движение не причина. Назови мешающий фактор, контроль или напиши «смешение не проверено»."
                 + "\nКОЖА В ИГРЕ: назови, кто несёт убыток, если рекомендация ошибочна. Чужой риск не закрывает выбор."
-                + "\nПУБЛИКАЦИИ: опубликованные успехи не вся выборка. Назови пропущенные неудачи или напиши, что ящик стола не проверен.";
+                + "\nПУБЛИКАЦИИ: опубликованные успехи не вся выборка. Назови пропущенные неудачи или напиши, что ящик стола не проверен."
+                + "\nВОПРОС: первая фраза отвечает на заданный вопрос. Удобный соседний вопрос не закрывает выбор.";
     }
 
     public static Brief analyze(String task, String answerA, String answerB) {
@@ -229,7 +230,7 @@ public final class DeliberationIntelligence {
         detectConditionalFork(a, b, conflicts);
         detectQuantifierClash(a, b, conflicts);
         detectMetricKind(a, b, conflicts);
-        DeliberationSignals.detectAll(a, b, conflicts);
+        DeliberationSignals.detectAll(task, a, b, conflicts);
         ConfusionOfTheInversePolicy.detectAgainstTask(task, a, b, conflicts);
         detectSequenceClash(a, b, conflicts);
         detectLogicStrength(a, b, conflicts);
@@ -352,6 +353,12 @@ public final class DeliberationIntelligence {
                 sb.append("Не закрывай вердикт на названии: ярлык и этимология не наблюдение, пока свойство не названо отдельно от слова.\n");
                 break;
             }
+        }
+        if (hypotheses >= 4) {
+            sb.append("ТРИАЖ КАРТЫ: гипотез ").append(hypotheses)
+                    .append(". Первая фраза итога — прямой ответ на вопрос. ")
+                    .append("В итог возьми не больше трёх расхождений, которые меняют решение. ")
+                    .append("Остальные гипотезы не перечисляй: это контекст, не стопка вето.\n");
         }
         CoordinatorCue.append(sb, brief.conflicts);
         return sb.toString().trim();

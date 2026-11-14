@@ -11,6 +11,10 @@ public final class DeliberationSignals {
     private DeliberationSignals() {}
 
     public static void detectAll(String a, String b, List<String> conflicts) {
+        detectAll(null, a, b, conflicts);
+    }
+
+    public static void detectAll(String task, String a, String b, List<String> conflicts) {
         detectUrgency(a, b, conflicts);
         detectEvidenceGrade(a, b, conflicts);
         detectCostBenefitFraming(a, b, conflicts);
@@ -163,6 +167,7 @@ public final class DeliberationSignals {
         PublicationBiasPolicy.detect(a, b, conflicts);
         IllusoryCorrelationPolicy.detect(a, b, conflicts);
         AttributeSubstitutionPolicy.detect(a, b, conflicts);
+        AnswerContractPolicy.detect(task, a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */

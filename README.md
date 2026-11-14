@@ -1,3 +1,7 @@
+# AI Council 3.37.0
+
+The council now checks whether a closing verdict actually answers the question that was asked. A fluent answer about a neighbouring, easier topic is a local hypothesis (`AnswerContractPolicy`), not a result. Naming that gap is not itself an error. When several local hypotheses fire, the coordinator is told to answer the question in the first sentence and to carry at most three decision-changing disagreements — the rest stay context, not a stack of vetoes. The on-screen version matches Gradle: `3.37.0` / versionCode `204`. The previous screen constant had drifted behind Gradle; that drift is closed.
+
 # AI Council 3.36.0
 
 A local attribute-substitution / WYSIATI check now flags a verdict that answers a hard target question by substituting an easier attribute (fluency, familiarity, vividness, recent exposure, simple count) or treats currently available information as complete without noting missing data, unknown unknowns, or the need for further search. Naming that gap is not itself an error. The coordinator cannot close on the easy attribute or the visible slice alone. Version on screen matches Gradle: `3.36.0` / versionCode `203`.
