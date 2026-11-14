@@ -1,3 +1,7 @@
+# AI Council 3.43.0
+
+A local sample-size neglect / law of small numbers check now flags a verdict that treats a small number of observations, a short streak, or a tiny sample as representative or decisive without noting sampling variance, regression to the mean, the need for a larger base rate, or that small samples fluctuate more. Naming that gap is not itself an error. The coordinator cannot close on the small sample alone. Version on screen matches Gradle: `3.43.0` / versionCode `210` .
+
 # AI Council 3.42.0
 
 A local McNamara fallacy / quantitative-bias check now flags a verdict that treats only what is easy to measure (counts, rates, scores) as decisive while dismissing or ignoring hard-to-quantify factors, qualitative evidence, or the risk that the metric does not capture the goal. Naming that gap is not itself an error. The coordinator cannot close on the measurable proxy alone. Version on screen matches Gradle: `3.42.0` / versionCode `209` .
