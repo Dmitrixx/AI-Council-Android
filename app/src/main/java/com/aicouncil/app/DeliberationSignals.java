@@ -161,6 +161,7 @@ public final class DeliberationSignals {
         ConfoundingPolicy.detect(a, b, conflicts);
         SkinInTheGamePolicy.detect(a, b, conflicts);
         PublicationBiasPolicy.detect(a, b, conflicts);
+        IllusoryCorrelationPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
