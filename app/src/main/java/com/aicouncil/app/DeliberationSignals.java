@@ -173,6 +173,7 @@ public final class DeliberationSignals {
         BetterThanAveragePolicy.detect(a, b, conflicts);
         HotHandFallacyPolicy.detect(a, b, conflicts);
         McNamaraFallacyPolicy.detect(a, b, conflicts);
+        SampleSizeNeglectPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
