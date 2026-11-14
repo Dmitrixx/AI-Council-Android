@@ -171,6 +171,7 @@ public final class DeliberationSignals {
         WishfulThinkingPolicy.detect(a, b, conflicts);
         BackfireEffectPolicy.detect(a, b, conflicts);
         BetterThanAveragePolicy.detect(a, b, conflicts);
+        HotHandFallacyPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
