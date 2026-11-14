@@ -1,3 +1,7 @@
+# AI Council 3.36.0
+
+A local attribute-substitution / WYSIATI check now flags a verdict that answers a hard target question by substituting an easier attribute (fluency, familiarity, vividness, recent exposure, simple count) or treats currently available information as complete without noting missing data, unknown unknowns, or the need for further search. Naming that gap is not itself an error. The coordinator cannot close on the easy attribute or the visible slice alone. Version on screen matches Gradle: `3.36.0` / versionCode `203`.
+
 # AI Council 3.35.0
 
 A local illusory-correlation check now flags a verdict that treats co-occurrence or joint frequency ("they often appear together") as a real association without an independent base-rate comparison, a control, or an explicit note that chance is plausible. Naming that gap is not itself an error. The coordinator cannot close on joint frequency alone. Version on screen matches Gradle: `3.35.0` / versionCode `202`.
