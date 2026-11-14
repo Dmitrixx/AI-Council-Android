@@ -169,6 +169,7 @@ public final class DeliberationSignals {
         AttributeSubstitutionPolicy.detect(a, b, conflicts);
         AnswerContractPolicy.detect(task, a, b, conflicts);
         WishfulThinkingPolicy.detect(a, b, conflicts);
+        BackfireEffectPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
