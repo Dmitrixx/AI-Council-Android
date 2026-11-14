@@ -1,3 +1,7 @@
+# AI Council 3.34.0
+
+Three local checks now sit on the deliberation map. A confounding check flags a verdict that treats correlation or co-movement as the cause without a named confounder, a control, or an explicit "confounding unchecked". A skin-in-the-game check flags a recommendation that closes while the downside is someone else's. A publication-bias check flags a verdict that treats published successes as the whole distribution. Naming any of those gaps is not itself an error. The coordinator cannot close on the association, the insulated recommendation, or the published slice alone, and experts on a structured task are told to name the confounder, the loss-bearer, and the file drawer. The on-screen version matches Gradle again: `3.34.0` / versionCode `201`.
+
 # AI Council 3.33.0
 
 A local belief-perseverance check now flags a verdict that clings to an original belief or conclusion despite explicit contradictory evidence, disconfirming data, or failed predictions, without acknowledging the new evidence or updating the prior. Naming that gap is not itself an error. The coordinator cannot close on the original stance once contrary observations are named. Version on screen matches Gradle: `3.33.0` / versionCode `200`.
