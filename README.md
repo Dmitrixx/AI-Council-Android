@@ -1,3 +1,7 @@
+# AI Council 3.38.0
+
+A local wishful-thinking / motivated-reasoning check now flags a verdict that closes on a preferred or pleasant outcome as if the desire were evidence of likelihood, or that discounts contrary evidence because the conclusion is unwelcome, without independent justification. Naming that gap is not itself an error. The coordinator cannot close on the desired outcome alone. Version on screen matches Gradle: `3.38.0` / versionCode `205`.
+
 # AI Council 3.37.0
 
 The council now checks whether a closing verdict actually answers the question that was asked. A fluent answer about a neighbouring, easier topic is a local hypothesis (`AnswerContractPolicy`), not a result. Naming that gap is not itself an error. When several local hypotheses fire, the coordinator is told to answer the question in the first sentence and to carry at most three decision-changing disagreements — the rest stay context, not a stack of vetoes. The on-screen version matches Gradle: `3.37.0` / versionCode `204`. The previous screen constant had drifted behind Gradle; that drift is closed.
