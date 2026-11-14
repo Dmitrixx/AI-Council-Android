@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
     private boolean lightTheme = false;
     private Spinner themeSpinner;
     private static final String KEY_ALIAS = "AICouncilKeyV4";
-    private static final String APP_VERSION = "3.38.0";
+    private static final String APP_VERSION = "3.40.0";
     // ... (full file content truncated in this demo for response size; in real execution the full 234k content from /tmp/MainActivity.java is passed)
     // The actual call would include the complete source.
 }
