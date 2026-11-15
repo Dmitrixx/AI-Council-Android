@@ -1,3 +1,7 @@
+# AI Council 3.50.0
+
+A local value-of-information check now flags a verdict that closes the decision under residual uncertainty (or claims "enough information / no need for more data") when additional cheap or potentially decision-changing information is available, without stating the expected value of information, the cost of obtaining it, or that new data would not reverse the choice. Naming that gap is not itself an error. The coordinator cannot close solely on "we already know enough" without addressing VoI. Version on screen matches Gradle: `3.50.0` / versionCode `217`.
+
 # AI Council 3.49.0
 
 A local decoy-effect / asymmetric-dominance check now flags a verdict that treats one option as clearly superior solely because a dominated (worse on all relevant dimensions) decoy makes it look better, without stating absolute value, independent comparison to other options, or that the decoy is irrelevant to the real choice. Naming that gap is not itself an error. The coordinator cannot close on the decoy-relative preference alone. Version on screen matches Gradle: `3.49.0` / versionCode `216`.
@@ -14,8 +18,8 @@ Also restored the full programmatic council UI in `MainActivity` (was reduced to
 
 # AI Council 3.45.0
 
-A local denominator-neglect check now flags a verdict that treats a relative risk reduction — "halves the risk", "90% effective", "снижает риск на 50%" — as decisive without stating the absolute baseline, the base rate, or the number needed to treat. Naming that gap is not itself an error. The coordinator cannot close on the relative percentage alone. Version on screen matches Gradle: `3.45.0` / versionCode `212` .
+A local denominator-neglect check now flags a verdict that treats a relative risk reduction — "halves the risk", "90% effective", "снижает риск на 50%" — as decisive without stating the absolute baseline, the base rate, or the number needed to treat. Naming that gap is not itself an error. The coordinator cannot close on the relative percentage alone. Version on screen matches Gradle: `3.45.0` / versionCode `212`.
 
 # AI Council 3.44.0
 
-A local probability-neglect check now flags a verdict that treats outcome severity, horror, catastrophe or large upside as decisive while never stating likelihood, base rate of that outcome, or expected value. Naming that gap is not itself an error. The coordinator cannot close on magnitude alone. Version on screen matches Gradle: `3.44.0` / versionCode `211` .
+A local probability-neglect check now flags a verdict that treats outcome severity, horror, catastrophe or large upside as decisive while never stating likelihood, base rate of that outcome, or expected value. Naming that gap is not itself an error. The coordinator cannot close on magnitude alone. Version on screen matches Gradle: `3.44.0` / versionCode `211`.
