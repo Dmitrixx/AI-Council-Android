@@ -175,6 +175,7 @@ public final class DeliberationSignals {
         McNamaraFallacyPolicy.detect(a, b, conflicts);
         SampleSizeNeglectPolicy.detect(a, b, conflicts);
         ProbabilityNeglectPolicy.detect(a, b, conflicts);
+        DenominatorNeglectPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
