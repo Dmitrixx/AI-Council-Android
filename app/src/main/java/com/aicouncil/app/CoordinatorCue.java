@@ -12,6 +12,7 @@ public final class CoordinatorCue {
 
     /** Longer and more decision-shaped cues come first so the cap keeps them. */
     private static final String[][] CUES = new String[][] {
+        {"value of information", "Ценность информации не учтена: не закрывай вердикт «достаточно информации» или «решаем сейчас» при остаточной неопределённости, пока не названы ожидаемая ценность дополнительной информации, стоимость её получения или явное «новые данные не изменят решение»."},
         {"decoy effect", "Эффект приманки не закрывает выбор: не закрывай вердикт тем, что один вариант «лучше чем эта приманка» или асимметрично доминирует, пока не названы абсолютная ценность, независимое сравнение с другими опциями или явное «приманка нерелевантна для выбора»."},
         {"denominator neglect", "Относительный процент не закрывает выбор: не закрывай вердикт «вдвое меньше», «на 90%» или relative risk reduction, пока не названы абсолютный риск, базовая частота или число, которых нужно пролечить."},
         {"probability neglect", "Тяжесть или upside без вероятности не закрывает выбор: не закрывай вердикт катастрофой, ужасом или огромным выигрышем, пока не названы правдоподобие, базовая частота исхода, математическое ожидание или явное «даже если редко»."},
@@ -77,36 +78,31 @@ public final class CoordinatorCue {
         {"sunk cost", "Уже потраченное не причина продолжать: сравнивай только будущие издержки и выгоды."},
         {"goodhart", "Метрика, ставшая целью, перестаёт мерить цель: не закрывай выбор ростом показателя самого по себе."},
         {"zero-sum bias", "Чужой выигрыш не обязан быть твоим проигрышем: проверь взаимную выгоду, прежде чем закрывать отказ."},
-        {"automation bias", "Ответ системы не наблюдение: не закрывай вердикт тем, что так сказала модель, без независимой опоры."}
+        {"automation bias", "Ответ системы или модели не заменяет проверку: не закрывай вердикт тем, что «иИ так сказала», пока не названа независимая проверка или явное «модель может ошибаться»."}
     };
 
     private CoordinatorCue() {}
 
-    public static void append(StringBuilder sb, List<String> conflicts) {
-        if (sb == null || conflicts == null || conflicts.isEmpty()) return;
-        int added = 0;
+    public static String forConflicts(List<String> conflicts) {
+        if (conflicts == null || conflicts.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        int notes = 0;
         for (String[] cue : CUES) {
-            if (added >= MAX_NOTES) return;
-            if (!mentioned(conflicts, cue[0])) continue;
-            sb.append(cue[1]).append('\n');
-            added++;
+            if (notes >= MAX_NOTES) break;
+            String key = cue[0];
+            boolean hit = false;
+            for (String c : conflicts) {
+                if (c != null && c.toLowerCase().contains(key)) {
+                    hit = true;
+                    break;
+                }
+            }
+            if (hit) {
+                if (sb.length() > 0) sb.append("\n");
+                sb.append(cue[1]);
+                notes++;
+            }
         }
-    }
-
-    public static int noteCount(List<String> conflicts) {
-        if (conflicts == null || conflicts.isEmpty()) return 0;
-        int added = 0;
-        for (String[] cue : CUES) {
-            if (added >= MAX_NOTES) return added;
-            if (mentioned(conflicts, cue[0])) added++;
-        }
-        return added;
-    }
-
-    private static boolean mentioned(List<String> conflicts, String key) {
-        for (String conflict : conflicts) {
-            if (conflict != null && conflict.contains(key)) return true;
-        }
-        return false;
+        return sb.toString();
     }
 }
