@@ -86,7 +86,7 @@ public final class DeliberationSignals {
         AutomationBiasPolicy.detect(a, b, conflicts);
         EndowmentEffectPolicy.detect(a, b, conflicts);
         MysideBiasPolicy.detect(a, b, conflicts);
-        FalsePrecisionPolicy.java.detect(a, b, conflicts);
+        FalsePrecisionPolicy.detect(a, b, conflicts);
         IKEAEffectPolicy.detect(a, b, conflicts);
         FocusingIllusionPolicy.detect(a, b, conflicts);
         PeakEndRulePolicy.detect(a, b, conflicts);
