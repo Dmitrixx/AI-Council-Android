@@ -177,6 +177,7 @@ public final class DeliberationSignals {
         ProbabilityNeglectPolicy.detect(a, b, conflicts);
         DenominatorNeglectPolicy.detect(a, b, conflicts);
         MentalAccountingPolicy.detect(a, b, conflicts);
+        IllusionOfValidityPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
