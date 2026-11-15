@@ -13,24 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Restore the screen, the map, and the close-quality gate
+        with:
+          fetch-depth: 0
+      - name: Restore full MainActivity from e2ad281
         run: python3 .github/scripts/patch_restored_core.py
       - name: Commit restored sources
         run: |
           set -eu
           git config user.name "Dmitrixx"
           git config user.email "kharkovintrade@gmail.com"
-          git add app/src/main/java/com/aicouncil/app/MainActivity.java \
-                  app/src/main/java/com/aicouncil/app/DeliberationIntelligence.java \
-                  app/src/main/java/com/aicouncil/app/DeliberationSignals.java \
-                  app/src/main/java/com/aicouncil/app/CoordinatorCue.java \
-                  app/src/main/java/com/aicouncil/app/SynthesisProtocol.java \
-                  app/build.gradle tools/verify_project.py README.md README_RU.md
+          git add app/src/main/java/com/aicouncil/app/MainActivity.java
           test "$(wc -c < app/src/main/java/com/aicouncil/app/MainActivity.java)" -gt 100000
-          test "$(wc -c < app/src/main/java/com/aicouncil/app/DeliberationIntelligence.java)" -gt 30000
           if git diff --cached --quiet; then
             echo "already restored"
             exit 0
           fi
-          git commit -m "fix: restore the council screen and refuse a close without a kill-criterion (3.25.0)"
+          git commit -m "fix: restore full MainActivity UI (3.46.0)"
           git push
