@@ -73,11 +73,6 @@ public final class DenominatorNeglectPolicySmokeTest {
 
     private static void noSignal(String name, String text) {
         List<String> out = new ArrayList<String>();
-        IdentifiableVictimPolicySmokeTestQuiet(name, text);
-    }
-
-    private static void IdentifiableVictimPolicySmokeTestQuiet(String name, String text) {
-        List<String> out = new ArrayList<String>();
         DenominatorNeglectPolicy.detect(text, "", out);
         check(out.isEmpty(), name);
     }
