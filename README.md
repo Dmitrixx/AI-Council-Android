@@ -1,3 +1,7 @@
+# AI Council 3.49.0
+
+A local decoy-effect / asymmetric-dominance check now flags a verdict that treats one option as clearly superior because a third dominated (decoy) option makes it look better, without stating that the preference may be induced by the decoy or that the ranking should be stable without it. Naming that gap is not itself an error. The coordinator cannot close on the decoy-induced ranking alone. Version on screen matches Gradle: `3.49.0` / versionCode `216`.
+
 # AI Council 3.48.0
 
 A local illusion-of-validity check now flags a verdict that treats a coherent, confident, internally consistent story or model as decisive evidence of correctness or predictive power without stating out-of-sample checks, base rates, alternative narratives, or calibration against outcomes. Naming that gap is not itself an error. The coordinator cannot close on narrative coherence or confidence alone. Version on screen matches Gradle: `3.48.0` / versionCode `215`.
