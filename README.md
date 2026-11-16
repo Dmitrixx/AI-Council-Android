@@ -1,3 +1,7 @@
+# AI Council 3.58.0
+
+A local duration-neglect check now flags a verdict that treats the peak or end intensity of an experience as decisive for its overall value while never stating or weighing how long the experience lasts. Naming that gap is not itself an error. The coordinator cannot close on peak or end intensity alone. Version on screen matches Gradle: `3.58.0` / versionCode `225`.
+
 # AI Council 3.57.0
 
 A local choice-overload / paradox-of-choice check now flags a verdict that treats the mere number of options as decisive — either deferring or refusing to choose solely because there are too many, or preferring more options just because there are more — without stating decision criteria, quality comparison across options, or that quantity alone does not determine value. Naming that gap is not itself an error. The coordinator cannot close (or refuse to close) on option count alone. Version on screen matches Gradle: `3.57.0` / versionCode `224`.
