@@ -1,8 +1,10 @@
-# AI Council 3.60.0
+# AI Council 3.61.0
 
-The workspace receives a visual refresh: a dedicated brand mark, consistent typography and card geometry, a visible keyboard-focus state, and larger touch targets for input tools. The selected council mode is now restored from preferences and remains legible in both light and dark themes. New Android UI smoke tests cover the brand, status, progress indicator, and selected mode.
+The workspace has a consistent visual hierarchy, accessible status states, visible field focus, and larger touch targets. The selected strategy persists across restarts.
 
-The complete `MainActivity.java` source is now version-controlled. CI no longer silently replaces an incomplete source file with a downloaded snapshot; static verification fails clearly when the committed UI source is incomplete. The Android instrumentation test compilation issue is fixed. Version matches Gradle: `3.60.0` / versionCode `228`.
+Auto mode can learn from explicit, per-result usefulness ratings. Only bounded aggregate counters are stored locally for six coarse task categories and four strategies. A four-rating minimum, Beta(2,2) smoothing, saturation and decay limit noise. A learned strategy is selected only when it has enough evidence, a meaningful advantage, and all required providers are available. Manual strategy choice remains authoritative; free-only routing and scrutiny floors remain in force. Prompts, answers, credentials, provider identities and model weights are not stored or trained. The local learning profile can be reset in Settings.
+
+The complete `MainActivity.java` source remains version-controlled, and CI fails closed on incomplete source. Version matches Gradle: `3.61.0` / versionCode `229`.
 
 A local escalation-of-commitment check now flags a verdict that treats continuing a failing project, investment or course of action as clearly superior solely because of prior sunk costs, past effort or previous commitment, without stating the forward-looking expected value, opportunity cost of continuing, or explicit kill criteria. Naming that gap is not itself an error. The coordinator cannot close on past investment alone. Version on screen matches Gradle: `3.59.0` / versionCode `226`.
 
