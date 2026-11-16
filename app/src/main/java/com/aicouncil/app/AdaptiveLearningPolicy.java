@@ -37,11 +37,11 @@ public final class AdaptiveLearningPolicy {
         double baselineRate = rate(counts, baselineOffset);
         double bestRate = baselineRate;
         int bestMode = safeBaseline;
-        boolean critical = isHighStakes(task);
+        int minimumRank = Math.max(safetyRank(safeBaseline), isHighStakes(task) ? 1 : 0);
 
         for (int mode = 0; mode < MODES; mode++) {
             if (mode == safeBaseline || !available(mode, configured, freeOnly, markedFree)) continue;
-            if (critical && safetyRank(mode) < safetyRank(safeBaseline)) continue;
+            if (safetyRank(mode) < minimumRank) continue;
             int offset = (category * MODES + mode) * 2;
             int samples = counts[offset] + counts[offset + 1];
             if (samples < MIN_SAMPLES) continue;
