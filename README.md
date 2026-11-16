@@ -1,3 +1,7 @@
+# AI Council 3.56.0
+
+A local default-effect check now flags a verdict that treats the pre-selected, default, or current option as clearly superior solely because it is the default, without stating absolute value on the relevant dimensions, independent comparison, or that the default is irrelevant to the real choice. Naming that gap is not itself an error. The coordinator cannot close on the mere fact of default status alone. Version on screen matches Gradle: `3.56.0` / versionCode `223`.
+
 # AI Council 3.55.0
 
 A local contrast-effect check now flags a verdict that treats an option as clearly superior or inferior solely because it is compared to a recent extreme (very good or very bad) alternative, without stating absolute value on the relevant dimensions or that the contrast is irrelevant to the real choice. Naming that gap is not itself an error. The coordinator cannot close on the contrast-relative preference alone. Version on screen matches Gradle: `3.55.0` / versionCode `222`.
