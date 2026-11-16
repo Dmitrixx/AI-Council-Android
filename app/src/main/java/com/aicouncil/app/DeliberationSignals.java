@@ -187,6 +187,7 @@ public final class DeliberationSignals {
         ContrastEffectPolicy.detect(a, b, conflicts);
         DefaultEffectPolicy.detect(a, b, conflicts);
         ChoiceOverloadPolicy.detect(a, b, conflicts);
+        DurationNeglectPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
