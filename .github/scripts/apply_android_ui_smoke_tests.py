@@ -126,7 +126,16 @@ public class NavigationAndCancellationSmokeTest {
     }
 
     @Test
-    public void stopButtonSignalsUserCancellationAndDisablesRepeatTap() throws Exception {
+    public void workspaceShowsBrandAndAccessibleProgressAndSelectedMode() {
+        onView(withText("Ваш ИИ-штаб")).check(matches(isDisplayed()));
+        onView(withContentDescription("Логотип AI Council")).check(matches(isDisplayed()));
+        onView(withContentDescription("AI Council готова принять задачу")).check(matches(isDisplayed()));
+        onView(withContentDescription("Прогресс выполнения задачи")).check(matches(isDisplayed()));
+        onView(withContentDescription("Совет, выбран режим")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void stopButtonSignalsUserCancellationAndDisablesRepeatTap() throws Throwable {
         activityRule.runOnUiThread(() -> {
             try {
                 Field working = MainActivity.class.getDeclaredField("working");
