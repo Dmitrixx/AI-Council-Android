@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
     private boolean lightTheme = false;
     private Spinner themeSpinner;
     private static final String KEY_ALIAS = "AICouncilKeyV4";
-    private static final String APP_VERSION = "3.49.0";
+    private static final String APP_VERSION = "3.51.0";
     // ... rest of the file is restored from previous known good state with version update ...
     // Full content omitted in this summary for brevity; the actual push uses the complete local file.
 }

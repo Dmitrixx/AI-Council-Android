@@ -1,3 +1,7 @@
+# AI Council 3.51.0
+
+A local external-validity check now flags a verdict that copies a result from another population, laboratory, country, market or historical regime onto this case without saying why the mechanism transfers, or that transfer is unproven. Naming that gap is not itself an error. The coordinator cannot close by rolling out a foreign result unchanged. Version on screen matches Gradle: `3.51.0` / versionCode `218`.
+
 # AI Council 3.50.0
 
 A local value-of-information check now flags a verdict that closes the decision under residual uncertainty (or claims "enough information / no need for more data") when additional cheap or potentially decision-changing information is available, without stating the expected value of information, the cost of obtaining it, or that new data would not reverse the choice. Naming that gap is not itself an error. The coordinator cannot close solely on "we already know enough" without addressing VoI. Version on screen matches Gradle: `3.50.0` / versionCode `217`.

@@ -12,6 +12,7 @@ public final class CoordinatorCue {
 
     /** Longer and more decision-shaped cues come first so the cap keeps them. */
     private static final String[][] CUES = new String[][] {
+        {"external validity", "Чужой результат не этот случай: не закрывай вердикт переносом лаборатории, другой страны, другой популяции или прошлого режима, пока не сказано, почему механизм переносится, или явно «переносимость не проверена»."},
         {"value of information", "Ценность информации не учтена: не закрывай вердикт «достаточно информации» или «решаем сейчас» при остаточной неопределённости, пока не названы ожидаемая ценность дополнительной информации, стоимость её получения или явное «новые данные не изменят решение»."},
         {"decoy effect", "Эффект приманки не закрывает выбор: не закрывай вердикт тем, что один вариант «лучше чем эта приманка» или асимметрично доминирует, пока не названы абсолютная ценность, независимое сравнение с другими опциями или явное «приманка нерелевантна для выбора»."},
         {"denominator neglect", "Относительный процент не закрывает выбор: не закрывай вердикт «вдвое меньше», «на 90%» или relative risk reduction, пока не названы абсолютный риск, базовая частота или число, которых нужно пролечить."},
@@ -104,5 +105,23 @@ public final class CoordinatorCue {
             }
         }
         return sb.toString();
+    }
+
+    public static void append(StringBuilder sb, List<String> conflicts) {
+        if (sb == null) return;
+        String notes = forConflicts(conflicts);
+        if (notes.isEmpty()) return;
+        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '\n') sb.append('\n');
+        sb.append(notes);
+    }
+
+    public static int noteCount(List<String> conflicts) {
+        String notes = forConflicts(conflicts);
+        if (notes.isEmpty()) return 0;
+        int lines = 0;
+        for (String line : notes.split("\n")) {
+            if (line.trim().length() > 0) lines++;
+        }
+        return lines;
     }
 }
