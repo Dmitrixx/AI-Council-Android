@@ -184,6 +184,7 @@ public final class DeliberationSignals {
         HyperbolicDiscountingPolicy.detect(a, b, conflicts);
         CompromiseEffectPolicy.detect(a, b, conflicts);
         CertaintyEffectPolicy.detect(a, b, conflicts);
+        ContrastEffectPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
