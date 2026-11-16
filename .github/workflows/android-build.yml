@@ -18,6 +18,7 @@ on:
       - "CHANGELOG_RU.md"
   pull_request:
     paths:
+      - ".github/workflows/android-build.yml"
       - "AI-Council-Android-*.zip"
       - "settings.gradle"
       - "settings.gradle.kts"
