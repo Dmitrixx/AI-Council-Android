@@ -183,6 +183,7 @@ public final class DeliberationSignals {
         ExternalValidityPolicy.detect(a, b, conflicts);
         HyperbolicDiscountingPolicy.detect(a, b, conflicts);
         CompromiseEffectPolicy.detect(a, b, conflicts);
+        CertaintyEffectPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
