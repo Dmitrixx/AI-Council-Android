@@ -60,8 +60,8 @@ public class NavigationAndCancellationSmokeTest {
     }
 
     @Test
-    public void stopButtonSignalsUserCancellationAndDisablesRepeatTap() throws Throwable {
-        activityRule.runOnUiThread(() -> {
+    public void stopButtonSignalsUserCancellationAndDisablesRepeatTap() {
+        activityRule.getActivity().runOnUiThread(() -> {
             try {
                 Field working = MainActivity.class.getDeclaredField("working");
                 working.setAccessible(true);
