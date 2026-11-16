@@ -1,3 +1,7 @@
+# AI Council 3.54.0
+
+A local certainty-effect / Allais-paradox check now flags a verdict that treats a certain (probability-1) smaller outcome as clearly superior to a larger uncertain outcome solely because it is guaranteed, without stating expected value, a consistent risk preference, or explicit awareness that certainty is being overweighted. Naming that gap is not itself an error. The coordinator cannot close on the mere fact of certainty alone. Full programmatic UI restored in MainActivity. Version on screen matches Gradle: `3.54.0` / versionCode `221`.
+
 # AI Council 3.53.0
 
 A local compromise-effect check now flags a verdict that treats the middle option as clearly superior solely because it is the compromise between extremes, without stating absolute value on the relevant dimensions, independent comparison, or that the extremes are irrelevant to the real trade-off. Naming that gap is not itself an error. The coordinator cannot close on the middle-position preference alone. Full programmatic UI restored in MainActivity. Version on screen matches Gradle: `3.53.0` / versionCode `220`.
