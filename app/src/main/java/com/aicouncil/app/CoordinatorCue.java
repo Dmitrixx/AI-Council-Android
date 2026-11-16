@@ -129,12 +129,13 @@ public final class CoordinatorCue {
 
     private CoordinatorCue() {}
 
-    private static Rule rule(String key, int priority, String a, String b, String instruction) {
-        return new Rule(key, priority, new String[] {a, b}, instruction);
-    }
-
-    private static Rule rule(String key, int priority, String a, String b, String c, String instruction) {
-        return new Rule(key, priority, new String[] {a, b, c}, instruction);
+    private static Rule rule(String key, int priority, String... values) {
+        if (values == null || values.length < 2) {
+            throw new IllegalArgumentException("A coordinator rule needs an alias and an instruction.");
+        }
+        String[] aliases = new String[values.length - 1];
+        System.arraycopy(values, 0, aliases, 0, aliases.length);
+        return new Rule(key, priority, aliases, values[values.length - 1]);
     }
 
     public static void append(StringBuilder sb, List<String> conflicts) {
