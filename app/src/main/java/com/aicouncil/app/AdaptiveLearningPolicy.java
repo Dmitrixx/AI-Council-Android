@@ -93,7 +93,12 @@ public final class AdaptiveLearningPolicy {
     }
 
     private static int safetyRank(int mode) {
-        return mode == 0 ? 0 : (mode == 3 ? 2 : 1);
+        switch (mode) {
+            case 0: return 0; // quick answer
+            case 2: return 1; // independent audit
+            case 1: return 2; // council + coordinator
+            default: return 3; // deep analysis
+        }
     }
 
     private static boolean available(int mode, boolean[] configured, boolean freeOnly, boolean[] markedFree) {
