@@ -1,4 +1,6 @@
-# AI Council 3.59.0
+# AI Council 3.59.1
+
+The coordinator now turns recognized local reasoning signals into prioritized, actionable checks, deduplicates them, and caps the map at four items. Signals remain hypotheses requiring context; unknown numeric disagreements are not mislabeled as reasoning fallacies. The change also fixes nine regression smoke tests and the AndroidX Test Rules dependency coordinate. Version matches Gradle: `3.59.1` / versionCode `227`.
 
 A local escalation-of-commitment check now flags a verdict that treats continuing a failing project, investment or course of action as clearly superior solely because of prior sunk costs, past effort or previous commitment, without stating the forward-looking expected value, opportunity cost of continuing, or explicit kill criteria. Naming that gap is not itself an error. The coordinator cannot close on past investment alone. Version on screen matches Gradle: `3.59.0` / versionCode `226`.
 
