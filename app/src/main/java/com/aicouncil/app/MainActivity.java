@@ -37,7 +37,8 @@ public class MainActivity extends Activity {
     private boolean lightTheme = false;
     private Spinner themeSpinner;
     private static final String KEY_ALIAS = "AICouncilKeyV4";
-    private static final String APP_VERSION = "3.60.0";
+    private static final String LEARNING_PROFILE_KEY = "adaptive_learning_profile_v1";
+    private static final String APP_VERSION = "3.61.0";
     private static final int REQUEST_SAVE_TEXT = 1401;
     private static final int REQUEST_SAVE_BACKUP = 1402;
     private static final int REQUEST_SAVE_MARKDOWN = 1408;
@@ -73,7 +74,9 @@ public class MainActivity extends Activity {
     private EditText prompt;
     private TextView promptCounter;
     private Spinner modeSpinner, tokenLimitSpinner;
-    private TextView output, status, historyCount, headerStatus;
+    private TextView output, status, historyCount, headerStatus, learningFeedbackStatus;
+    private LinearLayout learningFeedbackCard;
+    private Button helpfulFeedbackButton, alternativeFeedbackButton;
     private LinearLayout historyContainer, projectContainer, resultCards, expertStatusPanel;
     private TextView[] expertStatus = new TextView[4];
     private ProgressBar taskProgress;
@@ -89,6 +92,8 @@ public class MainActivity extends Activity {
     private String pendingExportText = "";
     private boolean pendingBackupTrimmed = false;
     private String lastCompletedTask = "";
+    private long currentHistoryTime = 0L;
+    private boolean currentFeedbackRecorded = false, currentFeedbackEligible = false;
     private JSONArray currentDialogue = new JSONArray();
     private int lastCompletedMode = 0;
     private CheckBox webSearchEnabled;
@@ -201,6 +206,7 @@ public class MainActivity extends Activity {
         if (projectName != null) projectName.setText(savedProjectName);
         showHistory();
         showProjects();
+        updateLearningFeedbackCard();
         if (wasWorking) {
             runButton.setVisibility(View.GONE);
             runButton.setEnabled(false);
@@ -497,7 +503,7 @@ public class MainActivity extends Activity {
         newTaskButton.setOnClickListener(v -> {
             if (working) { setStatus("Сначала остановите или дождитесь текущего запроса.", RED); return; }
             prompt.setText(""); followUpInput.setText(""); currentDialogue = new JSONArray(); output.setText("Ваш итоговый ответ появится здесь. Запустите задачу, чтобы получить независимые мнения и сводный вывод.");
-            renderResultCards(""); lastCompletedTask = ""; taskProgress.setProgress(0); resetExpertStates();
+            renderResultCards(""); lastCompletedTask = ""; currentHistoryTime = 0L; currentFeedbackRecorded = false; currentFeedbackEligible = false; updateLearningFeedbackCard(); taskProgress.setProgress(0); resetExpertStates();
             setStatus("Готово к новой задаче.", TEAL); mainScroll.smoothScrollTo(0, taskSection.getTop()); prompt.requestFocus();
         });
         stopButton = button("Остановить", false); LinearLayout.LayoutParams stopP = lp(-1, 46); stopP.topMargin = dp(8); taskCard.addView(stopButton, stopP); stopButton.setVisibility(View.GONE); stopButton.setEnabled(true); stopButton.setAlpha(1f);
@@ -510,6 +516,15 @@ public class MainActivity extends Activity {
         Button share = button("Поделиться", false); LinearLayout.LayoutParams shareP = lp(-2, 44); shareP.leftMargin = dp(6); resultHead.addView(share, shareP);
         output = text("Ваш итоговый ответ появится здесь. Запустите задачу, чтобы получить независимые мнения и сводный вывод.", 14, Color.rgb(184, 197, 220), false);
         share.setOnClickListener(v -> shareCurrentResult()); output.setLineSpacing(dp(3), 1.05f); output.setTextIsSelectable(true); output.setPadding(0, dp(16), 0, dp(5)); resultCard.addView(output);
+        learningFeedbackCard = column(); learningFeedbackCard.setPadding(dp(12), dp(11), dp(12), dp(12)); learningFeedbackCard.setBackground(shape(Color.rgb(12, 18, 33), 16, Color.rgb(43, 55, 81)));
+        learningFeedbackCard.addView(text("Помочь автовыбору стать точнее", 14, TEXT, true));
+        learningFeedbackCard.addView(text("Оценка относится к формату и глубине ответа, а не к истинности фактов. Хранятся только агрегированные счётчики на устройстве.", 11, MUTED, false), withTop(lp(-1, -2), 3));
+        learningFeedbackStatus = text("Ваш отзыв повлияет только на будущий автовыбор стратегии.", 10, MUTED, false); learningFeedbackCard.addView(learningFeedbackStatus, withTop(lp(-1, -2), 5));
+        LinearLayout learningActions = row(); learningFeedbackCard.addView(learningActions, withTop(lp(-1, 44), 7));
+        helpfulFeedbackButton = button("👍 Полезно", true); alternativeFeedbackButton = button("↻ Другой подход", false);
+        learningActions.addView(helpfulFeedbackButton, new LinearLayout.LayoutParams(0, dp(44), 1)); LinearLayout.LayoutParams alternativeP = new LinearLayout.LayoutParams(0, dp(44), 1); alternativeP.leftMargin = dp(7); learningActions.addView(alternativeFeedbackButton, alternativeP);
+        helpfulFeedbackButton.setOnClickListener(v -> recordAdaptiveFeedback(true)); alternativeFeedbackButton.setOnClickListener(v -> recordAdaptiveFeedback(false));
+        learningFeedbackCard.setVisibility(View.GONE); resultCard.addView(learningFeedbackCard, withTop(lp(-1, -2), 7));
         LinearLayout exportRow = row(); resultCard.addView(exportRow, withTop(lp(-1, 46), 8)); exportRow.setVisibility(View.GONE);
         exportTextButton = button("⇩ TXT", false);
         Button exportMarkdownButton = button("⇩ Markdown", true);
@@ -580,6 +595,12 @@ public class MainActivity extends Activity {
             }
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
+        LinearLayout adaptiveCard = column(); adaptiveCard.setPadding(dp(13), dp(12), dp(13), dp(13)); adaptiveCard.setBackground(shape(Color.rgb(12, 18, 33), 17, Color.rgb(43, 55, 81)));
+        settingsCard.addView(adaptiveCard, withTop(lp(-1, -2), 12));
+        adaptiveCard.addView(text("Локальная адаптация", 16, TEXT, true));
+        adaptiveCard.addView(text("В режиме «Авто» приложение может учитывать ваши оценки формата ответа по типам задач. Текст запросов, ответы, API-ключи и данные провайдеров в профиль не записываются. Ручной выбор стратегии всегда имеет приоритет.", 11, MUTED, false), withTop(lp(-1, -2), 4));
+        Button resetLearning = button("Сбросить память выбора режимов", false); adaptiveCard.addView(resetLearning, withTop(lp(-1, 44), 8));
+        resetLearning.setOnClickListener(v -> new android.app.AlertDialog.Builder(MainActivity.this).setTitle("Сбросить локальную адаптацию?").setMessage("Будут удалены только счётчики полезности стратегий. История, проекты и настройки останутся без изменений.").setNegativeButton("Отмена", null).setPositiveButton("Сбросить", (dialog, which) -> { dataStore.putString(LEARNING_PROFILE_KEY, ""); setStatus("Локальная память выбора режимов сброшена.", TEAL); }).show());
         settingsCard.addView(text("Подключения ИИ", 19, TEXT, true), withTop(lp(-1, -2), 18));
         settingsCard.addView(text("Добавьте облачный API или локальную модель Ollama / LM Studio. Для локального сервера выберите пресет, замените 192.168.1.100 на IP компьютера в той же Wi-Fi-сети, нажмите «Получить список моделей» и выберите установленный ID. Статус chat-проверки и статус каталога моделей отображаются отдельно. Сохранённые облачные ключи никогда не отправляются локальному серверу.", 12, MUTED, false));
         settingsCard.addView(text("Локальный режим не означает, что модель встроена в APK: вычисления идут на выбранном локальном сервере. Android localhost — сам телефон, а не компьютер.", 11, Color.rgb(255, 200, 135), false), withTop(lp(-1, -2), 6));
@@ -2704,8 +2725,19 @@ public class MainActivity extends Activity {
             return;
         }
         if (!saveSettings()) return;
-        int chosenMode = selectedMode == 4 ? chooseAutomaticMode(task) : selectedMode;
+        int baselineMode = selectedMode == 4 ? chooseAutomaticMode(task) : selectedMode;
+        int chosenMode = baselineMode;
+        int learnedSampleCount = 0;
+        if (selectedMode == 4 && dataStore != null) {
+            boolean[] ready = new boolean[4], markedFree = new boolean[4];
+            for (int i = 0; i < 4; i++) { ready[i] = configured(i); markedFree[i] = providerFree[i].isChecked(); }
+            String profile = dataStore.getString(LEARNING_PROFILE_KEY, "");
+            chosenMode = AdaptiveLearningPolicy.recommendMode(profile, task, baselineMode, ready, freeOnly.isChecked(), markedFree);
+            learnedSampleCount = AdaptiveLearningPolicy.sampleCount(profile, task, chosenMode);
+        }
         final int mode = chosenMode;
+        final boolean adaptedRoute = selectedMode == 4 && chosenMode != baselineMode;
+        final int routeEvidenceCount = learnedSampleCount;
         final boolean localOnlyRequested = localOnlyMode != null && localOnlyMode.isChecked();
         final boolean doWebSearch = LocalAiPolicy.shouldUseWebSearch(localOnlyRequested, webSearchEnabled.isChecked()); // Defensive privacy invariant: local-only always disables external search.
         final int selectedWebContextMode = webContextModeSpinner == null ? 2 : Math.max(0, Math.min(WEB_CONTEXT_MODES.length - 1, webContextModeSpinner.getSelectedItemPosition()));
@@ -2722,12 +2754,13 @@ public class MainActivity extends Activity {
         if ((mode == 1 || mode == 2 || mode == 3) && (!configured(1) || (freeOnly.isChecked() && !providerFree[1].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №2, отмеченный как бесплатный." : "Для этого режима настройте ИИ №2: URL и ID модели (для облачного API нужен ключ).", RED); return; }
         if ((mode == 1 || mode == 3) && (!configured(2) || (freeOnly.isChecked() && !providerFree[2].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №3, отмеченный как бесплатный." : "Для этого режима настройте ИИ №3 — аудитора доказательств (для облачного API нужен ключ).", RED); return; }
         if ((mode == 1 || mode == 3) && (!configured(3) || (freeOnly.isChecked() && !providerFree[3].isChecked()))) { setStatus(freeOnly.isChecked() ? "Для выбранного режима нужен ИИ №4, отмеченный как бесплатный." : "Для этого режима настройте ИИ №4 — координатора (для облачного API нужен ключ).", RED); return; }
-        if (selectedMode == 4) setStatus("Автовыбор: " + MODES[mode] + (freeOnly.isChecked() ? " · только отмеченные бесплатными" : "") + (localOnlyMode != null && localOnlyMode.isChecked() ? " · локальные модели" : ""), TEAL);
+        if (selectedMode == 4) setStatus("Автовыбор: " + MODES[mode] + (adaptedRoute ? " · по " + routeEvidenceCount + " вашим оценкам" : "") + (freeOnly.isChecked() ? " · только отмеченные бесплатными" : "") + (localOnlyMode != null && localOnlyMode.isChecked() ? " · локальные модели" : ""), TEAL);
         final String[] urls = new String[4], models = new String[4], keys = new String[4], roleInstructions = new String[4];
         try { for (int i=0;i<4;i++) { urls[i]=endpoint[i].getText().toString().trim(); models[i]=model[i].getText().toString().trim(); keys[i]=decrypt(prefs.getString("key"+i, "")); roleInstructions[i]=ExpertRolePolicy.sanitizeRole(expertRole[i].getText().toString()); } }
         catch (Exception e) { setStatus("Ошибка чтения зашифрованных ключей. Введите их заново.", RED); return; }
         ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(prompt.getWindowToken(), 0);
         cancelRequested = false;
+        currentFeedbackEligible = false; updateLearningFeedbackCard();
         streamingMainTaskActive = true;
         runningMode = mode;
         lastPartialPersistMs = 0L;
@@ -2799,12 +2832,61 @@ public class MainActivity extends Activity {
                     JSONObject userTurn = new JSONObject(); userTurn.put("role", "user"); userTurn.put("content", task); currentDialogue.put(userTurn);
                     JSONObject assistantTurn = new JSONObject(); assistantTurn.put("role", "assistant"); assistantTurn.put("content", finalResult); currentDialogue.put(assistantTurn);
                 } catch (Exception ignored) { }
-                saveToHistory(task, finalResult, mode); showHistory();
+                saveToHistory(task, finalResult, mode); currentFeedbackEligible = !hasFailure && !cancelRequested; updateLearningFeedbackCard(); showHistory();
                 if (cancelRequested) setStatus("Остановлено пользователем. Частичный результат сохранён.", RED);
                 else setStatus((hasFailure ? "Завершено с предупреждением" : "Готово") + " · " + elapsedSeconds + " сек. · проверьте важные факты", hasFailure ? RED : TEAL);
                 cancelRequested = false;
             });
         });
+    }
+
+    private void updateLearningFeedbackCard() {
+        if (learningFeedbackCard == null) return;
+        boolean visible = currentFeedbackEligible && currentHistoryTime > 0L && !lastCompletedTask.trim().isEmpty();
+        learningFeedbackCard.setVisibility(visible ? View.VISIBLE : View.GONE);
+        if (helpfulFeedbackButton != null) helpfulFeedbackButton.setEnabled(visible && !currentFeedbackRecorded);
+        if (alternativeFeedbackButton != null) alternativeFeedbackButton.setEnabled(visible && !currentFeedbackRecorded);
+        if (learningFeedbackStatus != null) learningFeedbackStatus.setText(currentFeedbackRecorded
+                ? "Оценка сохранена локально. Она влияет только на выбор стратегии для похожих задач."
+                : "Оцените именно формат ответа: счётчик будет учтён только в режиме «Авто».");
+    }
+
+    private void recordAdaptiveFeedback(boolean helpful) {
+        if (dataStore == null || currentHistoryTime <= 0L || currentFeedbackRecorded || !currentFeedbackEligible) return;
+        try {
+            JSONArray history = new JSONArray(dataStore.getString("history", "[]"));
+            JSONArray updated = new JSONArray();
+            boolean found = false;
+            for (int i = 0; i < history.length(); i++) {
+                JSONObject item = history.optJSONObject(i);
+                if (item == null) continue;
+                if (!found && item.optLong("time", 0L) == currentHistoryTime
+                        && item.optString("task", "").equals(lastCompletedTask)
+                        && item.optInt("feedback", 0) == 0) {
+                    item.put("feedback", helpful ? 1 : -1);
+                    found = true;
+                }
+                updated.put(item);
+            }
+            if (!found) { currentFeedbackRecorded = true; updateLearningFeedbackCard(); return; }
+            dataStore.putString("history", updated.toString());
+            String profile = dataStore.getString(LEARNING_PROFILE_KEY, "");
+            dataStore.putString(LEARNING_PROFILE_KEY,
+                    AdaptiveLearningPolicy.recordFeedback(profile, lastCompletedTask, lastCompletedMode, helpful));
+            currentFeedbackRecorded = true;
+            updateLearningFeedbackCard(); showHistory();
+            setStatus(helpful ? "Отзыв сохранён. Этот режим получил положительную оценку." : "Отзыв сохранён. В автовыборе будет проверен другой формат.", TEAL);
+        } catch (Exception error) {
+            setStatus("Не удалось сохранить оценку. История ответа не изменена.", RED);
+        }
+    }
+
+    private boolean isRateableAnswer(String answer) {
+        if (answer == null || answer.trim().isEmpty()) return false;
+        String value = answer.trim().toLowerCase(java.util.Locale.ROOT);
+        return !value.startsWith("не удалось выполнить") && !value.startsWith("ошибка")
+                && !value.startsWith("остановлено") && !value.startsWith("■ остановлено")
+                && !value.startsWith("⚠️ задача прервана") && !value.contains("не завершился успешно");
     }
 
     private int colorForEngineTone(CouncilExecutionEngine.Tone tone) {
@@ -3188,9 +3270,17 @@ public class MainActivity extends Activity {
     }
 
     private void saveToHistory(String task, String answer, int mode) {
-        try { JSONArray arr = new JSONArray(dataStore.getString("history", "[]")); JSONObject item = new JSONObject(); item.put("task", task); item.put("answer", answer); item.put("mode", MODES[mode]); item.put("time", System.currentTimeMillis()); if (currentDialogue != null && currentDialogue.length() > 0) item.put("dialogue", currentDialogue);
-            JSONArray next = new JSONArray(); next.put(item); for (int i=0;i<arr.length() && i<19;i++) next.put(arr.getJSONObject(i)); dataStore.putString("history", next.toString()); }
-        catch (Exception ignored) { }
+        try {
+            JSONArray arr = new JSONArray(dataStore.getString("history", "[]"));
+            JSONObject item = new JSONObject();
+            long savedAt = System.currentTimeMillis();
+            item.put("task", task); item.put("answer", answer); item.put("mode", MODES[mode]); item.put("time", savedAt); item.put("feedback", 0);
+            if (currentDialogue != null && currentDialogue.length() > 0) item.put("dialogue", currentDialogue);
+            JSONArray next = new JSONArray(); next.put(item);
+            for (int i = 0; i < arr.length() && i < 19; i++) next.put(arr.getJSONObject(i));
+            dataStore.putString("history", next.toString());
+            currentHistoryTime = savedAt; currentFeedbackRecorded = false;
+        } catch (Exception ignored) { currentHistoryTime = 0L; currentFeedbackRecorded = false; }
     }
     private void showHistory() {
         historyContainer.removeAllViews();
@@ -3239,7 +3329,7 @@ public class MainActivity extends Activity {
                         }).show();
                     return true;
                 });
-                entry.setOnClickListener(v -> { prompt.setText(task); output.setText(answer); output.setTextColor(TEXT); lastCompletedTask=task; lastCompletedMode=historyMode; modeSpinner.setSelection(historyMode); resetExpertDurations(); try { currentDialogue = item.optJSONArray("dialogue") == null ? new JSONArray() : parseDialogue(item.optJSONArray("dialogue").toString()); } catch (Exception ignored) { currentDialogue = new JSONArray(); } renderResultCards(answer); output.setVisibility(View.GONE); setStatus(currentDialogue.length() > 0 ? "Задача загружена: история диалога восстановлена." : "Задача загружена. Для старой записи диалог начнётся с текущего результата.", TEAL); mainScroll.smoothScrollTo(0, resultSection.getTop()); });
+                entry.setOnClickListener(v -> { prompt.setText(task); output.setText(answer); output.setTextColor(TEXT); lastCompletedTask=task; lastCompletedMode=historyMode; currentHistoryTime=historyTime; currentFeedbackRecorded=item.optInt("feedback",0)!=0; currentFeedbackEligible=isRateableAnswer(answer) && !item.optBoolean("interrupted",false); modeSpinner.setSelection(historyMode); resetExpertDurations(); try { currentDialogue = item.optJSONArray("dialogue") == null ? new JSONArray() : parseDialogue(item.optJSONArray("dialogue").toString()); } catch (Exception ignored) { currentDialogue = new JSONArray(); } renderResultCards(answer); output.setVisibility(View.GONE); updateLearningFeedbackCard(); setStatus(currentDialogue.length() > 0 ? "Задача загружена: диалог восстановлен." : "Задача загружена из локальной истории.", TEAL); mainScroll.smoothScrollTo(0, resultSection.getTop()); });
                 historyContainer.addView(entry, withTop(lp(-1, -2), i == 0 ? 0 : 7));
             }
         } catch (Exception e) { historyCount.setText("—"); historyContainer.addView(text("Не удалось прочитать историю.", 12, RED, false)); }
