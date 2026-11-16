@@ -51,6 +51,19 @@ public final class AdaptiveLearningPolicySmokeTest {
                 AdaptiveLearningPolicy.recommendMode(quickPreferred, "general question", 1,
                         all, false, free) == 1);
 
+        String auditPreferred = "";
+        for (int i = 0; i < 4; i++)
+            auditPreferred = AdaptiveLearningPolicy.recordFeedback(auditPreferred, "general question", 2, true);
+        check("learned audit preference cannot downgrade a council baseline",
+                AdaptiveLearningPolicy.recommendMode(auditPreferred, "general question", 1,
+                        all, false, free) == 1);
+        String councilPreferred = "";
+        for (int i = 0; i < 4; i++)
+            councilPreferred = AdaptiveLearningPolicy.recordFeedback(councilPreferred, "general question", 1, true);
+        check("learned council preference cannot downgrade a deep-analysis baseline",
+                AdaptiveLearningPolicy.recommendMode(councilPreferred, "general question", 3,
+                        all, false, free) == 3);
+
         String corrupt = AdaptiveLearningPolicy.normalizeProfile("v9:broken");
         check("unknown profile versions safely reset", corrupt.startsWith("v1:"));
         String saturated = "";
