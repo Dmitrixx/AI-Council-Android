@@ -1,3 +1,7 @@
+# AI Council 3.53.0
+
+A local compromise-effect check now flags a verdict that treats the middle option as clearly superior solely because it is the compromise between extremes, without stating absolute value on the relevant dimensions, independent comparison, or that the extremes are irrelevant to the real trade-off. Naming that gap is not itself an error. The coordinator cannot close on the middle-position preference alone. Full programmatic UI restored in MainActivity. Version on screen matches Gradle: `3.53.0` / versionCode `220`.
+
 # AI Council 3.52.0
 
 A local hyperbolic-discounting check now flags a verdict that treats a smaller immediate reward or lower immediate cost as decisively better than a larger delayed alternative solely because it is nearer in time, without stating a consistent discount rate, total undiscounted value, or explicit awareness of time-inconsistency. Naming that gap is not itself an error. The coordinator cannot close on proximity-in-time alone. Full programmatic UI restored in MainActivity. Version on screen matches Gradle: `3.52.0` / versionCode `219`.
