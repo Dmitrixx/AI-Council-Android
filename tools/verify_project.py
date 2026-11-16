@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 GRADLE = ROOT / "app" / "build.gradle"
 SIGNALS = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "DeliberationSignals.java"
 
-EXPECTED_VERSION = "3.59.1"
-EXPECTED_CODE = 227
+EXPECTED_VERSION = "3.60.0"
+EXPECTED_CODE = 228
 
 REQUIRED_POLICIES = [
     "AutomationBiasPolicy",
@@ -185,8 +185,14 @@ def main() -> int:
         errors.append("missing MainActivity.java")
     else:
         activity_text = activity.read_text(encoding="utf-8")
+        if len(activity_text.encode("utf-8")) < 100000:
+            errors.append("MainActivity.java is incomplete; full UI source must be version-controlled")
         if f'APP_VERSION = "{EXPECTED_VERSION}"' not in activity_text:
             errors.append(f"MainActivity APP_VERSION is not {EXPECTED_VERSION}")
+        if "R.drawable.ic_council_mark" not in activity_text:
+            errors.append("MainActivity brand mark is not wired into the workspace header")
+        if "fieldBackground(16)" not in activity_text:
+            errors.append("task composer is missing the visible keyboard-focus state")
 
     if errors:
         print("verify_project.py FAILED:")
