@@ -1,3 +1,7 @@
+# AI Council 3.55.0
+
+A local contrast-effect check now flags a verdict that treats an option as clearly superior or inferior solely because it is compared to a recent extreme (very good or very bad) alternative, without stating absolute value on the relevant dimensions or that the contrast is irrelevant to the real choice. Naming that gap is not itself an error. The coordinator cannot close on the contrast-relative preference alone. Version on screen matches Gradle: `3.55.0` / versionCode `222`.
+
 # AI Council 3.54.0
 
 A local certainty-effect / Allais-paradox check now flags a verdict that treats a certain (probability-1) smaller outcome as clearly superior to a larger uncertain outcome solely because it is guaranteed, without stating expected value, a consistent risk preference, or explicit awareness that certainty is being overweighted. Naming that gap is not itself an error. The coordinator cannot close on the mere fact of certainty alone. Full programmatic UI restored in MainActivity. Version on screen matches Gradle: `3.54.0` / versionCode `221`.
