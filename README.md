@@ -1,6 +1,10 @@
-# AI Council 3.59.1
+# AI Council 3.61.0
 
-The coordinator now turns recognized local reasoning signals into prioritized, actionable checks, deduplicates them, and caps the map at four items. Signals remain hypotheses requiring context; unknown numeric disagreements are not mislabeled as reasoning fallacies. The change also fixes nine regression smoke tests and the AndroidX Test Rules dependency coordinate. Version matches Gradle: `3.59.1` / versionCode `227`.
+The workspace has a consistent visual hierarchy, accessible status states, visible field focus, and larger touch targets. The selected strategy persists across restarts.
+
+Auto mode can learn from explicit, per-result usefulness ratings. Only bounded aggregate counters are stored locally for six coarse task categories and four strategies. A four-rating minimum, Beta(2,2) smoothing, saturation and decay limit noise. A learned strategy is selected only when it has enough evidence, a meaningful advantage, and all required providers are available. Manual strategy choice remains authoritative; free-only routing and scrutiny floors remain in force. Prompts, answers, credentials, provider identities and model weights are not stored or trained. The local learning profile can be reset in Settings.
+
+The complete `MainActivity.java` source remains version-controlled, and CI fails closed on incomplete source. Version matches Gradle: `3.61.0` / versionCode `229`.
 
 A local escalation-of-commitment check now flags a verdict that treats continuing a failing project, investment or course of action as clearly superior solely because of prior sunk costs, past effort or previous commitment, without stating the forward-looking expected value, opportunity cost of continuing, or explicit kill criteria. Naming that gap is not itself an error. The coordinator cannot close on past investment alone. Version on screen matches Gradle: `3.59.0` / versionCode `226`.
 

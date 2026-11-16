@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 GRADLE = ROOT / "app" / "build.gradle"
 SIGNALS = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "DeliberationSignals.java"
 
-EXPECTED_VERSION = "3.59.1"
-EXPECTED_CODE = 227
+EXPECTED_VERSION = "3.61.0"
+EXPECTED_CODE = 229
 
 REQUIRED_POLICIES = [
     "AutomationBiasPolicy",
@@ -185,8 +185,30 @@ def main() -> int:
         errors.append("missing MainActivity.java")
     else:
         activity_text = activity.read_text(encoding="utf-8")
+        if len(activity_text.encode("utf-8")) < 100000:
+            errors.append("MainActivity.java is incomplete; full UI source must be version-controlled")
         if f'APP_VERSION = "{EXPECTED_VERSION}"' not in activity_text:
             errors.append(f"MainActivity APP_VERSION is not {EXPECTED_VERSION}")
+        if "R.drawable.ic_council_mark" not in activity_text:
+            errors.append("MainActivity brand mark is not wired into the workspace header")
+        if "fieldBackground(16)" not in activity_text:
+            errors.append("task composer is missing the visible keyboard-focus state")
+        if "AdaptiveLearningPolicy.recommendMode" not in activity_text or "AdaptiveLearningPolicy.recordFeedback" not in activity_text:
+            errors.append("explicit local feedback is not connected to Auto strategy selection")
+        if "selectedMode == 4" not in activity_text or "LEARNING_PROFILE_KEY" not in activity_text:
+            errors.append("adaptive routing is not restricted to Auto mode or its local profile key is missing")
+
+    learning = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "AdaptiveLearningPolicy.java"
+    if not learning.is_file():
+        errors.append("missing AdaptiveLearningPolicy.java")
+    else:
+        learning_text = learning.read_text(encoding="utf-8")
+        for marker in ("recordFeedback", "recommendMode", "MIN_SAMPLES", "isHighStakes", "MAX_COUNT", 'PREFIX = "v1:"'):
+            if marker not in learning_text:
+                errors.append("AdaptiveLearningPolicy is missing invariant: " + marker)
+    feedback_test = ROOT / "tools" / "desktop_smoke" / "src" / "com" / "aicouncil" / "app" / "AdaptiveLearningPolicySmokeTest.java"
+    if not feedback_test.is_file():
+        errors.append("missing AdaptiveLearningPolicySmokeTest.java")
 
     if errors:
         print("verify_project.py FAILED:")

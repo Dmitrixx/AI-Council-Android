@@ -363,4 +363,16 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           # The emulator action executes each script line in a separate shell.
           # Keep the command on one line so shell control blocks are not split.
-          script: cd "$GITHUB_WORKSPACE/${{ steps.source.outputs.project_dir }}" && gradle --no-daemon --stacktrace connectedDebugAndroidTest
+          script: cd "$GITHUB_WORKSPACE/${{ steps.source.outputs.project_dir }}" && { adb logcat -c >/dev/null 2>&1 || true; gradle --no-daemon --stacktrace --info connectedDebugAndroidTest; rc=$?; echo Android_UI_instrumentation_XML; find "$GITHUB_WORKSPACE/.build-source/app/build/outputs/androidTest-results/connected" -type f -name "*.xml" -print -exec cat {} \; 2>/dev/null || true; adb logcat -d -t 2500 > "$RUNNER_TEMP/aicouncil-ui-logcat.txt" 2>/dev/null || true; exit "$rc"; }
+
+      - name: Upload Android UI test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-ui-test-diagnostics-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/aicouncil-ui-logcat.txt
+            .build-source/app/build/outputs/androidTest-results/connected/
+            .build-source/app/build/reports/androidTests/connected/
+          if-no-files-found: warn
+          retention-days: 7

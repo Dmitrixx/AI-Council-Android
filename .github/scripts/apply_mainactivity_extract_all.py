@@ -3,23 +3,7 @@
 from pathlib import Path
 import subprocess
 import sys
-import urllib.request
-
-KNOWN_GOOD_URL = (
-    "https://raw.githubusercontent.com/Dmitrixx/AI-Council-Android/"
-    "14d24fe0a24d1e82a81889187de45f1bd2e3ad63/"
-    "app/src/main/java/com/aicouncil/app/MainActivity.java"
-)
 MIN_EXPECTED_BYTES = 100000
-
-def restore_known_good(activity: Path) -> None:
-    print("MainActivity looks truncated/corrupt; restoring known-good snapshot…")
-    with urllib.request.urlopen(KNOWN_GOOD_URL, timeout=60) as resp:
-        data = resp.read()
-    if len(data) < MIN_EXPECTED_BYTES:
-        raise SystemExit("restored content too small: %d" % len(data))
-    activity.write_bytes(data)
-    print("MainActivity restored: %d bytes" % len(data))
 
 def run_script(scripts: Path, name: str, root: Path) -> None:
     script = scripts / name
@@ -34,10 +18,8 @@ def main():
         raise SystemExit("MainActivity.java not found")
     size = activity.stat().st_size
     src = activity.read_text(encoding="utf-8", errors="replace")
-    if size < MIN_EXPECTED_BYTES or "package com.aicouncil.app" not in src or "class MainActivity" not in src:
-        restore_known_good(activity)
-        src = activity.read_text(encoding="utf-8")
-        size = len(src.encode("utf-8"))
+    if size < MIN_EXPECTED_BYTES or "package com.aicouncil.app" not in src or "class MainActivity" not in src or "extends Activity" not in src:
+        raise SystemExit("MainActivity.java is incomplete. The full application source must be committed to the repository; CI will not download a hidden snapshot.")
 
     if size >= MIN_EXPECTED_BYTES and "class MainActivity" in src and "extends Activity" in src:
         print("MainActivity is a full activity (%d bytes); skip optional extract rewrites" % size)
