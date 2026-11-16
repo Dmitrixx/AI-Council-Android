@@ -45,9 +45,11 @@ public final class AdaptiveLearningPolicySmokeTest {
         check("high-stakes tasks never learn down to one-model quick mode",
                 AdaptiveLearningPolicy.recommendMode(critical, "medical dosage calculation", 2,
                         all, false, free) == 2);
-        check("explicit manual baseline remains the fallback",
-                AdaptiveLearningPolicy.recommendMode(profile, "general question", 1,
-                        all, false, free) == 2);
+        String quickPreferred = "";
+        for (int i = 0; i < 4; i++) quickPreferred = AdaptiveLearningPolicy.recordFeedback(quickPreferred, "general question", 0, true);
+        check("learned preference cannot downgrade a council baseline to quick mode",
+                AdaptiveLearningPolicy.recommendMode(quickPreferred, "general question", 1,
+                        all, false, free) == 1);
 
         String corrupt = AdaptiveLearningPolicy.normalizeProfile("v9:broken");
         check("unknown profile versions safely reset", corrupt.startsWith("v1:"));
