@@ -284,7 +284,7 @@ public class MainActivity extends Activity {
         TextView t = new TextView(this); t.setText(s); t.setTextSize(size); t.setTextColor(UiThemePolicy.textColor(color, lightTheme));
         t.setTypeface(Typeface.create(bold ? "sans-serif-medium" : "sans-serif", Typeface.NORMAL));
         t.setIncludeFontPadding(true);
-        if (android.os.Build.VERSION.SDK_INT >= 23) { t.setBreakStrategy(TextView.BREAK_STRATEGY_HIGH_QUALITY); t.setHyphenationFrequency(TextView.HYPHENATION_FREQUENCY_NORMAL); }
+        if (android.os.Build.VERSION.SDK_INT >= 23) { t.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_HIGH_QUALITY); t.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NORMAL); }
         return t;
     }
     private TextView label(String s) { TextView t = text(s, 12, MUTED, true); t.setLetterSpacing(0.04f); t.setPadding(0, dp(12), 0, dp(6)); return t; }
