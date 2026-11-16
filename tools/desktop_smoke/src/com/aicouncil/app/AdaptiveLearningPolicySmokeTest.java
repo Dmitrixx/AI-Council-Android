@@ -23,7 +23,7 @@ public final class AdaptiveLearningPolicySmokeTest {
         for (int i = 0; i < 4; i++)
             profile = AdaptiveLearningPolicy.recordFeedback(profile, "general question", 2, true);
         check("four positive ratings teach a better strategy",
-                AdaptiveLearningPolicy.recommendMode(profile, "general question", 1, all, false, free) == 2);
+                AdaptiveLearningPolicy.recommendMode(profile, "general question", 0, all, false, free) == 2);
         check("sample count is tracked per task class and mode",
                 AdaptiveLearningPolicy.sampleCount(profile, "general question", 2) == 4);
         check("no cross-category leakage",
@@ -36,8 +36,8 @@ public final class AdaptiveLearningPolicySmokeTest {
                 AdaptiveLearningPolicy.recommendMode(negative, "general question", 1,
                         new boolean[]{false, true, true, true}, false, free) == 1);
         check("free-only routing excludes unverified providers",
-                AdaptiveLearningPolicy.recommendMode(profile, "general question", 1, all,
-                        true, new boolean[]{true, false, true, true}) == 1);
+                AdaptiveLearningPolicy.recommendMode(profile, "general question", 0, all,
+                        true, new boolean[]{true, false, true, true}) == 0);
 
         String critical = "";
         for (int i = 0; i < 4; i++)
