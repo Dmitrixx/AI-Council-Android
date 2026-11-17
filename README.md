@@ -1,3 +1,7 @@
+# AI Council 3.68.0
+
+A local catastrophic / asymmetric-downside check now flags a verdict that treats a high-stakes decision as ordinary expected-value calculation when the downside is severe, irreversible, or potentially ruinous, without explicitly weighing the magnitude of the worst plausible outcome or considering safeguards against fat tails / ruin. Naming that gap is not itself an error. The coordinator cannot close solely on average expected value when the left tail is fat. Version matches Gradle: `3.68.0` / versionCode `236`.
+
 # AI Council 3.67.0
 
 A local unintended-consequences / perverse-incentive check now flags a verdict that treats a proposed action or policy as clearly superior based solely on its intended first-order effect without stating possible behavioral adaptations, feedback loops, ways agents may route around the intervention, or risks that the measure creates incentives undermining its own goal (Cobra effect). Naming that gap is not itself an error. The coordinator cannot close solely on the intended effect. Version matches Gradle: `3.67.0` / versionCode `235`.
