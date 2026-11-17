@@ -1,3 +1,7 @@
+# AI Council 3.63.0
+
+A local anecdotal-evidence check now flags a verdict that treats one personal or second-hand story as decisive for a rate, a risk, or a general choice without a base rate, a sample, or an explicit note that the story is only an illustration. Naming that gap is not itself an error. The coordinator cannot close on a single story. The unit-bias signal is now on the coordinator map as well. Version matches Gradle: `3.63.0` / versionCode `231`.
+
 # AI Council 3.62.0
 
 A local unit-bias check now flags a verdict that treats completing a full unit, round package or whole serving as decisive without stating the marginal value of a partial amount or an alternative size. Naming that gap is not itself an error. The coordinator cannot close on the unit boundary alone. Version matches Gradle: `3.62.0` / versionCode `230`.
