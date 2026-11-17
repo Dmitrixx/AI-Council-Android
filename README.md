@@ -1,3 +1,7 @@
+# AI Council 3.66.0
+
+A local missing-counterfactual check now flags a verdict that treats one option as clearly superior without stating what would happen under the next-best or rejected alternative, or without comparing the incremental outcome relative to that baseline. Naming that gap is not itself an error. The coordinator cannot close solely on the preferred option without a counterfactual. Version matches Gradle: `3.66.0` / versionCode `234`.
+
 # AI Council 3.65.0
 
 A local anticipated-regret check now flags a verdict that treats avoiding possible future regret as clearly decisive for preferring a safer, status-quo or "at least I tried" option, without stating the expected value of the alternatives, the probability of the regret-causing outcome, or that regret is an emotional cost to be weighed rather than the sole criterion. Naming that gap is not itself an error. The coordinator cannot close solely on anticipated regret. Version matches Gradle: `3.65.0` / versionCode `233`.
