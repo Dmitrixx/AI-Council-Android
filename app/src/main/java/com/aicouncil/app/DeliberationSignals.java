@@ -189,6 +189,7 @@ public final class DeliberationSignals {
         ChoiceOverloadPolicy.detect(a, b, conflicts);
         DurationNeglectPolicy.detect(a, b, conflicts);
         EscalationOfCommitmentPolicy.detect(a, b, conflicts);
+        DisagreementDiagnosisPolicy.detect(task, a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */

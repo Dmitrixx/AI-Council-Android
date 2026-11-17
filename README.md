@@ -1,3 +1,7 @@
+# AI Council 3.60.0
+
+A local disagreement diagnosis now separates two failures the coordinator used to average away. Fragile agreement: both experts pick the same option for incompatible reasons and neither names the observation that would flip the call. Fact versus norm: one side closes on evidence, the other on an ought, and those are not two estimates of one number. Naming the split is not an error. Version matches Gradle: `3.60.0` / versionCode `228`.
+
 # AI Council 3.59.1
 
 The coordinator now turns recognized local reasoning signals into prioritized, actionable checks, deduplicates them, and caps the map at four items. Signals remain hypotheses requiring context; unknown numeric disagreements are not mislabeled as reasoning fallacies. The change also fixes nine regression smoke tests and the AndroidX Test Rules dependency coordinate. Version matches Gradle: `3.59.1` / versionCode `227`.

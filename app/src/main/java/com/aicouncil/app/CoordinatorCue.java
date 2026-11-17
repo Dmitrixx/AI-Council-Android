@@ -20,6 +20,9 @@ public final class CoordinatorCue {
     private static final int MAX_SIGNAL_CHARS = 180;
 
     private static final Rule[] RULES = {
+            rule("disagreement-diagnosis", 0,
+                    "disagreement diagnosis",
+                    "Это тип разногласия, не вердикт: не усредняй причины. Оставь один несущий механизм и назови наблюдение, которое переключит вывод."),
             rule("seen-and-unseen", 1,
                     "seen and unseen", "видимая выгода", "невидимая цена", "бастиа",
                     "Видимая выгода не весь счёт: назови невидимую цену или прямо укажи, что она неизвестна."),
