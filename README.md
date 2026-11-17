@@ -1,3 +1,7 @@
+# AI Council 3.61.0
+
+The council no longer treats repeated agreement as a second observation. Hidden profile: a verdict that closes because "everyone agrees", while a measurement or named fact held on only one side goes unanswered. Quoting that fact, or saying agreement is not independent evidence, is not an error. Version matches Gradle: `3.61.0` / versionCode `229`.
+
 # AI Council 3.60.0
 
 A local disagreement diagnosis now separates two failures the coordinator used to average away. Fragile agreement: both experts pick the same option for incompatible reasons and neither names the observation that would flip the call. Fact versus norm: one side closes on evidence, the other on an ought, and those are not two estimates of one number. Naming the split is not an error. Version matches Gradle: `3.60.0` / versionCode `228`.
