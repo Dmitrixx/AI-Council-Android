@@ -1,3 +1,7 @@
+# AI Council 3.62.0
+
+A local unit-bias check now flags a verdict that treats completing a full unit, round package or whole serving as decisive without stating the marginal value of a partial amount or an alternative size. Naming that gap is not itself an error. The coordinator cannot close on the unit boundary alone. Version matches Gradle: `3.62.0` / versionCode `230`.
+
 # AI Council 3.61.0
 
 The council no longer treats repeated agreement as a second observation. Hidden profile: a verdict that closes because "everyone agrees", while a measurement or named fact held on only one side goes unanswered. Quoting that fact, or saying agreement is not independent evidence, is not an error. Version matches Gradle: `3.61.0` / versionCode `229`.
