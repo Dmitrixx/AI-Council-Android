@@ -1,3 +1,7 @@
+# AI Council 3.67.0
+
+A local unintended-consequences / perverse-incentive check now flags a verdict that treats a proposed action or policy as clearly superior based solely on its intended first-order effect without stating possible behavioral adaptations, feedback loops, ways agents may route around the intervention, or risks that the measure creates incentives undermining its own goal (Cobra effect). Naming that gap is not itself an error. The coordinator cannot close solely on the intended effect. Version matches Gradle: `3.67.0` / versionCode `235`.
+
 # AI Council 3.66.0
 
 A local missing-counterfactual check now flags a verdict that treats one option as clearly superior without stating what would happen under the next-best or rejected alternative, or without comparing the incremental outcome relative to that baseline. Naming that gap is not itself an error. The coordinator cannot close solely on the preferred option without a counterfactual. Version matches Gradle: `3.66.0` / versionCode `234`.
@@ -9,7 +13,3 @@ A local anticipated-regret check now flags a verdict that treats avoiding possib
 # AI Council 3.64.0
 
 A local Knightian-uncertainty check now flags a verdict that treats a decision under genuine uncertainty (unknown probabilities, unmodeled risks, unknown unknowns) as if it were a risk problem with known probabilities, without acknowledging the distinction or considering robust / maximin / scenario approaches. Naming that gap is not itself an error. The coordinator cannot close by assigning precise probabilities to unknown unknowns. Version matches Gradle: `3.64.0` / versionCode `232`.
-
-# AI Council 3.63.0
-
-A local anecdotal-evidence check now flags a verdict that treats one personal or second-hand story as decisive for a rate, a risk, or a general choice without a base rate, a sample, or an explicit note that the story is only an illustration. Naming that gap is not itself an error. The coordinator cannot close on a single story. The unit-bias signal is now on the coordinator map as well. Version matches Gradle: `3.63.0` / versionCode `231`.
