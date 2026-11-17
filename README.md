@@ -1,3 +1,7 @@
+# AI Council 3.69.0
+
+The full council screen is restored, so the local brain actually runs again: experts, coordinator, streaming and on-device checks. A local moral-hazard check now flags a verdict that treats insured, guaranteed or third-party-covered downside as if the protected party will stay equally careful, without saying who bears the loss or how shifted risk changes behavior. Naming that gap is not itself an error. The coordinator cannot close solely because someone else pays for the failure. Version matches Gradle: `3.69.0` / versionCode `237`.
+
 # AI Council 3.68.0
 
 A local catastrophic / asymmetric-downside check now flags a verdict that treats a high-stakes decision as ordinary expected-value calculation when the downside is severe, irreversible, or potentially ruinous, without explicitly weighing the magnitude of the worst plausible outcome or considering safeguards against fat tails / ruin. Naming that gap is not itself an error. The coordinator cannot close solely on average expected value when the left tail is fat. Version matches Gradle: `3.68.0` / versionCode `236`.
