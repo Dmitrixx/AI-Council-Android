@@ -195,6 +195,7 @@ public final class DeliberationSignals {
         AnecdotalEvidencePolicy.detect(a, b, conflicts);
         KnightianUncertaintyPolicy.detect(a, b, conflicts);
         AnticipatedRegretPolicy.detect(a, b, conflicts);
+        MissingCounterfactualPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
