@@ -1,3 +1,7 @@
+# AI Council 3.65.0
+
+A local anticipated-regret check now flags a verdict that treats avoiding possible future regret as clearly decisive for preferring a safer, status-quo or "at least I tried" option, without stating the expected value of the alternatives, the probability of the regret-causing outcome, or that regret is an emotional cost to be weighed rather than the sole criterion. Naming that gap is not itself an error. The coordinator cannot close solely on anticipated regret. Version matches Gradle: `3.65.0` / versionCode `233`.
+
 # AI Council 3.64.0
 
 A local Knightian-uncertainty check now flags a verdict that treats a decision under genuine uncertainty (unknown probabilities, unmodeled risks, unknown unknowns) as if it were a risk problem with known probabilities, without acknowledging the distinction or considering robust / maximin / scenario approaches. Naming that gap is not itself an error. The coordinator cannot close by assigning precise probabilities to unknown unknowns. Version matches Gradle: `3.64.0` / versionCode `232`.
@@ -5,41 +9,3 @@ A local Knightian-uncertainty check now flags a verdict that treats a decision u
 # AI Council 3.63.0
 
 A local anecdotal-evidence check now flags a verdict that treats one personal or second-hand story as decisive for a rate, a risk, or a general choice without a base rate, a sample, or an explicit note that the story is only an illustration. Naming that gap is not itself an error. The coordinator cannot close on a single story. The unit-bias signal is now on the coordinator map as well. Version matches Gradle: `3.63.0` / versionCode `231`.
-
-# AI Council 3.62.0
-
-A local unit-bias check now flags a verdict that treats completing a full unit, round package or whole serving as decisive without stating the marginal value of a partial amount or an alternative size. Naming that gap is not itself an error. The coordinator cannot close on the unit boundary alone. Version matches Gradle: `3.62.0` / versionCode `230`.
-
-# AI Council 3.61.0
-
-The council no longer treats repeated agreement as a second observation. Hidden profile: a verdict that closes because "everyone agrees", while a measurement or named fact held on only one side goes unanswered. Quoting that fact, or saying agreement is not independent evidence, is not an error. Version matches Gradle: `3.61.0` / versionCode `229`.
-
-# AI Council 3.60.0
-
-A local disagreement diagnosis now separates two failures the coordinator used to average away. Fragile agreement: both experts pick the same option for incompatible reasons and neither names the observation that would flip the call. Fact versus norm: one side closes on evidence, the other on an ought, and those are not two estimates of one number. Naming the split is not an error. Version matches Gradle: `3.60.0` / versionCode `228`.
-
-# AI Council 3.59.1
-
-The coordinator now turns recognized local reasoning signals into prioritized, actionable checks, deduplicates them, and caps the map at four items. Signals remain hypotheses requiring context; unknown numeric disagreements are not mislabeled as reasoning fallacies. The change also fixes nine regression smoke tests and the AndroidX Test Rules dependency coordinate. Version matches Gradle: `3.59.1` / versionCode `227`.
-
-A local escalation-of-commitment check now flags a verdict that treats continuing a failing project, investment or course of action as clearly superior solely because of prior sunk costs, past effort or previous commitment, without stating the forward-looking expected value, opportunity cost of continuing, or explicit kill criteria. Naming that gap is not itself an error. The coordinator cannot close on past investment alone. Version on screen matches Gradle: `3.59.0` / versionCode `226`.
-
-# AI Council 3.58.0
-
-A local duration-neglect check now flags a verdict that treats the peak or end intensity of an experience as decisive for its overall value while never stating or weighing how long the experience lasts. Naming that gap is not itself an error. The coordinator cannot close on peak or end intensity alone. Version on screen matches Gradle: `3.58.0` / versionCode `225`.
-
-# AI Council 3.57.0
-
-A local choice-overload / paradox-of-choice check now flags a verdict that treats the mere number of options as decisive — either deferring or refusing to choose solely because there are too many, or preferring more options just because there are more — without stating decision criteria, quality comparison across options, or that quantity alone does not determine value. Naming that gap is not itself an error. The coordinator cannot close (or refuse to close) on option count alone. Version on screen matches Gradle: `3.57.0` / versionCode `224`.
-
-# AI Council 3.56.0
-
-A local default-effect check now flags a verdict that treats the pre-selected, default, or current option as clearly superior solely because it is the default, without stating absolute value on the relevant dimensions, independent comparison, or that the default is irrelevant to the real choice. Naming that gap is not itself an error. The coordinator cannot close on the mere fact of default status alone. Version on screen matches Gradle: `3.56.0` / versionCode `223`.
-
-# AI Council 3.55.0
-
-A local contrast-effect check now flags a verdict that treats an option as clearly superior or inferior solely because it is compared to a recent extreme (very good or very bad) alternative, without stating absolute value on the relevant dimensions or that the contrast is irrelevant to the real choice. Naming that gap is not itself an error. The coordinator cannot close on the contrast-relative preference alone. Version on screen matches Gradle: `3.55.0` / versionCode `222`.
-
-# AI Council 3.54.0
-
-A local certainty-effect / Allais-paradox check now flags a verdict that treats a certain (probability-1) smaller outcome as clearly superior to a larger uncertain outcome solely because it is guaranteed, without stating expected value, a consistent risk preference, or explicit awareness that certainty is being overweighted. Naming that gap is not itself an error. The coordinator cannot close on the mere fact of certainty alone. Full programmatic UI restored in MainActivity. Version on screen matches Gradle: `3.54.0` / versionCode `221`.
