@@ -193,6 +193,7 @@ public final class DeliberationSignals {
         HiddenProfilePolicy.detect(a, b, conflicts);
         UnitBiasPolicy.detect(a, b, conflicts);
         AnecdotalEvidencePolicy.detect(a, b, conflicts);
+        KnightianUncertaintyPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
