@@ -1,3 +1,7 @@
+# AI Council 3.72.0
+
+The council now checks whether a closing label actually closed the verdict. `ДЕЛАТЬ` or `НЕ ДЕЛАТЬ` without an observation that would flip the conclusion, and without saying whether the step is reversible, is marked unfinished. A forecast stated as one percent, with no range and no reference class, is marked unfinished too. Naming the gap silences the check. The coordinator is told this before it picks a label, and the finished report carries a local note when the label is still hollow. Version matches Gradle: `3.72.0` / versionCode `240`.
+
 # AI Council 3.70.0
 
 A local adverse-selection check now flags a verdict that treats people who opt into an offer, insurance, loan, job or program as typical of the wider pool, without asking whether hidden information makes that self-selected side systematically worse for the counterparty. This is hidden type before the contract, not behavior change after protection. Naming that gap is not itself an error. The coordinator cannot close solely because volunteers look like the average customer. Version matches Gradle: `3.70.0` / versionCode `238`.

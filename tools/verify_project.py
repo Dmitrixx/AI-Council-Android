@@ -14,10 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 GRADLE = ROOT / "app" / "build.gradle"
 SIGNALS = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "DeliberationSignals.java"
 
-EXPECTED_VERSION = "3.71.0"
-EXPECTED_CODE = 239
+EXPECTED_VERSION = "3.72.0"
+EXPECTED_CODE = 240
 
 REQUIRED_POLICIES = [
+    "VerdictClosurePolicy",
     "WinnersCursePolicy",
     "InformationCascadePolicy",
     "FreeRiderPolicy",

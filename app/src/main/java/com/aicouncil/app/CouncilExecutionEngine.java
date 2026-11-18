@@ -144,6 +144,8 @@ public final class CouncilExecutionEngine {
         if (!callbacks.isCancelled()) {
             String localCheck = DeliberationIntelligence.localCheckFooter(result);
             if (!localCheck.isEmpty()) result += "\n\n" + localCheck;
+            String closure = VerdictClosurePolicy.footer(request.task, result);
+            if (!closure.isEmpty()) result += "\n\n" + closure;
         }
         return new Outcome(result, usedSources, callbacks.isCancelled());
     }
@@ -307,6 +309,7 @@ public final class CouncilExecutionEngine {
         String reviewerPrompt = CouncilAnalysisPolicy.buildCoordinatorOpening()
                 + (localMap.isEmpty() ? "" : "\n\nЛОКАЛЬНАЯ КАРТА РАЗНОГЛАСИЙ (посчитана приложением, не моделью; проверь её и не выдавай за внешний источник):\n" + localMap)
                 + SynthesisProtocol.coordinatorBlock(r.task, localMap)
+                + VerdictClosurePolicy.reminder(r.task)
                 + "\n\n" + structuredStatus
                 + "\n\nЗАДАЧА ПОЛЬЗОВАТЕЛЯ:\n" + task
                 + "\n\nОТВЕТ ИИ №1 (" + r.models[0] + "):\n" + a

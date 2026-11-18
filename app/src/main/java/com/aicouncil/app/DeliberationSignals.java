@@ -205,6 +205,7 @@ public final class DeliberationSignals {
         FreeRiderPolicy.detect(a, b, conflicts);
         PathDependencePolicy.detect(a, b, conflicts);
         LucasCritiquePolicy.detect(a, b, conflicts);
+        VerdictClosurePolicy.detect(task, a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
