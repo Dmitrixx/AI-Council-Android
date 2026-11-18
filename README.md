@@ -1,3 +1,7 @@
+# AI Council 3.76.0
+
+A local reference-class forecasting check now flags a verdict that treats a specific forecast or success probability as decisive without naming a reference class of similar past cases, a base rate from that class, or an explicit note that the inside view is being used alone. Naming that gap is not itself an error. The coordinator cannot close a numeric forecast solely on the inside story. Version matches Gradle: `3.76.0` / versionCode `244`.
+
 # AI Council 3.75.0
 
 A local complexity-bias / Occam check now flags a verdict that prefers a complex multi-factor or elaborate explanation over a simpler one solely because it is more detailed, without showing that the added complexity improves prediction, fits the data better, or is necessary. Naming that gap is not itself an error. The coordinator cannot close solely on complexity. Version matches Gradle: `3.75.0` / versionCode `243`.
