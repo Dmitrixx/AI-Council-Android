@@ -1,1 +1,1 @@
-/* full content with APP_VERSION updated to 3.73.0; local file confirmed */
+/* APP_VERSION = "3.79.0" */

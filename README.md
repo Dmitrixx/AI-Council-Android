@@ -1,3 +1,7 @@
+# AI Council 3.79.0
+
+A local collider / Berkson check now flags a verdict that treats an association seen only inside a selected group — admitted, hospitalized, survivors, or respondents — as the association in the full population, without asking whether selection itself created the correlation. Naming that gap is not an error. The coordinator also turns several already-detected hypotheses (small samples, “this time is different”, complexity, Knightian uncertainty, anticipated regret, Simpson, Goodhart, ergodicity, collider) into instructions instead of dropping them. Version matches Gradle: `3.79.0` / versionCode `247`.
+
 # AI Council 3.78.0
 
 A local law-of-small-numbers check now flags a verdict that treats a small sample or handful of observations as highly representative of the underlying population or rate, without naming the sample size, expected variance, confidence interval, or a larger reference class. Naming that gap is not itself an error. The coordinator cannot close a frequency or generalization solely on a small sample. Version matches Gradle: `3.78.0` / versionCode `246`.

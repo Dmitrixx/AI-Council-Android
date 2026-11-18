@@ -208,6 +208,7 @@ public final class DeliberationSignals {
         ComplexityBiasPolicy.detect(a, b, conflicts);
         ReferenceClassForecastingPolicy.detect(a, b, conflicts);
         ThisTimeIsDifferentPolicy.detect(a, b, conflicts);
+        ColliderBiasPolicy.detect(a, b, conflicts);
         LawOfSmallNumbersPolicy.detect(a, b, conflicts);
         VerdictClosurePolicy.detect(task, a, b, conflicts);
     }
