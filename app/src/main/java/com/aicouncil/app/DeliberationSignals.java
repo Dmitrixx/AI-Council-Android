@@ -205,6 +205,7 @@ public final class DeliberationSignals {
         FreeRiderPolicy.detect(a, b, conflicts);
         PathDependencePolicy.detect(a, b, conflicts);
         LucasCritiquePolicy.detect(a, b, conflicts);
+        ComplexityBiasPolicy.detect(a, b, conflicts);
         VerdictClosurePolicy.detect(task, a, b, conflicts);
     }
 
@@ -212,20 +213,20 @@ public final class DeliberationSignals {
     static void detectUrgency(String a, String b, List<String> conflicts) {
         int ua = urgencySign(a), ub = urgencySign(b);
         if (ua != 0 && ub != 0 && ua != ub) {
-            conflicts.add("срочность: действовать сейчас против отложить / подождать");
+            conflicts.add("\u0441\u0440\u043e\u0447\u043d\u043e\u0441\u0442\u044c: \u0434\u0435\u0439\u0441\u0442\u0432\u043e\u0432\u0430\u0442\u044c \u0441\u0435\u0439\u0447\u0430\u0441 \u043f\u0440\u043e\u0442\u0438\u0432 \u043e\u0442\u043b\u043e\u0436\u0438\u0442\u044c / \u043f\u043e\u0434\u043e\u0436\u0434\u0430\u0442\u044c");
         }
     }
 
     private static int urgencySign(String text) {
         String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
-        boolean now = lower.contains("немедленно") || lower.contains("сейчас") || lower.contains("срочно")
-                || lower.contains("как можно скорее") || lower.contains("without delay")
+        boolean now = lower.contains("\u043d\u0435\u043c\u0435\u0434\u043b\u0435\u043d\u043d\u043e") || lower.contains("\u0441\u0435\u0439\u0447\u0430\u0441") || lower.contains("\u0441\u0440\u043e\u0447\u043d\u043e")
+                || lower.contains("\u043a\u0430\u043a \u043c\u043e\u0436\u043d\u043e \u0441\u043a\u043e\u0440\u0435\u0435") || lower.contains("without delay")
                 || lower.contains("immediately") || lower.contains("right now") || lower.contains("asap")
-                || lower.contains("негайно") || lower.contains("якомога швидше");
-        boolean later = lower.contains("подождать") || lower.contains("отложить") || lower.contains("не сейчас")
-                || lower.contains("позже") || lower.contains("wait until") || lower.contains("postpone")
-                || lower.contains("not yet") || lower.contains("defer") || lower.contains("зачекати")
-                || lower.contains("відкласти") || lower.contains("пізніше");
+                || lower.contains("\u043d\u0435\u0433\u0430\u0439\u043d\u043e") || lower.contains("\u044f\u043a\u043e\u043c\u043e\u0433\u0430 \u0448\u0432\u0438\u0434\u0448\u0435");
+        boolean later = lower.contains("\u043f\u043e\u0434\u043e\u0436\u0434\u0430\u0442\u044c") || lower.contains("\u043e\u0442\u043b\u043e\u0436\u0438\u0442\u044c") || lower.contains("\u043d\u0435 \u0441\u0435\u0439\u0447\u0430\u0441")
+                || lower.contains("\u043f\u043e\u0437\u0436\u0435") || lower.contains("wait until") || lower.contains("postpone")
+                || lower.contains("not yet") || lower.contains("defer") || lower.contains("\u0437\u0430\u0447\u0435\u043a\u0430\u0442\u0438")
+                || lower.contains("\u0432\u0456\u0434\u043a\u043b\u0430\u0441\u0442\u0438") || lower.contains("\u043f\u0456\u0437\u043d\u0456\u0448\u0435");
         if (now && later) return 0;
         if (now) return 1;
         if (later) return -1;
@@ -236,21 +237,21 @@ public final class DeliberationSignals {
     static void detectEvidenceGrade(String a, String b, List<String> conflicts) {
         int ga = evidenceGrade(a), gb = evidenceGrade(b);
         if ((ga >= 2 && gb <= 0) || (gb >= 2 && ga <= 0)) {
-            conflicts.add("сила доказательств: систематика/RCT против анекдота или единичного случая");
+            conflicts.add("\u0441\u0438\u043b\u0430 \u0434\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432: \u0441\u0438\u0441\u0442\u0435\u043c\u0430\u0442\u0438\u043a\u0430/RCT \u043f\u0440\u043e\u0442\u0438\u0432 \u0430\u043d\u0435\u043a\u0434\u043e\u0442\u0430 \u0438\u043b\u0438 \u0435\u0434\u0438\u043d\u0438\u0447\u043d\u043e\u0433\u043e \u0441\u043b\u0443\u0447\u0430\u044f");
         }
     }
 
     private static int evidenceGrade(String text) {
         String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
         int grade = 0;
-        if (lower.contains("meta-analysis") || lower.contains("мета-анализ") || lower.contains("метааналіз")
-                || lower.contains("systematic review") || lower.contains("систематическ") || lower.contains("систематичн")) {
+        if (lower.contains("meta-analysis") || lower.contains("\u043c\u0435\u0442\u0430-\u0430\u043d\u0430\u043b\u0438\u0437") || lower.contains("\u043c\u0435\u0442\u0430\u0430\u043d\u0430\u043b\u0456\u0437")
+                || lower.contains("systematic review") || lower.contains("\u0441\u0438\u0441\u0442\u0435\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a") || lower.contains("\u0441\u0438\u0441\u0442\u0435\u043c\u0430\u0442\u0438\u0447\u043d")) {
             grade = 3;
-        } else if (lower.contains("randomized") || lower.contains("rct") || lower.contains("рандомизирован")
-                || lower.contains("рандомізован")) {
+        } else if (lower.contains("randomized") || lower.contains("rct") || lower.contains("\u0440\u0430\u043d\u0434\u043e\u043c\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d")
+                || lower.contains("\u0440\u0430\u043d\u0434\u043e\u043c\u0456\u0437\u043e\u0432\u0430\u043d")) {
             grade = 2;
-        } else if (lower.contains("anecdote") || lower.contains("анекдот") || lower.contains("единичный случай")
-                || lower.contains("one case") || lower.contains("один случай") || lower.contains("один випадок")) {
+        } else if (lower.contains("anecdote") || lower.contains("\u0430\u043d\u0435\u043a\u0434\u043e\u0442") || lower.contains("\u0435\u0434\u0438\u043d\u0438\u0447\u043d\u044b\u0439 \u0441\u043b\u0443\u0447\u0430\u0439")
+                || lower.contains("one case") || lower.contains("\u043e\u0434\u0438\u043d \u0441\u043b\u0443\u0447\u0430\u0439") || lower.contains("\u043e\u0434\u0438\u043d \u0432\u0438\u043f\u0430\u0434\u043e\u043a")) {
             grade = 0;
         } else {
             grade = 1;
@@ -263,16 +264,16 @@ public final class DeliberationSignals {
         boolean aCost = costBenefitSign(a) < 0, aBen = costBenefitSign(a) > 0;
         boolean bCost = costBenefitSign(b) < 0, bBen = costBenefitSign(b) > 0;
         if ((aCost && bBen) || (bCost && aBen)) {
-            conflicts.add("фрейминг цены/выгоды: один акцент на затратах, другой на выгодах");
+            conflicts.add("\u0444\u0440\u0435\u0439\u043c\u0438\u043d\u0433 \u0446\u0435\u043d\u044b/\u0432\u044b\u0433\u043e\u0434\u044b: \u043e\u0434\u0438\u043d \u0430\u043a\u0446\u0435\u043d\u0442 \u043d\u0430 \u0437\u0430\u0442\u0440\u0430\u0442\u0430\u0445, \u0434\u0440\u0443\u0433\u043e\u0439 \u043d\u0430 \u0432\u044b\u0433\u043e\u0434\u0430\u0445");
         }
     }
 
     private static int costBenefitSign(String text) {
         String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
-        boolean cost = lower.contains("затрат") || lower.contains("cost") || lower.contains("цена")
-                || lower.contains("дорого") || lower.contains("expensive") || lower.contains("витрат");
-        boolean benefit = lower.contains("выгод") || lower.contains("benefit") || lower.contains("прибыл")
-                || lower.contains("дёшево") || lower.contains("cheap") || lower.contains("економія");
+        boolean cost = lower.contains("\u0437\u0430\u0442\u0440\u0430\u0442") || lower.contains("cost") || lower.contains("\u0446\u0435\u043d\u0430")
+                || lower.contains("\u0434\u043e\u0440\u043e\u0433\u043e") || lower.contains("expensive") || lower.contains("\u0432\u0438\u0442\u0440\u0430\u0442");
+        boolean benefit = lower.contains("\u0432\u044b\u0433\u043e\u0434") || lower.contains("benefit") || lower.contains("\u043f\u0440\u0438\u0431\u044b\u043b")
+                || lower.contains("\u0434\u0451\u0448\u0435\u0432\u043e") || lower.contains("cheap") || lower.contains("\u0435\u043a\u043e\u043d\u043e\u043c\u0456\u044f");
         if (cost && benefit) return 0;
         if (cost) return -1;
         if (benefit) return 1;
@@ -283,18 +284,18 @@ public final class DeliberationSignals {
     static void detectObligation(String a, String b, List<String> conflicts) {
         int oa = obligationSign(a), ob = obligationSign(b);
         if (oa != 0 && ob != 0 && oa != ob) {
-            conflicts.add("обязательность: «надо/должен» против «можно/опционально»");
+            conflicts.add("\u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c: \u00ab\u043d\u0430\u0434\u043e/\u0434\u043e\u043b\u0436\u0435\u043d\u00bb \u043f\u0440\u043e\u0442\u0438\u0432 \u00ab\u043c\u043e\u0436\u043d\u043e/\u043e\u043f\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u043e\u00bb");
         }
     }
 
     private static int obligationSign(String text) {
         String lower = text == null ? "" : text.toLowerCase(Locale.ROOT);
-        boolean must = lower.contains("должен") || lower.contains("надо") || lower.contains("обязан")
+        boolean must = lower.contains("\u0434\u043e\u043b\u0436\u0435\u043d") || lower.contains("\u043d\u0430\u0434\u043e") || lower.contains("\u043e\u0431\u044f\u0437\u0430\u043d")
                 || lower.contains("must") || lower.contains("have to") || lower.contains("required")
-                || lower.contains("повинен") || lower.contains("треба");
-        boolean optional = lower.contains("можно") || lower.contains("опционально") || lower.contains("не обязательно")
-                || lower.contains("optional") || lower.contains("can") || lower.contains("можна")
-                || lower.contains("не обовязково");
+                || lower.contains("\u043f\u043e\u0432\u0438\u043d\u0435\u043d") || lower.contains("\u0442\u0440\u0435\u0431\u0430");
+        boolean optional = lower.contains("\u043c\u043e\u0436\u043d\u043e") || lower.contains("\u043e\u043f\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u043e") || lower.contains("\u043d\u0435 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e")
+                || lower.contains("optional") || lower.contains("can") || lower.contains("\u043c\u043e\u0436\u043d\u0430")
+                || lower.contains("\u043d\u0435 \u043e\u0431\u043e\u0432\u044f\u0437\u043a\u043e\u0432\u043e");
         if (must && optional) return 0;
         if (must) return 1;
         if (optional) return -1;
