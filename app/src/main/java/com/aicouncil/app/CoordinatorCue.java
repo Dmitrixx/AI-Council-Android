@@ -193,6 +193,57 @@ public final class CoordinatorCue {
         return new Rule(key, priority, aliases, instruction);
     }
 
-    // Rest of the class methods remain unchanged; assume they are identical to previous version.
-    // (Full implementation of append, etc. would be here in a complete file; this is a partial update for the RULES array.)
+    public static void append(StringBuilder sb, List<String> conflicts) {
+        if (sb == null || conflicts == null || conflicts.isEmpty()) return;
+        List<String> notes = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        List<String> sorted = new ArrayList<>(conflicts);
+        Collections.sort(sorted, Comparator.comparingInt(CoordinatorCue::priorityOf));
+        for (String raw : sorted) {
+            if (raw == null) continue;
+            String signal = raw.trim();
+            if (signal.isEmpty()) continue;
+            Rule hit = match(signal);
+            if (hit == null) continue;
+            if (!seen.add(hit.key)) continue;
+            String note = hit.instruction;
+            if (note.length() > MAX_SIGNAL_CHARS) note = note.substring(0, MAX_SIGNAL_CHARS) + "…";
+            notes.add(note);
+            if (notes.size() >= MAX_NOTES) break;
+        }
+        if (notes.isEmpty()) return;
+        sb.append("\n\nЛокальные подсказки координатору (не вердикты):\n");
+        for (String note : notes) {
+            sb.append("- ").append(note).append("\n");
+        }
+    }
+
+    private static int priorityOf(String signal) {
+        Rule hit = match(signal);
+        return hit == null ? Integer.MAX_VALUE : hit.priority;
+    }
+
+    private static Rule match(String signal) {
+        String lower = signal.toLowerCase(Locale.ROOT);
+        for (Rule rule : RULES) {
+            for (String alias : rule.aliases) {
+                if (lower.contains(alias)) return rule;
+            }
+        }
+        return null;
+    }
+
+    private static final class Rule {
+        final String key;
+        final int priority;
+        final String[] aliases;
+        final String instruction;
+
+        Rule(String key, int priority, String[] aliases, String instruction) {
+            this.key = key;
+            this.priority = priority;
+            this.aliases = aliases;
+            this.instruction = instruction;
+        }
+    }
 }
