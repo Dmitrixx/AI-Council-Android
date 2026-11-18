@@ -1,3 +1,7 @@
+# AI Council 3.70.0
+
+A local adverse-selection check now flags a verdict that treats people who opt into an offer, insurance, loan, job or program as typical of the wider pool, without asking whether hidden information makes that self-selected side systematically worse for the counterparty. This is hidden type before the contract, not behavior change after protection. Naming that gap is not itself an error. The coordinator cannot close solely because volunteers look like the average customer. Version matches Gradle: `3.70.0` / versionCode `238`.
+
 # AI Council 3.69.0
 
 The full council screen is restored, so the local brain actually runs again: experts, coordinator, streaming and on-device checks. A local moral-hazard check now flags a verdict that treats insured, guaranteed or third-party-covered downside as if the protected party will stay equally careful, without saying who bears the loss or how shifted risk changes behavior. Naming that gap is not itself an error. The coordinator cannot close solely because someone else pays for the failure. Version matches Gradle: `3.69.0` / versionCode `237`.

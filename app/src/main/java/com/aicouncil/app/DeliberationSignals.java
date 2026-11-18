@@ -199,6 +199,7 @@ public final class DeliberationSignals {
         UnintendedConsequencesPolicy.detect(a, b, conflicts);
         CatastrophicRiskPolicy.detect(a, b, conflicts);
         MoralHazardPolicy.detect(a, b, conflicts);
+        AdverseSelectionPolicy.detect(a, b, conflicts);
     }
 
     /** One expert pushes immediate action; the other wants to wait. */
