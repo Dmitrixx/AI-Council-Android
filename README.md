@@ -1,3 +1,7 @@
+# AI Council 3.78.0
+
+A local law-of-small-numbers check now flags a verdict that treats a small sample or handful of observations as highly representative of the underlying population or rate, without naming the sample size, expected variance, confidence interval, or a larger reference class. Naming that gap is not itself an error. The coordinator cannot close a frequency or generalization solely on a small sample. Version matches Gradle: `3.78.0` / versionCode `246`.
+
 # AI Council 3.77.0
 
 A local "this time is different" check now flags a verdict that treats a specific case as immune to the historical base rate or reference class solely because "this time is different", "conditions have changed", or "we are special", without naming the reference class, the base rate, or an explicit mechanism why the difference overrides the outside view. Naming that gap is not itself an error. The coordinator cannot close a numeric forecast or timeline solely on the claim that this case is exceptional. Version matches Gradle: `3.77.0` / versionCode `245`.
