@@ -32,6 +32,9 @@ public final class CoordinatorCue {
             rule("anecdotal-evidence", 1,
                     "anecdotal evidence",
                     "Один рассказ не задаёт частоту: назови базовую частоту, выборку или прямо напиши, что истории недостаточно."),
+            rule("survivorship-bias", 5,
+                    "survivorship bias", "смещение выжившего", "видимые успехи",
+                    "Видимые успехи не вся выборка: назови долю провалов, отсев или прямо укажи, что базовые неудачи неизвестны."),
             rule("seen-and-unseen", 1,
                     "seen and unseen", "видимая выгода", "невидимая цена", "бастиа",
                     "Видимая выгода не весь счёт: назови невидимую цену или прямо укажи, что она неизвестна."),
@@ -188,61 +191,42 @@ public final class CoordinatorCue {
 
     public static void append(StringBuilder sb, List<String> conflicts) {
         if (sb == null || conflicts == null || conflicts.isEmpty()) return;
-        List<Note> notes = collect(conflicts);
+        List<String> notes = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        List<String> sorted = new ArrayList<>(conflicts);
+        Collections.sort(sorted, Comparator.comparingInt(CoordinatorCue::priorityOf));
+        for (String raw : sorted) {
+            if (raw == null) continue;
+            String signal = raw.trim();
+            if (signal.isEmpty()) continue;
+            Rule hit = match(signal);
+            if (hit == null) continue;
+            if (!seen.add(hit.key)) continue;
+            String note = hit.instruction;
+            if (note.length() > MAX_SIGNAL_CHARS) note = note.substring(0, MAX_SIGNAL_CHARS) + "…";
+            notes.add(note);
+            if (notes.size() >= MAX_NOTES) break;
+        }
         if (notes.isEmpty()) return;
-
-        for (int i = 0; i < notes.size(); i++) {
-            Note note = notes.get(i);
-            if (i == 0) {
-                sb.append("\nЛокальная гипотеза (требует контекста, не автоматический вердикт): ");
-            } else {
-                sb.append("\n- ");
-            }
-            sb.append(note.signal).append(" — ").append(note.rule.instruction);
+        sb.append("\n\nЛокальные подсказки координатору (не вердикты):\n");
+        for (String note : notes) {
+            sb.append("- ").append(note).append("\n");
         }
     }
 
-    /** Number of distinct, recognized hypotheses that will actually be shown. */
-    public static int noteCount(List<String> conflicts) {
-        return conflicts == null ? 0 : collect(conflicts).size();
+    private static int priorityOf(String signal) {
+        Rule hit = match(signal);
+        return hit == null ? Integer.MAX_VALUE : hit.priority;
     }
 
-    private static List<Note> collect(List<String> conflicts) {
-        List<Note> notes = new ArrayList<Note>();
-        Set<String> seen = new HashSet<String>();
-        for (String raw : conflicts) {
-            if (raw == null || raw.trim().isEmpty()) continue;
-            Rule matched = match(raw.toLowerCase(Locale.ROOT));
-            if (matched == null || !seen.add(matched.key)) continue;
-            notes.add(new Note(matched, compact(raw)));
-        }
-        Collections.sort(notes, new Comparator<Note>() {
-            @Override public int compare(Note left, Note right) {
-                return left.rule.priority - right.rule.priority;
-            }
-        });
-        if (notes.size() > MAX_NOTES) {
-            return new ArrayList<Note>(notes.subList(0, MAX_NOTES));
-        }
-        return notes;
-    }
-
-    private static Rule match(String text) {
-        for (Rule candidate : RULES) {
-            for (String alias : candidate.aliases) {
-                if (text.contains(alias)) return candidate;
+    private static Rule match(String signal) {
+        String lower = signal.toLowerCase(Locale.ROOT);
+        for (Rule rule : RULES) {
+            for (String alias : rule.aliases) {
+                if (lower.contains(alias)) return rule;
             }
         }
         return null;
-    }
-
-    private static String compact(String value) {
-        String result = value.replace('\r', ' ').replace('\n', ' ').replace('\t', ' ').trim();
-        while (result.contains("  ")) result = result.replace("  ", " ");
-        if (result.length() > MAX_SIGNAL_CHARS) {
-            result = result.substring(0, MAX_SIGNAL_CHARS - 1).trim() + "…";
-        }
-        return result;
     }
 
     private static final class Rule {
@@ -256,16 +240,6 @@ public final class CoordinatorCue {
             this.priority = priority;
             this.aliases = aliases;
             this.instruction = instruction;
-        }
-    }
-
-    private static final class Note {
-        final Rule rule;
-        final String signal;
-
-        Note(Rule rule, String signal) {
-            this.rule = rule;
-            this.signal = signal;
         }
     }
 }
