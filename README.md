@@ -1,3 +1,7 @@
+# AI Council 3.75.0
+
+A local complexity-bias / Occam check now flags a verdict that prefers a complex multi-factor or elaborate explanation over a simpler one solely because it is more detailed, without showing that the added complexity improves prediction, fits the data better, or is necessary. Naming that gap is not itself an error. The coordinator cannot close solely on complexity. Version matches Gradle: `3.75.0` / versionCode `243`.
+
 # AI Council 3.74.0
 
 A local outcome-bias check now flags a verdict that treats the quality of a past decision as determined solely by its outcome (success or failure) without evaluating the decision process, the information available at the time, or base rates of success for similar choices. Naming that gap is not itself an error. The coordinator cannot close solely because it worked or failed. Version matches Gradle: `3.74.0` / versionCode `242`.
