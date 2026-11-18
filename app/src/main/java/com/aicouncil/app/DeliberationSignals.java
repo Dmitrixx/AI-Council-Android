@@ -206,6 +206,7 @@ public final class DeliberationSignals {
         PathDependencePolicy.detect(a, b, conflicts);
         LucasCritiquePolicy.detect(a, b, conflicts);
         ComplexityBiasPolicy.detect(a, b, conflicts);
+        ReferenceClassForecastingPolicy.detect(a, b, conflicts);
         VerdictClosurePolicy.detect(task, a, b, conflicts);
     }
 
