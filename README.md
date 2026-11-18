@@ -1,1 +1,7 @@
-PLACEHOLDER
+# AI Council 3.77.0
+
+A local "this time is different" check now flags a verdict that treats a specific case as immune to the historical base rate or reference class solely because "this time is different", "conditions have changed", or "we are special", without naming the reference class, the base rate, or an explicit mechanism why the difference overrides the outside view. Naming that gap is not itself an error. The coordinator cannot close a numeric forecast or timeline solely on the claim that this case is exceptional. Version matches Gradle: `3.77.0` / versionCode `245`.
+
+# AI Council 3.76.0
+
+A local reference-class forecasting check now flags a verdict that treats a specific forecast or success probability as decisive without naming a reference class of similar past cases, a base rate from that class, or an explicit note that the inside view is being used alone. Naming that gap is not itself an error. The coordinator cannot close a numeric forecast solely on the inside story. Version matches Gradle: `3.76.0` / versionCode `244`.
