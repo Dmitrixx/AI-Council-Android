@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - ".github/scripts/apply_371_version_and_wire.py"
+      - ".github/scripts/apply_371_coordinator_cues.py"
       - "app/src/main/java/com/aicouncil/app/WinnersCursePolicy.java"
 jobs:
   wire:
@@ -12,15 +13,16 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v7
-      - name: Wire policies and bump version on main
+      - name: Wire policies, version, and coordinator cues
         run: |
           set -euo pipefail
           python3 .github/scripts/apply_371_version_and_wire.py
+          python3 .github/scripts/apply_371_coordinator_cues.py
           if [[ -n "$(git status --porcelain)" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
-            git commit -m "chore: apply 3.71.0 policy wiring and version bump"
+            git commit -m "chore: apply 3.71.0 wiring and coordinator cues"
             git push
           else
             echo "nothing to commit"
