@@ -208,6 +208,7 @@ public final class DeliberationSignals {
         ComplexityBiasPolicy.detect(a, b, conflicts);
         ReferenceClassForecastingPolicy.detect(a, b, conflicts);
         ThisTimeIsDifferentPolicy.detect(a, b, conflicts);
+        LawOfSmallNumbersPolicy.detect(a, b, conflicts);
         VerdictClosurePolicy.detect(task, a, b, conflicts);
     }
 
@@ -297,7 +298,7 @@ public final class DeliberationSignals {
                 || lower.contains("\u043f\u043e\u0432\u0438\u043d\u0435\u043d") || lower.contains("\u0442\u0440\u0435\u0431\u0430");
         boolean optional = lower.contains("\u043c\u043e\u0436\u043d\u043e") || lower.contains("\u043e\u043f\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u043e") || lower.contains("\u043d\u0435 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e")
                 || lower.contains("optional") || lower.contains("can") || lower.contains("\u043c\u043e\u0436\u043d\u0430")
-                || lower.contains("\u043d\u0435 \u043e\u0431\u043e\u0432\u044f\u0437\u043a\u043e\u0432\u043e");
+                || lower.contains("\u043d\u0435\u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e");
         if (must && optional) return 0;
         if (must) return 1;
         if (optional) return -1;
