@@ -1,3 +1,7 @@
+# AI Council 3.88.0
+
+A local marginal-analysis / diminishing-returns check now flags a verdict that treats a large-scale or all-or-nothing action as clearly superior without stating the incremental (marginal) costs and benefits of the next unit, or acknowledging diminishing returns, when the decision concerns intensity, quantity, dosage or scale rather than a pure binary choice. Naming the gap is not itself an error. The coordinator cannot close solely on total average effects when the relevant question is the margin. Version matches Gradle: `3.88.0` / versionCode `256`.
+
 # AI Council 3.87.0
 
 A local proportional / Bayesian-style belief-update check now flags a verdict that treats new evidence as fully confirmatory or fully disconfirmatory (proves / completely changes / settles the question) without stating the strength of the evidence relative to the prior, the direction and rough magnitude of the update, or that weak or dependent evidence should move beliefs less. Naming the gap is not itself an error. The coordinator cannot close solely on unweighted “decisive” evidence. Version matches Gradle: `3.87.0` / versionCode `255`.
