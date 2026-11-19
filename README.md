@@ -1,3 +1,7 @@
+# AI Council 3.86.0
+
+A local option-value / real-options check now flags a verdict that treats committing now to a course of action as clearly superior without stating the value of preserving flexibility, the option to wait for more information, to reverse course, or to stage the decision when residual uncertainty exists and the cost of irreversibility is material. Naming the gap is not itself an error. The coordinator cannot close solely on immediate commitment when keeping options open has value. Version matches Gradle: `3.86.0` / versionCode `254`.
+
 # AI Council 3.85.0
 
 A local point-estimate check now flags a verdict that treats a single number, percentage, or forecast as precise and decisive without stating a range, confidence interval, sensitivity to assumptions, or that the figure is an estimate. Naming the uncertainty is not itself an error. The coordinator cannot close solely on a bare point estimate. Version matches Gradle: `3.85.0` / versionCode `253`.
