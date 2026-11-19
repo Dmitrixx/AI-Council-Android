@@ -219,6 +219,7 @@ public final class DeliberationSignals {
         KeyAssumptionsPolicy.detect(a, b, conflicts);
         PointEstimatePolicy.detect(a, b, conflicts);
         OptionValuePolicy.detect(a, b, conflicts);
+        ProportionalUpdatePolicy.detect(a, b, conflicts);
         VerdictClosurePolicy.detect(task, a, b, conflicts);
     }
 

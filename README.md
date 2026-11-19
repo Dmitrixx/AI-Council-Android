@@ -1,3 +1,7 @@
+# AI Council 3.87.0
+
+A local proportional / Bayesian-style belief-update check now flags a verdict that treats new evidence as fully confirmatory or fully disconfirmatory (proves / completely changes / settles the question) without stating the strength of the evidence relative to the prior, the direction and rough magnitude of the update, or that weak or dependent evidence should move beliefs less. Naming the gap is not itself an error. The coordinator cannot close solely on unweighted “decisive” evidence. Version matches Gradle: `3.87.0` / versionCode `255`.
+
 # AI Council 3.86.0
 
 A local option-value / real-options check now flags a verdict that treats committing now to a course of action as clearly superior without stating the value of preserving flexibility, the option to wait for more information, to reverse course, or to stage the decision when residual uncertainty exists and the cost of irreversibility is material. Naming the gap is not itself an error. The coordinator cannot close solely on immediate commitment when keeping options open has value. Version matches Gradle: `3.86.0` / versionCode `254`.
