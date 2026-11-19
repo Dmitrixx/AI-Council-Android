@@ -1,3 +1,7 @@
+# AI Council 3.81.0
+
+A local absolute-risk neglect check now flags a verdict that treats a relative risk reduction, percentage improvement, or ratio as decisive while never stating the absolute risk difference, baseline rate, or number needed to treat/harm. Naming that gap is not itself an error. The coordinator cannot close solely on relative figures. Version matches Gradle: `3.81.0` / versionCode `249`.
+
 # AI Council 3.80.0
 
 A local motivated-reasoning check now flags a verdict that appears to select, interpret, or weight evidence primarily to protect a preferred conclusion, identity, or prior commitment, rather than updating on the full balance of evidence (including disconfirming data). Naming that gap is not itself an error. The coordinator cannot close solely on a conclusion-preserving reading of the evidence. Version matches Gradle: `3.80.0` / versionCode `248`.
