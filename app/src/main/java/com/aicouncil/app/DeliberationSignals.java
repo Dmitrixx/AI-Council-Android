@@ -216,6 +216,7 @@ public final class DeliberationSignals {
         InversionPolicy.detect(a, b, conflicts);
         FermiDecompositionPolicy.detect(a, b, conflicts);
         MultipleComparisonsPolicy.detect(a, b, conflicts);
+        KeyAssumptionsPolicy.detect(a, b, conflicts);
         VerdictClosurePolicy.detect(task, a, b, conflicts);
     }
 
