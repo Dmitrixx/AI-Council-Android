@@ -71,8 +71,11 @@ public final class OutcomeBiasPolicy {
     private static boolean outcomeDeterminesQuality(String t) {
         boolean outcomeFocus = has(t,
                 "решение было хорошим потому что успешно", "плохое решение потому что провалилось",
-                "good decision because it worked", "bad decision since it failed", "outcome proves");
-        boolean conclude = has(t, "значит", "следовательно", "рекомендую", "стоит делать так", "therefore", "i recommend");
+                "good decision because it worked", "bad decision since it failed", "outcome proves",
+                "раз сработало", "раз провалилось", "раз выиграли",
+                "успех доказывает", "it failed so the decision");
+        boolean conclude = has(t, "значит", "следовательно", "рекомендую", "стоит делать так", "therefore", "i recommend",
+                "было правильным", "было плохим", "решение отличное", "was wrong", "правильность решения");
         return outcomeFocus && conclude && !accountsForProcess(t);
     }
 

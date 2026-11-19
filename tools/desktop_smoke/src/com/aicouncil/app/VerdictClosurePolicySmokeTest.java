@@ -133,7 +133,7 @@ public final class VerdictClosurePolicySmokeTest {
         StringBuilder sb = new StringBuilder();
         CoordinatorCue.append(sb, conflicts);
         String text = sb.toString();
-        return text.contains("verdict closure") && text.contains("СНАЧАЛА ПРОВЕРИТЬ");
+        return text.contains("СНАЧАЛА ПРОВЕРИТЬ") && (text.contains("обратим") || text.contains("метк"));
     }
 
     private static int check(String name, boolean ok) {

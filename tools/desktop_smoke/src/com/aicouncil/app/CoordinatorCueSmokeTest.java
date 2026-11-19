@@ -32,7 +32,7 @@ public final class CoordinatorCueSmokeTest {
         CoordinatorCue.append(capped, many);
         int lines = 0;
         for (String line : capped.toString().split("\n")) {
-            if (line.trim().length() > 0) lines++;
+            if (line.trim().startsWith("- ")) lines++;
         }
         check(lines == 4, "notes stay capped at four");
         check(capped.toString().contains("невидимую цену"), "decision-shaped cue is kept under the cap");

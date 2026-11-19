@@ -26,6 +26,21 @@ public final class CoordinatorCue {
             rule("hidden-profile", 0,
                     "hidden profile", "скрытый профиль",
                     "Повтор общего текста — не вторая выборка. Ответь на наблюдение только одной стороны или прямо напиши, что его нет."),
+            rule("absolute-risk-neglect", 2,
+                    "absolute risk neglect",
+                    "Относительный процент не закрывает выбор: назови абсолютный риск, базовую частоту или NNT, иначе оставь вопрос открытым."),
+            rule("motivated-reasoning", 3,
+                    "motivated reasoning", "мотивированное рассуждение",
+                    "Защита заранее выбранного вывода — гипотеза: взвесь опровергающие данные или прямо напиши, что баланс доказательств не собран."),
+            rule("steelman", 4,
+                    "steelman", "стальной человек",
+                    "Сначала сформулируй сильнейшую честную версию чужой позиции; критика слабой карикатуры не закрывает выбор."),
+            rule("inversion", 5,
+                    "inversion", "инверсия мангера", "via negativa",
+                    "План только «что делать» не закрывает выбор: назови, как это провалится, и чего сознательно избежать."),
+            rule("fermi", 6,
+                    "fermi decomposition", "разложение ферми",
+                    "Точное число без разложения на оцениваемые множители — не измерение: разложи или пометь как догадку."),
             rule("unit-bias", 1,
                     "unit bias", "эффект единицы",
                     "Граница единицы не закрывает выбор: оцени предельную ценность частичной дозы или другого размера."),
@@ -218,6 +233,17 @@ public final class CoordinatorCue {
         String[] aliases = new String[values.length - 1];
         System.arraycopy(values, 0, aliases, 0, aliases.length);
         return new Rule(key, priority, aliases, instruction);
+    }
+
+    /** How many coordinator notes {@link #append} would emit. */
+    public static int noteCount(List<String> conflicts) {
+        StringBuilder sb = new StringBuilder();
+        append(sb, conflicts);
+        int notes = 0;
+        for (String line : sb.toString().split("\n")) {
+            if (line.trim().startsWith("- ")) notes++;
+        }
+        return notes;
     }
 
     public static void append(StringBuilder sb, List<String> conflicts) {

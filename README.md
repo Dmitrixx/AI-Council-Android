@@ -1,3 +1,7 @@
+# AI Council 3.82.0
+
+The council now reasons with three operators it was missing, and two checks that were written but did not reach the coordinator actually do. A steelman check flags a verdict that beats a cartoon of the other side without stating the strongest fair version. An inversion check flags a plan that only says what to do and never how it fails or what to avoid. A Fermi check flags a precise figure treated as measured when it was never decomposed into estimable factors. Absolute-risk neglect is wired into `DeliberationSignals.detectAll`, and the coordinator now turns absolute-risk neglect and motivated reasoning into instructions instead of dropping them. Naming a gap is not itself an error. Version matches Gradle: `3.82.0` / versionCode `250`.
+
 # AI Council 3.81.0
 
 A local absolute-risk neglect check now flags a verdict that treats a relative risk reduction, percentage improvement, or ratio as decisive while never stating the absolute risk difference, baseline rate, or number needed to treat/harm. Naming that gap is not itself an error. The coordinator cannot close solely on relative figures. Version matches Gradle: `3.81.0` / versionCode `249`.
