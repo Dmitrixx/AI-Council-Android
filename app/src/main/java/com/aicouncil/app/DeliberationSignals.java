@@ -226,6 +226,7 @@ public final class DeliberationSignals {
         InteractionEffectsPolicy.detect(a, b, conflicts);
         ThresholdEffectsPolicy.detect(a, b, conflicts);
         ScenarioStressTestPolicy.detect(a, b, conflicts);
+        FeedbackEffectsPolicy.detect(a, b, conflicts);
         DecisionFramePolicy.detect(task, a, b, conflicts);
         VerdictClosurePolicy.detect(task, a, b, conflicts);
     }
