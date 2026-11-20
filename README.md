@@ -1,3 +1,7 @@
+# AI Council 3.96.0
+
+A local feedback / second-order effects check now flags a verdict that closes a decision on a direct first-order effect without naming feedback loops, adaptive responses of agents, or second-order consequences that could reverse or amplify the intended outcome. Naming the gap is not itself an error. The coordinator cannot close solely on first-order expected effects when system feedback is material. Version matches Gradle: `3.96.0` / versionCode `264`.
+
 # AI Council 3.95.0
 
 A local scenario / stress-test check now flags a verdict that closes a decision on a single expected or base-case forecast without naming alternative plausible scenarios, stress cases, or how robust the conclusion is under different futures. Naming the gap is not itself an error. The coordinator cannot close solely on one point forecast when residual uncertainty is material. Version matches Gradle: `3.95.0` / versionCode `263`.
