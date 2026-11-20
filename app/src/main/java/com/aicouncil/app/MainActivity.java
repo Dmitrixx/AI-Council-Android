@@ -17,7 +17,7 @@ import android.widget.TextView;
  * execution engine; this screen keeps the on-device checks usable.
  */
 public final class MainActivity extends Activity {
-    /* APP_VERSION = "3.95.0" */
+    /* APP_VERSION = "3.96.0" */
 
     private EditText taskField;
     private TextView report;
@@ -40,7 +40,7 @@ public final class MainActivity extends Activity {
 
         root.addView(CouncilShell.sectionTitle(this, "AI Council", teal));
         root.addView(CouncilShell.label(this,
-                "Локальный контур 3.95.0: кадр решения, сценарный стресс-тест, цена ошибки (лишнее действие или упущенный шанс), арифметика и проверка закрытия. Сеть не используется.",
+                "Локальный контур 3.96.0: кадр решения, сценарный стресс-тест, обратная связь / эффекты второго порядка, цена ошибки (лишнее действие или упущенный шанс), арифметика и проверка закрытия. Сеть не используется.",
                 muted));
 
         taskField = CouncilShell.field(this, fg, muted, field, true, 6);
