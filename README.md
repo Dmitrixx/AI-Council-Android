@@ -1,3 +1,7 @@
+# AI Council 3.98.0
+
+A local strategic anticipation / theory-of-mind check now flags a verdict that treats other agents' behavior as fixed or non-strategic (they will not change their actions, information, or incentives in response to our decision) without naming likely adaptive responses, the incentives they face, or higher-order beliefs. Naming the gap is not itself an error. The coordinator cannot close solely on a static reaction function when strategic interaction is material. Version matches Gradle: `3.98.0` / versionCode `266`.
+
 # AI Council 3.97.0
 
 A local unknown-unknowns / higher-order uncertainty check now flags a verdict that treats the decision problem as fully specified and known (all relevant factors, risks, and responses are in the model) without naming residual unknown unknowns, black-swan possibilities, model incompleteness, or the need for humility about what has not been considered. Naming the gap is not itself an error. The coordinator cannot close solely on a fully enumerated risk list when higher-order uncertainty is material. Version matches Gradle: `3.97.0` / versionCode `265`.
