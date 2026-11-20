@@ -26,6 +26,7 @@ public final class DecisionFramePolicySmokeTest {
         String closedFrame = DecisionFramePolicy.block(closed);
         check(closedFrame.contains("запускать новый тариф"), "first alternative is extracted");
         check(closedFrame.contains("оставить текущий"), "second alternative is extracted");
+        check(!closedFrame.contains("Решить в этом квартале"), "the next sentence is not an alternative");
         check(closedFrame.contains("20 %"), "percent magnitude is extracted");
         check(closedFrame.contains("явных дыр в постановке не найдено"), "a complete brief has no gaps");
 

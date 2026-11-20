@@ -19,9 +19,9 @@ public final class DecisionFramePolicy {
     private static final int MAX_SIGNALS = 2;
     private static final int MAX_GAPS = 4;
     private static final Pattern OR_SPLIT = Pattern.compile(
-            "(?iu)((?:\\S+\\s+){0,5}\\S+)\\s+(?:или|либо|versus|\\bvs\\.?\\b|\\bor\\b)\\s+((?:\\S+\\s+){0,5}\\S+)");
+            "(?iu)((?:[^\\s?!,.;:]+\\s+){0,5}[^\\s?!,.;:]+)\\s+(?:или|либо|versus|\\bvs\\.?\\b|\\bor\\b)\\s+((?:[^\\s?!,.;:]+\\s+){0,5}[^\\s?!,.;:]+)");
     private static final Pattern BETWEEN = Pattern.compile(
-            "(?iu)между\\s+((?:\\S+\\s+){0,4}\\S+)\\s+и\\s+((?:\\S+\\s+){0,4}\\S+)");
+            "(?iu)между\\s+((?:[^\\s?!,.;:]+\\s+){0,4}[^\\s?!,.;:]+)\\s+и\\s+((?:[^\\s?!,.;:]+\\s+){0,4}[^\\s?!,.;:]+)");
     private static final Pattern MAGNITUDE = Pattern.compile(
             "(?iu)(\\d+(?:[.,]\\d+)?)\\s*(%|процент(?:а|ов)?|₽|руб(?:лей|ля|\\.)?|\\$|usd|eur|млн|тыс\\.?|человек|пользовател(?:ей|я)|дн(?:ей|я)|недел(?:ь|и|ю)|месяц(?:ев|а)?|год(?:а|ов)?|лет)");
 
@@ -163,7 +163,10 @@ public final class DecisionFramePolicy {
         String[] lines = task.split("\\n");
         for (String line : lines) {
             String trimmed = line.trim();
-            if (trimmed.contains("?") || trimmed.contains("？")) return clip(trimmed);
+            int q = trimmed.indexOf('?');
+            int qFull = trimmed.indexOf('？');
+            int cut = q < 0 ? qFull : (qFull < 0 ? q : Math.min(q, qFull));
+            if (cut >= 0) return clip(trimmed.substring(0, cut + 1));
         }
         String flat = task.trim().replaceAll("\\s+", " ");
         int cut = -1;
