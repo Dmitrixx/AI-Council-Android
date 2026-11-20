@@ -1,3 +1,7 @@
+# AI Council 3.89.0
+
+A local interaction-effects / non-additivity check now flags a verdict that treats a package of simultaneous actions or combined interventions as the simple sum of separate effects without stating interaction terms, synergies, interference, thresholds, or why effects remain approximately additive. Naming the gap is not itself an error. The coordinator cannot close solely on additive decomposition when the decision packages multiple levers or crosses a threshold where interactions become material. Version matches Gradle: `3.89.0` / versionCode `257`.
+
 # AI Council 3.88.0
 
 A local marginal-analysis / diminishing-returns check now flags a verdict that treats a large-scale or all-or-nothing action as clearly superior without stating the incremental (marginal) costs and benefits of the next unit, or acknowledging diminishing returns, when the decision concerns intensity, quantity, dosage or scale rather than a pure binary choice. Naming the gap is not itself an error. The coordinator cannot close solely on total average effects when the relevant question is the margin. Version matches Gradle: `3.88.0` / versionCode `256`.
@@ -17,7 +21,3 @@ A local point-estimate check now flags a verdict that treats a single number, pe
 # AI Council 3.84.0
 
 A local key-assumptions check now flags a verdict that treats a proposed action or policy as clearly preferable without stating the key assumptions on which that preference depends (costs, probabilities, agent responses, external conditions, model validity, or data quality). Naming the assumptions is not itself an error. The coordinator cannot close solely on a recommendation that hides its load-bearing assumptions. Version matches Gradle: `3.84.0` / versionCode `252`.
-
-# AI Council 3.83.0
-
-A local multiple-comparisons check now flags a verdict that treats a statistically significant result, p-value, or “proven” claim as decisive without naming the number of tests, family-wise error control, the look-elsewhere effect, or the garden of forking paths. Naming that gap is not itself an error. The coordinator cannot close solely on uncorrected significance. Version matches Gradle: `3.83.0` / versionCode `251`.
