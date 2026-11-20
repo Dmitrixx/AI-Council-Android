@@ -228,6 +228,7 @@ public final class DeliberationSignals {
         ScenarioStressTestPolicy.detect(a, b, conflicts);
         FeedbackEffectsPolicy.detect(a, b, conflicts);
         UnknownUnknownsPolicy.detect(a, b, conflicts);
+        StrategicAnticipationPolicy.detect(a, b, conflicts);
         DecisionFramePolicy.detect(task, a, b, conflicts);
         VerdictClosurePolicy.detect(task, a, b, conflicts);
     }
