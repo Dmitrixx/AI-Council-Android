@@ -1,3 +1,7 @@
+# AI Council 3.97.0
+
+A local unknown-unknowns / higher-order uncertainty check now flags a verdict that treats the decision problem as fully specified and known (all relevant factors, risks, and responses are in the model) without naming residual unknown unknowns, black-swan possibilities, model incompleteness, or the need for humility about what has not been considered. Naming the gap is not itself an error. The coordinator cannot close solely on a fully enumerated risk list when higher-order uncertainty is material. Version matches Gradle: `3.97.0` / versionCode `265`.
+
 # AI Council 3.96.0
 
 A local feedback / second-order effects check now flags a verdict that closes a decision on a direct first-order effect without naming feedback loops, adaptive responses of agents, or second-order consequences that could reverse or amplify the intended outcome. Naming the gap is not itself an error. The coordinator cannot close solely on first-order expected effects when system feedback is material. Version matches Gradle: `3.96.0` / versionCode `264`.
