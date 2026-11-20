@@ -1,3 +1,7 @@
+# AI Council 3.99.0
+
+A local alternative models / model pluralism check now flags a verdict that treats one preferred model, mechanism, or explanatory framework as sufficient to close the decision without naming alternative models, checking robustness to model choice, or noting where models disagree. Naming the gap is not itself an error. The coordinator cannot close solely on a single model when model uncertainty is material. Version matches Gradle: `3.99.0` / versionCode `267`.
+
 # AI Council 3.98.0
 
 A local strategic anticipation / theory-of-mind check now flags a verdict that treats other agents' behavior as fixed or non-strategic (they will not change their actions, information, or incentives in response to our decision) without naming likely adaptive responses, the incentives they face, or higher-order beliefs. Naming the gap is not itself an error. The coordinator cannot close solely on a static reaction function when strategic interaction is material. Version matches Gradle: `3.98.0` / versionCode `266`.
