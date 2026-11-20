@@ -211,6 +211,7 @@ public final class DeliberationSignals {
         ColliderBiasPolicy.detect(a, b, conflicts);
         LawOfSmallNumbersPolicy.detect(a, b, conflicts);
         RhymeAsReasonPolicy.detect(a, b, conflicts);
+        ErrorCostAsymmetryPolicy.detect(a, b, conflicts);
         MotivatedReasoningPolicy.detect(a, b, conflicts);
         AbsoluteRiskNeglectPolicy.detect(a, b, conflicts);
         SteelmanPolicy.detect(a, b, conflicts);

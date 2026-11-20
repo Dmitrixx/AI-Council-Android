@@ -14,21 +14,38 @@ public final class DecisionFramePolicySmokeTest {
         String openFrame = DecisionFramePolicy.block(open);
         check(openFrame.contains("КАДР РЕШЕНИЯ"), "open decision gets a frame");
         check(openFrame.contains("Режим: решение"), "decision cue selects decision mode");
-        check(openFrame.contains("Альтернативы: в тексте не выделены"), "missing alternatives are named");
+        check(openFrame.contains("переписать весь биллинг"), "binary prompt extracts the action");
+        check(openFrame.contains("оставить как есть"), "binary prompt keeps the status quo");
+        check(!openFrame.contains("закрыть выбор уже сегодня;"), "the request to close is not an alternative");
         check(openFrame.contains("Величины: не найдены"), "missing magnitude is named");
         check(openFrame.contains("кто несёт убыток"), "missing downside bearer is named");
         check(openFrame.contains("критерий успеха не назван"), "missing success metric is named");
         check(!openFrame.contains("горизонт решения не задан"), "today counts as a horizon");
 
+        String unnamed = "Нужно принять решение о запуске новой линии, но варианты в тексте не сравниваются и срок — этот квартал.";
+        check(DecisionFramePolicy.block(unnamed).contains("Альтернативы: в тексте не выделены"),
+                "a decision without a binary or an or-split still names missing alternatives");
+
         String closed = "Стоит ли запускать новый тариф или оставить текущий? "
                 + "Решить в этом квартале: убыток несёт команда, базовая частота похожих запусков 20% "
-                + "и критерий успеха — удержание 30 дней.";
+                + "и критерий успеха — удержание 30 дней. "
+                + "Альтернативная стоимость — отказ от доработки текущего тарифа. "
+                + "Pre-mortem: если удержание не вырастет, критерий отмены — откат. "
+                + "Ложная тревога дешевле пропущенного оттока.";
         String closedFrame = DecisionFramePolicy.block(closed);
         check(closedFrame.contains("запускать новый тариф"), "first alternative is extracted");
         check(closedFrame.contains("оставить текущий"), "second alternative is extracted");
         check(!closedFrame.contains("Решить в этом квартале"), "the next sentence is not an alternative");
         check(closedFrame.contains("20 %"), "percent magnitude is extracted");
         check(closedFrame.contains("явных дыр в постановке не найдено"), "a complete brief has no gaps");
+
+        String almost = "Стоит ли запускать новый тариф или оставить текущий? "
+                + "Решить в этом квартале: убыток несёт команда, базовая частота похожих запусков 20% "
+                + "и критерий успеха — удержание 30 дней. "
+                + "Альтернативная стоимость — отказ от доработки текущего тарифа. "
+                + "Pre-mortem: если удержание не вырастет, критерий отмены — откат.";
+        check(DecisionFramePolicy.block(almost).contains("какая ошибка дороже"),
+                "a brief that never prices the two mistakes names that gap");
 
         String forecast = "Оцени шанс, что через год продукт ещё будет жив на рынке подписок без смены модели.";
         String forecastFrame = DecisionFramePolicy.block(forecast);

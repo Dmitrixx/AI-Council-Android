@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
  * Local frame of the question itself, computed before any model speaks.
  * Extracts the asked question, explicit alternatives and magnitudes, then names
  * the missing ingredients a closable answer would need (options including status quo,
- * scale, horizon, who bears the loss, base rate, success metric, opportunity cost,
- * and a pre-mortem / kill criterion). Naming a gap is not an error.
+ * scale, horizon, who bears the loss, base rate, success metric, which error is
+ * costlier, opportunity cost, and a pre-mortem / kill criterion). Naming a gap is not an error.
  * A verdict that closes while the top gap is still open is a hypothesis, not a choice.
  * Distinct from verdict-closure (label slots) and from key-assumptions (hidden premises
  * inside a recommendation): this starts from the task text.
@@ -128,6 +128,13 @@ public final class DecisionFramePolicy {
                 "критерий успеха", "метрика", "kpi", "чем измеря", "успех —", "success")) {
             gaps.add(new Gap("metric", "критерий успеха не назван"));
         }
+        // 3.94.0: which mistake is more expensive
+        if (gaps.size() < MAX_GAPS && decision && !has(text,
+                "какая ошибка дороже", "асимметрия ошибки", "ложная тревога", "false positive",
+                "false negative", "упущенный шанс дороже", "пропуск дороже", "лишнее действие дороже",
+                "error-cost", "asymmetric loss", "цена ошибки")) {
+            gaps.add(new Gap("errorcost", "не сказано, какая ошибка дороже — лишнее действие или упущенный шанс"));
+        }
         // 3.92.0: opportunity cost gap for decisions
         if (gaps.size() < MAX_GAPS && decision && !has(text,
                 "opportunity cost", "альтернативная стоимость", "упущенная выгода",
@@ -162,6 +169,7 @@ public final class DecisionFramePolicy {
             if ("downside".equals(gap.key) && has(t, "кто несёт", "кто несет", "who bears", "downside")) return true;
             if ("base".equals(gap.key) && has(t, "базовая частота", "base rate", "reference class", "похожих случа")) return true;
             if ("metric".equals(gap.key) && has(t, "критерий успеха", "success metric", "чем измеря")) return true;
+            if ("errorcost".equals(gap.key) && has(t, "какая ошибка дороже", "асимметрия ошибки", "ложная тревога", "false positive", "false negative", "error-cost")) return true;
             if ("opportunity".equals(gap.key) && has(t, "opportunity cost", "альтернативная стоимость", "упущенн", "от чего отказыва", "next best")) return true;
             if ("premortem".equals(gap.key) && has(t, "премортем", "premortem", "failure mode", "критерий отмены", "kill criterion", "режим отказа")) return true;
         }
@@ -175,6 +183,7 @@ public final class DecisionFramePolicy {
         if ("downside".equals(key)) return "назови, чей ресурс сгорает, если рекомендация ошибочна.";
         if ("base".equals(key)) return "назови долю похожих случаев, где выбранный путь сработал, или напиши, что её нет.";
         if ("metric".equals(key)) return "назови измерение и порог, после которого рекомендацию следует отменить.";
+        if ("errorcost".equals(key)) return "назови, что дороже — лишнее действие или упущенный шанс — и хотя бы порядок этой разницы.";
         if ("opportunity".equals(key)) return "назови, от чего отказываются при этом выборе, и чем следующий лучший вариант хуже.";
         if ("premortem".equals(key)) return "представь, что решение провалилось через год: назови одну правдоподобную причину и критерий, при котором сейчас стоило бы остановиться.";
         return "назови одно наблюдение, которое перевернёт вывод.";
@@ -227,8 +236,10 @@ public final class DecisionFramePolicy {
             Matcher worth = BINARY_WORTH.matcher(task);
             if (worth.find()) {
                 String action = worth.group(1).trim();
+                action = action.replaceAll("(?iu)\\s+и\\s+закрыть\\s+выбор.*$", "").trim();
+                action = action.replaceAll("(?iu)^(нам|мне|нам бы)\\s+", "").trim();
                 action = action.replaceAll("[?!.…,:;]+$", "").trim();
-                if (action.length() >= 2 && action.length() <= 90) {
+                if (action.length() >= 2 && action.length() <= 80) {
                     out.clear();
                     out.add(action);
                     out.add("оставить как есть");
