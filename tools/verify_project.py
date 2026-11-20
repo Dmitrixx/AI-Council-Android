@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 GRADLE = ROOT / "app" / "build.gradle"
 SIGNALS = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "DeliberationSignals.java"
 
-EXPECTED_VERSION = "3.95.0"
-EXPECTED_CODE = 263
+EXPECTED_VERSION = "3.96.0"
+EXPECTED_CODE = 264
 
 REQUIRED_POLICIES = [
     "VerdictClosurePolicy",
@@ -167,6 +167,7 @@ REQUIRED_POLICIES = [
     "MultipleComparisonsPolicy",
     "DecisionFramePolicy",
     "ScenarioStressTestPolicy",
+    "FeedbackEffectsPolicy",
 ]
 
 def main() -> int:
