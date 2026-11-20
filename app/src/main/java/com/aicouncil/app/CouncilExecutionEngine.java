@@ -126,6 +126,10 @@ public final class CouncilExecutionEngine {
             if (!decisionFrame.isEmpty()) {
                 taskForModels = taskForModels + "\n\n" + decisionFrame;
             }
+            String nextObservation = NextObservationPolicy.block(request.task);
+            if (!nextObservation.isEmpty()) {
+                taskForModels = taskForModels + "\n\n" + nextObservation;
+            }
 
             if (request.mode == 0) {
                 callbacks.onExpertState(0, "◉ Работает", Tone.PRIMARY);
@@ -148,6 +152,8 @@ public final class CouncilExecutionEngine {
         if (!callbacks.isCancelled()) {
             String frameNote = DecisionFramePolicy.block(request.task);
             if (!frameNote.isEmpty()) result = frameNote + "\n\n" + result;
+            String nextNote = NextObservationPolicy.block(request.task);
+            if (!nextNote.isEmpty()) result = nextNote + "\n\n" + result;
             String localCheck = DeliberationIntelligence.localCheckFooter(result);
             if (!localCheck.isEmpty()) result += "\n\n" + localCheck;
             String closure = VerdictClosurePolicy.footer(request.task, result);

@@ -1,3 +1,7 @@
+# AI Council 4.0.0
+
+The local council now ranks open frame gaps and names a single highest-leverage next observation instead of treating every caveat as equal. A verdict that closes without that observation, or without marking it unknown, stays a hypothesis. Naming the gap is not itself an error. The same note is injected before the models speak and shown again on the result. Version matches Gradle: `4.0.0` / versionCode `268`.
+
 # AI Council 3.99.0
 
 A local alternative models / model pluralism check now flags a verdict that treats one preferred model, mechanism, or explanatory framework as sufficient to close the decision without naming alternative models, checking robustness to model choice, or noting where models disagree. Naming the gap is not itself an error. The coordinator cannot close solely on a single model when model uncertainty is material. Version matches Gradle: `3.99.0` / versionCode `267`.
