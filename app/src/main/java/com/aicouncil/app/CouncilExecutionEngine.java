@@ -122,6 +122,10 @@ public final class CouncilExecutionEngine {
             if (!synthesis.isEmpty()) {
                 taskForModels = taskForModels + "\n\n" + synthesis;
             }
+            String decisionFrame = DecisionFramePolicy.block(request.task);
+            if (!decisionFrame.isEmpty()) {
+                taskForModels = taskForModels + "\n\n" + decisionFrame;
+            }
 
             if (request.mode == 0) {
                 callbacks.onExpertState(0, "◉ Работает", Tone.PRIMARY);
@@ -142,6 +146,8 @@ public final class CouncilExecutionEngine {
         if (callbacks.isCancelled() && result.trim().isEmpty()) result = safe(callbacks.partialReport());
         if (request.webSearchEnabled && !usedSources.isEmpty()) result += "\n\n🌐 ИСТОЧНИКИ, ВОЗВРАЩЁННЫЕ ПОИСКОМ\n" + usedSources;
         if (!callbacks.isCancelled()) {
+            String frameNote = DecisionFramePolicy.block(request.task);
+            if (!frameNote.isEmpty()) result = frameNote + "\n\n" + result;
             String localCheck = DeliberationIntelligence.localCheckFooter(result);
             if (!localCheck.isEmpty()) result += "\n\n" + localCheck;
             String closure = VerdictClosurePolicy.footer(request.task, result);

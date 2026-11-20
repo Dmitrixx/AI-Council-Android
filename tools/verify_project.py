@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 GRADLE = ROOT / "app" / "build.gradle"
 SIGNALS = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "DeliberationSignals.java"
 
-EXPECTED_VERSION = "3.83.0"
-EXPECTED_CODE = 251
+EXPECTED_VERSION = "3.91.0"
+EXPECTED_CODE = 259
 
 REQUIRED_POLICIES = [
     "VerdictClosurePolicy",
@@ -163,6 +163,7 @@ REQUIRED_POLICIES = [
     "InversionPolicy",
     "FermiDecompositionPolicy",
     "MultipleComparisonsPolicy",
+    "DecisionFramePolicy",
 ]
 
 def main() -> int:
@@ -204,6 +205,12 @@ def main() -> int:
             errors.append("confidence ceiling ignores English possible signal markers")
         if "CoordinatorCue.append" not in intel:
             errors.append("coordinator map does not apply CoordinatorCue")
+
+    engine = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "CouncilExecutionEngine.java"
+    if not engine.is_file():
+        errors.append("missing CouncilExecutionEngine.java")
+    elif "DecisionFramePolicy.block" not in engine.read_text(encoding="utf-8"):
+        errors.append("decision frame is not injected before the models speak")
 
     activity = ROOT / "app" / "src" / "main" / "java" / "com" / "aicouncil" / "app" / "MainActivity.java"
     if not activity.is_file():
