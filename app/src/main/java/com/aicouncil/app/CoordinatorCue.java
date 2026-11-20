@@ -41,6 +41,21 @@ public final class CoordinatorCue {
             rule("fermi", 6,
                     "fermi decomposition", "разложение ферми",
                     "Точное число без разложения на оцениваемые множители — не измерение: разложи или пометь как догадку."),
+            rule("interaction-effects", 6,
+                    "interaction effects", "взаимодействие", "синергия", "нелинейн",
+                    "Пакет действий не равен сумме эффектов: назови синергию, помеху, порог или прямо укажи, почему эффекты остаются аддитивными."),
+            rule("marginal-analysis", 6,
+                    "marginal analysis", "маржинальный", "убывающая отдача",
+                    "Полный масштаб не закрывает выбор: оцени предельную ценность следующей единицы и точку убывающей отдачи."),
+            rule("point-estimate", 6,
+                    "point estimate", "точечная оценка",
+                    "Голое число не закрывает выбор: укажи диапазон, чувствительность или что это оценка."),
+            rule("option-value", 6,
+                    "option value", "ценность опциона", "real options",
+                    "Немедленное обязательство не закрывает выбор при остаточной неопределённости: назови ценность гибкости или поэтапности."),
+            rule("proportional-update", 6,
+                    "proportional update", "байесовское обновление",
+                    "Сила доказательства важнее ярлыка «доказано»: укажи направление и примерный размер обновления относительно априора."),
             rule("unit-bias", 1,
                     "unit bias", "эффект единицы",
                     "Граница единицы не закрывает выбор: оцени предельную ценность частичной дозы или другого размера."),
@@ -208,27 +223,10 @@ public final class CoordinatorCue {
                     "Сверь срок и бюджет с reference class завершённых проектов, а не только с внутренним планом."),
             rule("overconfidence", 36,
                     "overconfidence", "чрезмерная уверенность",
-                    "Калибруй уверенность по проверяемым данным и прошлым прогнозам; гладкость ответа не повышает точность."),
-            rule("probability-neglect", 37,
-                    "probability neglect", "игнорирование вероятности",
-                    "Тяжесть исхода не заменяет его вероятность: оцени риск и ожидаемый ущерб вместе."),
-            rule("appeal-to-emotion", 38,
-                    "appeal to emotion", "апелляция к эмоциям", "appeal to fear",
-                    "Эмоция может обозначать важную ценность, но не доказывает факт: отдели ценность от вероятности и данных."),
-            rule("red-herring", 80,
-                    "red herring", "увод в сторону",
-                    "Увод в сторону не отвечает на исходный вопрос: вернись к проверяемому тезису."),
-            rule("tu-quoque", 90,
-                    "tu quoque", "ты тоже", "tu quoque",
-                    "Чужое лицемерие не опровергает тезис: проверь само утверждение и его доказательства.")
+                    "Задай калибровку: диапазон, в котором ты будешь прав в 80% случаев, и условие пересмотра."),
     };
 
-    private CoordinatorCue() {}
-
     private static Rule rule(String key, int priority, String... values) {
-        if (values == null || values.length < 2) {
-            throw new IllegalArgumentException("A coordinator rule needs an alias and an instruction.");
-        }
         String instruction = values[values.length - 1];
         String[] aliases = new String[values.length - 1];
         System.arraycopy(values, 0, aliases, 0, aliases.length);
