@@ -1,3 +1,7 @@
+# AI Council 3.90.0
+
+A local threshold / tipping-point / phase-transition check now flags a verdict that treats effects as continuous and linear across a material threshold (tipping point, regulatory cliff, network critical mass, phase change) without locating the threshold or stating the discontinuity. Naming the gap is not itself an error. The coordinator cannot close solely on smooth extrapolation when the decision may cross a non-linear boundary. Distinct from interaction-effects and marginal-analysis. Version matches Gradle: `3.90.0` / versionCode `258`.
+
 # AI Council 3.89.0
 
 A local interaction-effects / non-additivity check now flags a verdict that treats a package of simultaneous actions or combined interventions as the simple sum of separate effects without stating interaction terms, synergies, interference, thresholds, or why effects remain approximately additive. Naming the gap is not itself an error. The coordinator cannot close solely on additive decomposition when the decision packages multiple levers or crosses a threshold where interactions become material. Version matches Gradle: `3.89.0` / versionCode `257`.

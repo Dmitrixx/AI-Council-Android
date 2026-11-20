@@ -222,6 +222,7 @@ public final class DeliberationSignals {
         ProportionalUpdatePolicy.detect(a, b, conflicts);
         MarginalAnalysisPolicy.detect(a, b, conflicts);
         InteractionEffectsPolicy.detect(a, b, conflicts);
+        ThresholdEffectsPolicy.detect(a, b, conflicts);
         VerdictClosurePolicy.detect(task, a, b, conflicts);
     }
 
